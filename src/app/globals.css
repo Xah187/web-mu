@@ -1,26 +1,467 @@
 @import "tailwindcss";
 
+/* Safe Area and Viewport Support */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bottom-safe-area: env(safe-area-inset-bottom, 0px);
 }
 
-@theme inline {
+.safe-area-bottom {
+  padding-bottom: var(--bottom-safe-area);
+}
+
+/* Enhanced Bottom Navigation Support */
+.bottom-navigation-safe {
+  height: calc(4rem + var(--bottom-safe-area));
+  padding-bottom: var(--bottom-safe-area);
+}
+
+.content-with-bottom-nav {
+  padding-bottom: calc(5rem + var(--bottom-safe-area));
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile browsers */
+}
+
+/* Better mobile browser support */
+@supports (min-height: 100dvh) {
+  .content-with-bottom-nav {
+    min-height: 100dvh;
+  }
+}
+
+/* iOS Safari specific adjustments */
+@supports (-webkit-touch-callout: none) {
+  .content-with-bottom-nav {
+    padding-bottom: calc(6rem + var(--bottom-safe-area));
+  }
+}
+
+/* Additional spacing for lists and scrollable content */
+.page-content {
+  padding-bottom: 2rem;
+}
+
+.list-container {
+  margin-bottom: 1rem;
+}
+
+.list-container:last-child {
+  margin-bottom: 2rem;
+}
+
+/* Better scrolling behavior */
+.scrollable-content {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Font Face Declarations */
+@font-face {
+  font-family: 'Tajawal-Regular';
+  src: url('/fonts/Tajawal-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Tajawal-ExtraBold';
+  src: url('/fonts/Tajawal-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cairo-Regular';
+  src: url('/fonts/Cairo-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cairo-Bold';
+  src: url('/fonts/Cairo-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cairo-Medium';
+  src: url('/fonts/Cairo-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Cairo-SemiBold';
+  src: url('/fonts/Cairo-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Changa-Regular';
+  src: url('/fonts/Changa-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Changa-Bold';
+  src: url('/fonts/Changa-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSansArabic-Regular';
+  src: url('/fonts/IBMPlexSansArabic-Regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSansArabic-Bold';
+  src: url('/fonts/IBMPlexSansArabic-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSansArabic-Medium';
+  src: url('/fonts/IBMPlexSansArabic-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBMPlexSansArabic-SemiBold';
+  src: url('/fonts/IBMPlexSansArabic-SemiBold.ttf') format('truetype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* CSS Variables */
+:root {
+  --background: #f6f8fe;
+  --foreground: #212121;
+  --primary-color: #2117fb;
+  --border-color: #7e879a;
+  --home-bg: #f6f8fe;
+  --white: #ffffff;
+  --black: #212121;
+  --blue: #2117fb;
+  --border: #7e879a;
+}
+
+/* Theme variables */
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'IBMPlexSansArabic-Regular', var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Force light theme consistently */
+/* Removed automatic dark-mode override to match mobile design */
+
+/* Global Styles */
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'IBMPlexSansArabic-Regular', Arial, sans-serif;
+  line-height: 1.6;
+  direction: rtl; /* دعم اللغة العربية */
+}
+
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+/* Focus Styles */
+:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Transitions */
+* {
+  transition: color 0.2s ease-in-out,
+              background-color 0.2s ease-in-out,
+              border-color 0.2s ease-in-out;
+}
+
+/* Utility Classes */
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Prevent text selection */
+.no-select {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Create Company Page - Perfect Centering */
+.create-company-page {
+  direction: rtl;
+  text-align: center;
+}
+
+.create-company-page .content-container {
+  max-width: 400px;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+/* Responsive adjustments for create company */
+@media (min-width: 640px) {
+  .create-company-page .content-container {
+    max-width: 450px;
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .create-company-page .content-container {
+    max-width: 500px;
+    padding: 0 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .create-company-page .content-container {
+    max-width: 550px;
+    padding: 0 2.5rem;
+  }
+}
+
+/* Input fields in create company */
+.create-company-page input,
+.create-company-page textarea {
+  text-align: right;
+  direction: rtl;
+  width: 100%;
+}
+
+/* API selection styling */
+.create-company-page .api-selection {
+  direction: rtl;
+  text-align: center;
+}
+
+.create-company-page .api-buttons {
+  direction: rtl;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 50%;
+  margin-right: auto;
+}
+
+.create-company-page .api-button {
+  direction: rtl;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Button centering */
+.create-company-page .submit-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* Branch Cards Responsive Design - Matching Mobile App */
+.branch-card {
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.branch-card:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+}
+
+.branch-card:active {
+  transform: scale(0.95);
+}
+
+/* Branch Grid Container - Perfect Centering */
+.branches-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  padding: 0 16px;
+  max-width: 100%;
+}
+
+/* Mobile: 2 cards per row with exact spacing */
+@media (max-width: 640px) {
+  .branches-container {
+    justify-content: space-between;
+    padding: 0 4%;
+  }
+  
+  .branch-card {
+    width: 42% !important;
+    margin: 3.9% 0 !important;
+  }
+}
+
+/* Desktop: Auto-layout with centering */
+@media (min-width: 641px) {
+  .branches-container {
+    justify-content: center;
+    gap: 16px;
+    align-items: center;
+  }
+  
+  .branch-card {
+    margin: 8px !important;
+    flex: 0 0 auto;
+    min-width: 200px;
+  }
+}
+
+/* Tablet: 3 cards per row */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .branches-container {
+    justify-content: center;
+    gap: 12px;
+    padding: 0 24px;
+  }
+  
+  .branch-card {
+    flex: 0 0 calc(33.333% - 16px);
+    max-width: 280px;
+    margin: 6px !important;
+  }
+}
+
+/* Large screens: Better spacing */
+@media (min-width: 1025px) {
+  .branches-container {
+    justify-content: center;
+    gap: 20px;
+    padding: 0 40px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .branch-card {
+    flex: 0 0 auto;
+    min-width: 240px;
+    max-width: 320px;
+    margin: 10px !important;
+  }
+}
+
+/* Ripple Effect for Branch Cards - Like Android Material Design */
+.branch-card::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: rgba(121, 143, 255, 0.3);
+  transform: translate(-50%, -50%);
+  transition: width 0.6s, height 0.6s;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.branch-card:active::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Branch Card Content */
+.branch-card > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Active scale effect */
+.active\:scale-98:active {
+  transform: scale(0.98);
+}
+
+.active\:scale-95:active {
+  transform: scale(0.95);
 }

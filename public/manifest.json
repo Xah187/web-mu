@@ -1,0 +1,27 @@
+{
+  "name": "منصة مشرف - نظام إدارة المشاريع",
+  "short_name": "مشرف",
+  "description": "منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f8fe",
+  "theme_color": "#2117fb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity", "utilities"],
+  "lang": "ar",
+  "dir": "rtl"
+}
