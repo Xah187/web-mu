@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store';
 
@@ -45,18 +45,35 @@ export default function ApprovalsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<{[key: number]: boolean}>({});
   const [newMessage, setNewMessage] = useState('');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
+  const [uploading, setUploading] = useState<{ idSendr: string; progress: number; kind: 'image' | 'video' | 'file' | 'text'; } | null>(null);
+  const [preview, setPreview] = useState<{ type: 'image' | 'video'; url: string } | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    fetchMessages();
+    initializeSocket();
+
+    // Cleanup عند إلغاء تحميل المكون
+    return () => {
+      socketService.removeListener('received_message');
+    };
+  }, []);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const initializeSocket = useCallback(async () => {
+  const initializeSocket = async () => {
     try {
       // تهيئة Socket مثل التطبيق المحمول
       await socketService.initializeSocket();
@@ -98,9 +115,9 @@ export default function ApprovalsPage() {
     } catch (error) {
       console.error('Error initializing socket:', error);
     }
-  }, [approvalsProjectId, user?.data?.userName]);
+  };
 
-  const fetchMessages = useCallback(async () => {
+  const fetchMessages = async () => {
     try {
       setLoading(true);
 
@@ -230,22 +247,7 @@ export default function ApprovalsPage() {
     } finally {
       setLoading(false);
     }
-  }, [approvalsProjectId, user?.data?.userName]);
-
-  // useEffect hooks
-  useEffect(() => {
-    fetchMessages();
-    initializeSocket();
-
-    // Cleanup عند إلغاء تحميل المكون
-    return () => {
-      socketService.removeListener('received_message');
-    };
-  }, [fetchMessages, initializeSocket]);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  };
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;

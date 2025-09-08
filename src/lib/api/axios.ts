@@ -2,9 +2,9 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
 // API Base URL - يمكن تغييره حسب البيئة
-export const Api = process.env.NEXT_PUBLIC_API_URL || 'http://35.247.12.97:8080';
+export const Api = 'https://mushrf.net';
 
-// URLs للملفات والتحميلات
+// URLs للملفات والتحميلات - matching mobile app exactly
 export const URLFILDonlwod = `${Api}/upload`;
 export const URLFIL = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1`;
 export const URLFILFiles = `${Api}/api/Files`;

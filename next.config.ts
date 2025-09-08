@@ -10,12 +10,6 @@ const nextConfig: NextConfig = {
         pathname: '/**',
       },
       {
-        protocol: 'http',
-        hostname: '35.247.12.97',
-        port: '8080',
-        pathname: '/**',
-      },
-      {
         protocol: 'https',
         hostname: '**',
       },
@@ -25,9 +19,6 @@ const nextConfig: NextConfig = {
     // السماح بإكمال البناء حتى مع وجود أخطاء ESLint (الموجودة سابقاً)
     ignoreDuringBuilds: true,
   },
-  // Production optimizations
-  poweredByHeader: false,
-  compress: true,
   // Enable experimental features if needed
   experimental: {
     turbo: {
