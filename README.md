@@ -182,10 +182,6 @@ NEXT_PUBLIC_API_URL=http://35.247.12.97:8080
 
 # إعدادات أخرى حسب الحاجة
 NEXT_PUBLIC_APP_NAME=مشرف
-
-# URLs للملفات والتحميلات
-NEXT_PUBLIC_UPLOAD_URL=http://35.247.12.97:8080/upload
-NEXT_PUBLIC_STORAGE_URL=https://storage.googleapis.com/demo_backendmoshrif_bucket-1
 ```
 
 ### تكوين Tailwind

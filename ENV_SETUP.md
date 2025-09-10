@@ -6,11 +6,7 @@
 
 ```bash
 # API Configuration
-NEXT_PUBLIC_API_URL=http://35.247.12.97:8080
-
-# URLs للملفات والتحميلات
-NEXT_PUBLIC_UPLOAD_URL=http://35.247.12.97:8080/upload
-NEXT_PUBLIC_STORAGE_URL=https://storage.googleapis.com/demo_backendmoshrif_bucket-1
+NEXT_PUBLIC_API_URL=http://localhost:3001
 
 # Development Configuration
 NODE_ENV=development

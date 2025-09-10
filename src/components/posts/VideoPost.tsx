@@ -15,7 +15,7 @@ export default function VideoPost({ videoUrl, thumbnailUrl, onPlay, className = 
   const [isHovered, setIsHovered] = useState(false);
 
   // Get API URL
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://35.247.12.97:8080';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
   
   const buildImageUrl = (url: string) => {
     if (!url) return null;
