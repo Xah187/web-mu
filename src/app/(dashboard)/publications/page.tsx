@@ -6,6 +6,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
+import '@/styles/mobile-layout.css';
 import FilterIcon from '@/components/icons/FilterIcon';
 
 import PostCard from '@/components/posts/PostCard';
@@ -423,17 +424,17 @@ export default function PublicationsPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-gray-50">
+    <div className="publications-page publications-mobile-container flex flex-col h-full bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
+      <div className="publications-header bg-white border-b border-gray-200 px-4 py-3">
         <div className="flex items-center justify-between">
-          <h1 
+          <h1
             className="font-cairo-bold text-gray-900"
             style={{ fontSize: verticalScale(20) }}
           >
             اليوميات
           </h1>
-          
+
           <div className="flex items-center gap-3">
             {/* زر تبديل نمط العرض */}
             <button
@@ -535,21 +536,10 @@ export default function PublicationsPage() {
               </div>
             </div>
           ) : (
-            /* Container الرئيسي محسن للجوال */
+            /* Container الرئيسي محسن للجوال - عرض ثابت */
             <div
               ref={containerRef}
-              className="fixed inset-0 bg-black"
-              style={{
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: '64px', // فوق الشريط السفلي مباشرة
-                touchAction: 'none', // منع أي حركة أو تمرير
-                userSelect: 'none', // منع تحديد النص
-                WebkitUserSelect: 'none', // منع تحديد النص على Safari
-                WebkitTouchCallout: 'none', // منع قائمة السياق على iOS
-                zIndex: 20 // فوق المحتوى العادي لكن تحت الشريط السفلي
-              }}
+              className="reels-mobile-container"
               onTouchStart={handleTouchStart}
               onTouchEnd={handleTouchEnd}
             >
@@ -621,15 +611,15 @@ export default function PublicationsPage() {
         </div>
       ) : (
         /* Grid Mode - العرض التقليدي */
-        <div className="flex-1 px-4 pb-20">
+        <div className="publications-content flex-1 px-4 pb-20">
           {loading && posts.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : posts.length > 0 ? (
             <>
-              {/* Grid Layout للمنشورات */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {/* Grid Layout للمنشورات - عرض الجوال فقط */}
+              <div className="publications-grid">
                 {posts.map((post, index) => (
                   <PostCard
                     key={index.toString()}

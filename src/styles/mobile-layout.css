@@ -1,0 +1,119 @@
+/* Mobile-first layout for Publications page */
+
+/* Force mobile layout on all screen sizes */
+.publications-mobile-container {
+  width: 100% !important;
+  max-width: 448px !important; /* max-w-md equivalent */
+  margin: 0 auto !important;
+  min-height: 100vh !important;
+  position: relative !important;
+}
+
+/* Reels container mobile layout */
+.reels-mobile-container {
+  position: fixed !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 100% !important;
+  max-width: 448px !important;
+  height: 100vh !important;
+  background: black !important;
+  z-index: 20 !important;
+  touch-action: none !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
+}
+
+/* Grid layout mobile-only */
+.publications-grid {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1rem !important;
+  padding: 0 1rem !important;
+}
+
+/* Responsive breakpoints override */
+@media (min-width: 768px) {
+  .publications-mobile-container {
+    width: 100% !important;
+    max-width: 448px !important;
+  }
+  
+  .publications-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .reels-mobile-container {
+    max-width: 448px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .publications-mobile-container {
+    width: 100% !important;
+    max-width: 448px !important;
+  }
+  
+  .publications-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .reels-mobile-container {
+    max-width: 448px !important;
+  }
+}
+
+@media (min-width: 1280px) {
+  .publications-mobile-container {
+    width: 100% !important;
+    max-width: 448px !important;
+  }
+  
+  .publications-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .reels-mobile-container {
+    max-width: 448px !important;
+  }
+}
+
+/* Force mobile viewport behavior */
+.publications-page {
+  overflow-x: hidden !important;
+}
+
+/* Mobile-first header */
+.publications-header {
+  width: 100% !important;
+  max-width: 448px !important;
+  margin: 0 auto !important;
+}
+
+/* Mobile-first content area */
+.publications-content {
+  width: 100% !important;
+  max-width: 448px !important;
+  margin: 0 auto !important;
+}
+
+/* Force mobile layout on body when publications page is active */
+body:has(.publications-page) {
+  overflow-x: hidden !important;
+}
+
+/* Center the entire app on large screens */
+.publications-page {
+  margin: 0 auto !important;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Mobile-first responsive design override */
+@media (min-width: 448px) {
+  .publications-page {
+    border-left: 1px solid #e5e7eb !important;
+    border-right: 1px solid #e5e7eb !important;
+  }
+}

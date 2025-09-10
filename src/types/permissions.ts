@@ -4,8 +4,9 @@ export type UserRole = 'Admin' | 'مدير عام' | 'مدير الفرع' | 'م
 // Job Descriptions
 export type JobDescription = 'Admin' | 'مدير عام' | 'مدير تنفيذي' | 'موارد بشرية' | 'مدير الفرع' | 'مالية' | 'موظف';
 
-// Permission Types (based on mobile app's Arraypromison)
+// Permission Types (based on mobile app's Arraypromison and actual usage)
 export type PermissionType =
+  // Core permissions from mobile app Arraypromison
   | 'اقفال المرحلة'
   | 'اضافة مرحلة فرعية'
   | 'تعديل مرحلة فرعية'
@@ -21,7 +22,10 @@ export type PermissionType =
   | 'إنشاء طلبات'
   | 'تشييك الطلبات'
   | 'إشعارات المالية'
+  // Additional permissions from mobile app usage
   | 'تعديل صلاحيات'
+  | 'حذف المستخدم'
+  | 'اضافة عضو'
   | 'اغلاق المشروع'
   | 'إغلاق وفتح المشروع'
   | 'حذف المشروع'

@@ -158,7 +158,11 @@ function DeleteAccountModal({ visible, onClose, onConfirm }: { visible: boolean;
           <div className="flex gap-3">
             <button
               onClick={onConfirm}
-              className="flex-1 py-3 px-4 bg-red text-white rounded-lg font-cairo font-medium hover:bg-red-600 transition-colors"
+              className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors"
+              style={{
+                backgroundColor: colors.RED,
+                color: 'white'
+              }}
             >
               حذف الحساب
             </button>
@@ -194,28 +198,35 @@ export default function SettingsPage() {
 
   const handleLogout = async () => {
     try {
+      // Close modal first
+      setShowLogoutConfirm(false);
+
       // Clear user data
       dispatch(clearUser());
       localStorage.removeItem('user');
       localStorage.removeItem('token');
       localStorage.removeItem('accessToken');
-      
+
       Tostget('تم تسجيل الخروج بنجاح');
       router.replace('/');
     } catch (error) {
       console.error('Logout error:', error);
       Tostget('حدث خطأ أثناء تسجيل الخروج');
+      setShowLogoutConfirm(false); // Close modal on error too
     }
   };
 
   const handleDeleteAccount = async () => {
     try {
+      // Close modal first
+      setShowDeleteConfirm(false);
+
       // TODO: Implement delete account API call
       Tostget('سيتم حذف الحساب قريباً');
-      setShowDeleteConfirm(false);
     } catch (error) {
       console.error('Delete account error:', error);
       Tostget('حدث خطأ أثناء حذف الحساب');
+      setShowDeleteConfirm(false); // Close modal on error too
     }
   };
 
@@ -305,7 +316,11 @@ export default function SettingsPage() {
               <div className="flex gap-3">
                 <button
                   onClick={handleLogout}
-                  className="flex-1 py-3 px-4 bg-red text-white rounded-lg font-cairo font-medium hover:bg-red-600 transition-colors"
+                  className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors"
+                  style={{
+                    backgroundColor: colors.RED,
+                    color: 'white'
+                  }}
                 >
                   تسجيل الخروج
                 </button>
@@ -520,16 +535,16 @@ export default function SettingsPage() {
                        </div>
          </div>
 
-         {/* Centered Bottom Actions */}
-         <div className="px-4 mt-8 mb-20 flex flex-col items-center">
-           {/* Admin Finance Toggle - Centered (like mobile app) */}
+         {/* Bottom Actions - Full Width */}
+         <div className="px-4 mt-8 mb-24 space-y-3">
+           {/* Admin Finance Toggle - Smaller */}
            <AdminGuard>
-             <div className="w-full max-w-sm mb-4">
-               <div className="bg-white rounded-2xl p-4 flex items-center justify-between">
-                 <span 
-                   className="font-ibm-arabic-semibold text-right flex-1 ml-4"
-                   style={{ 
-                     fontSize: verticalScale(15), 
+             <div className="flex justify-center">
+               <div className="bg-white rounded-2xl px-3 py-2 flex items-center justify-between max-w-sm gap-4">
+                 <span
+                   className="font-ibm-arabic-semibold text-right"
+                   style={{
+                     fontSize: verticalScale(14),
                      color: colors.BLUE
                    }}
                  >
@@ -537,7 +552,7 @@ export default function SettingsPage() {
                  </span>
                  <button
                    onClick={handleFinanceToggle}
-                   className="relative inline-flex items-center justify-center w-16 h-8 rounded-full transition-colors duration-200 focus:outline-none border font-ibm-arabic-bold text-xs text-white"
+                   className="relative inline-flex items-center justify-center w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none border font-ibm-arabic-bold text-xs text-white"
                    style={{
                      backgroundColor: financeDisabled ? colors.RED : colors.BLUE,
                      borderColor: financeDisabled ? colors.RED : colors.BLUE
@@ -549,52 +564,56 @@ export default function SettingsPage() {
              </div>
            </AdminGuard>
 
-           {/* Delete Account - Centered */}
-           <button
-             onClick={() => setShowDeleteConfirm(true)}
-             className="bg-white rounded-2xl p-4 mb-3 flex items-center gap-3 hover:shadow-md transition-shadow w-full max-w-sm"
-           >
-             <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
+           {/* Delete Account - Smaller */}
+           <div className="flex justify-center">
+             <button
+               onClick={() => setShowDeleteConfirm(true)}
+               className="bg-white rounded-2xl px-3 py-2 flex items-center justify-start gap-2 max-w-xs"
+             >
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
                <polyline points="3,6 5,6 21,6" />
                <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2v2" />
                <line x1="10" y1="11" x2="10" y2="17" />
                <line x1="14" y1="11" x2="14" y2="17" />
              </svg>
-             <span 
+             <span
                className="font-ibm-arabic-semibold text-right"
-               style={{ 
-                 fontSize: verticalScale(15), 
+               style={{
+                 fontSize: verticalScale(14),
                  color: colors.RED
                }}
              >
                حذف حسابي
              </span>
-           </button>
+             </button>
+           </div>
 
-           {/* Logout - Centered */}
-           <button
-             onClick={() => setShowLogoutConfirm(true)}
-             className="bg-white rounded-2xl p-4 flex items-center gap-3 hover:shadow-md transition-shadow w-full max-w-sm"
-           >
-             <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
+           {/* Logout - Smaller */}
+           <div className="flex justify-center">
+             <button
+               onClick={() => setShowLogoutConfirm(true)}
+               className="bg-white rounded-2xl px-3 py-2 flex items-center justify-start gap-2 max-w-xs"
+             >
+             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                <polyline points="16,17 21,12 16,7" />
                <line x1="21" y1="12" x2="9" y2="12" />
              </svg>
-             <span 
+             <span
                className="font-ibm-arabic-semibold text-right"
-               style={{ 
-                 fontSize: verticalScale(15), 
+               style={{
+                 fontSize: verticalScale(14),
                  color: colors.RED
                }}
              >
                تسجيل خروج
              </span>
-           </button>
+             </button>
+           </div>
 
            {/* System Admin Features */}
            {isSystemAdmin && (
-             <div className="w-full max-w-sm mt-4">
+             <div className="w-full">
                <SettingItem
                  title="طلبات الاشتراك"
                  onPress={() => Tostget('صفحة طلبات الاشتراك قريباً')}

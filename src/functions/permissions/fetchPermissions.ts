@@ -43,6 +43,83 @@ export const fetchUserPermissions = async (_accessToken: string, userData: any) 
       };
     }
 
+    // If no Validity in login response, fetch from API (like mobile app)
+    try {
+      const { default: axiosInstance } = await import('@/lib/api/axios');
+
+      // Get user data with full Validity information
+      const response = await axiosInstance.get(`/user/BringUserCompany`, {
+        params: {
+          IDCompany: userData.data?.IDCompany,
+          number: 0,
+          kind_request: 'all'
+        },
+        headers: {
+          'Authorization': `Bearer ${_accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.status === 200 && response.data?.data) {
+        // Find current user in the response
+        const currentUser = Array.isArray(response.data.data)
+          ? response.data.data.find((u: any) => u?.PhoneNumber === userData.data?.PhoneNumber)
+          : null;
+
+        if (currentUser?.Validity) {
+          let validity = currentUser.Validity;
+
+          // Parse if string (like mobile app)
+          if (typeof validity === 'string') {
+            try {
+              validity = JSON.parse(validity);
+            } catch {
+              validity = [];
+            }
+          }
+
+          // Extract permissions from Validity structure
+          let finalPermissions = [];
+          if (Array.isArray(validity)) {
+            // Find the branch entry for current company
+            const branchEntry = validity.find(item =>
+              parseInt(item.idBrinsh) === parseInt(userData.data?.IDCompany || 0)
+            );
+
+            if (branchEntry?.Validity && Array.isArray(branchEntry.Validity)) {
+              finalPermissions = branchEntry.Validity;
+            } else {
+              // Fallback: collect all Validity arrays from all branches
+              finalPermissions = validity
+                .filter(item => item?.Validity && Array.isArray(item.Validity))
+                .flatMap(item => item.Validity);
+            }
+          }
+
+          // Update Redux state
+          store.dispatch(setValidity(finalPermissions || []));
+
+          // Set boss status
+          const bossStatus = userData.data?.job === 'مدير الفرع' ? 'مدير الفرع' : '';
+          store.dispatch(setBoss(bossStatus as any));
+
+          console.log('✅ Permissions loaded from API:', {
+            permissions: finalPermissions,
+            boss: bossStatus,
+            userRole: userData.data?.job
+          });
+
+          return {
+            success: true,
+            permissions: finalPermissions,
+            boss: bossStatus
+          };
+        }
+      }
+    } catch (apiError) {
+      console.error('❌ API call failed:', apiError);
+    }
+
     // Fallback to default permissions if API call fails or user not found
     const userRole = userData.data?.job;
     const defaultPermissions = getDefaultPermissions(userRole);
@@ -51,7 +128,7 @@ export const fetchUserPermissions = async (_accessToken: string, userData: any) 
     store.dispatch(setValidity(defaultPermissions));
     store.dispatch(setBoss(defaultBoss as any));
 
-    console.log('Using default permissions (API failed or user not found):', {
+    console.log('⚠️ Using default permissions (API failed or user not found):', {
       permissions: defaultPermissions,
       boss: defaultBoss,
       userRole: userRole
@@ -118,6 +195,7 @@ const getDefaultPermissions = (userRole: string): PermissionType[] => {
     case 'Admin':
     case 'مالية': // مالية is treated as Admin in mobile app
       return [
+        // Core permissions from mobile app Arraypromison
         'اقفال المرحلة',
         'اضافة مرحلة فرعية',
         'تعديل مرحلة فرعية',
@@ -133,13 +211,55 @@ const getDefaultPermissions = (userRole: string): PermissionType[] => {
         'إنشاء طلبات',
         'تشييك الطلبات',
         'إشعارات المالية',
+        // Additional admin permissions from mobile app usage
         'تعديل صلاحيات',
+        'حذف المستخدم',
+        'اضافة عضو',
+        'اغلاق المشروع',
+        'إغلاق وفتح المشروع',
+        'حذف المشروع',
+        'إنشاء المشروع',
+        'تعديل بيانات المشروع',
+        'المشاريع المغلقة',
+        'رفع ملف',
         'covenant',
         'Admin'
       ] as PermissionType[];
-      
+
     case 'مدير الفرع':
       return [
+        // Core permissions from mobile app Arraypromison
+        'اقفال المرحلة',
+        'اضافة مرحلة فرعية',
+        'تعديل مرحلة فرعية',
+        'حذف مرحلة فرعية',
+        'إضافة مرحلة رئيسية',
+        'تعديل مرحلة رئيسية',
+        'حذف مرحلة رئيسية',
+        'تشييك الانجازات الفرعية',
+        'إضافة تأخيرات',
+        'انشاء مجلد او تعديله',
+        'ترتيب المراحل',
+        'إنشاء طلبات',
+        'تشييك الطلبات',
+        // Branch manager specific permissions
+        'تعديل صلاحيات',
+        'حذف المستخدم',
+        'اضافة عضو',
+        'اغلاق المشروع',
+        'إغلاق وفتح المشروع',
+        'حذف المشروع',
+        'إنشاء المشروع',
+        'تعديل بيانات المشروع',
+        'المشاريع المغلقة',
+        'رفع ملف',
+        'covenant'
+      ] as PermissionType[];
+
+    case 'إستشاري موقع':
+    case 'استشاري موقع':
+      return [
+        // Site consultant permissions - based on mobile app usage
         'اقفال المرحلة',
         'اضافة مرحلة فرعية',
         'تعديل مرحلة فرعية',
@@ -150,15 +270,23 @@ const getDefaultPermissions = (userRole: string): PermissionType[] => {
         'إضافة تأخيرات',
         'انشاء مجلد او تعديله',
         'ترتيب المراحل',
-        'إنشاء طلبات',
-        'تشييك الطلبات',
+        'رفع ملف',
         'covenant'
       ] as PermissionType[];
-      
+
     case 'موظف':
+      return [
+        // Employee permissions - limited access
+        'تعديل مرحلة فرعية',
+        'تشييك الانجازات الفرعية',
+        'إضافة تأخيرات',
+        'انشاء مجلد او تعديله',
+        'رفع ملف',
+        'covenant'
+      ] as PermissionType[];
+
     default:
       return [
-        'تعديل مرحلة فرعية',
         'covenant'
       ] as PermissionType[];
   }
