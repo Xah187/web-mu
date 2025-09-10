@@ -7,6 +7,7 @@ import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import '@/styles/mobile-layout.css';
+
 import FilterIcon from '@/components/icons/FilterIcon';
 
 import PostCard from '@/components/posts/PostCard';
