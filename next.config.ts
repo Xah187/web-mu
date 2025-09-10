@@ -5,9 +5,14 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'http',
-        hostname: 'localhost',
-        port: '3001',
+        hostname: '35.247.12.97',
+        port: '8080',
         pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'storage.googleapis.com',
+        pathname: '/demo_backendmoshrif_bucket-1/**',
       },
       {
         protocol: 'https',

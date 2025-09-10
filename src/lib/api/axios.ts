@@ -2,7 +2,7 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
 // API Base URL - يمكن تغييره حسب البيئة
-export const Api = 'https://mushrf.net';
+export const Api = 'http://35.247.12.97:8080';
 
 // URLs للملفات والتحميلات - matching mobile app exactly
 export const URLFILDonlwod = `${Api}/upload`;

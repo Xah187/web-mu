@@ -424,9 +424,9 @@ export default function PublicationsPage() {
   }
 
   return (
-    <div className="publications-page publications-mobile-container flex flex-col h-full bg-gray-50">
+    <div className={`flex flex-col h-full bg-gray-50 ${viewMode === 'reels' ? 'publications-mobile-container' : ''}`}>
       {/* Header */}
-      <div className="publications-header bg-white border-b border-gray-200 px-4 py-3">
+      <div className={`bg-white border-b border-gray-200 px-4 py-3 ${viewMode === 'reels' ? 'publications-header' : ''}`}>
         <div className="flex items-center justify-between">
           <h1
             className="font-cairo-bold text-gray-900"
@@ -536,13 +536,17 @@ export default function PublicationsPage() {
               </div>
             </div>
           ) : (
-            /* Container الرئيسي محسن للجوال - عرض ثابت */
-            <div
-              ref={containerRef}
-              className="reels-mobile-container"
-              onTouchStart={handleTouchStart}
-              onTouchEnd={handleTouchEnd}
-            >
+            <>
+              {/* Background overlay */}
+              <div className="reels-backdrop" />
+
+              {/* Container الرئيسي محسن للجوال والديسكتوب */}
+              <div
+                ref={containerRef}
+                className="reels-container"
+                onTouchStart={handleTouchStart}
+                onTouchEnd={handleTouchEnd}
+              >
               {/* عرض الفيديو الحالي فقط - عناصر ثابتة */}
               {videoReels.length > 0 && videoReels[currentReelIndex] && (
                 <ReelItem
@@ -573,53 +577,68 @@ export default function PublicationsPage() {
                 />
               )}
 
-              {/* زر الخروج من وضع Reels */}
-              <div className="absolute top-4 left-4 z-30">
+              {/* زر الخروج من وضع Reels - محسن */}
+              <div className="absolute top-6 left-6 z-30">
                 <button
                   onClick={() => {
                     setViewMode('grid');
                     setCurrentReelIndex(0);
                   }}
-                  className="w-10 h-10 bg-black bg-opacity-50 rounded-full flex items-center justify-center hover:bg-opacity-70 transition-all active:scale-95"
+                  className="w-12 h-12 bg-black bg-opacity-60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-opacity-80 transition-all duration-300 active:scale-95 border border-white border-opacity-20"
                   title="الخروج من وضع الفيديوهات"
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                     <path d="M19 12H5"/>
                     <polyline points="12,19 5,12 12,5"/>
                   </svg>
                 </button>
               </div>
 
-              {/* مؤشر الفيديو الحالي - ثابت */}
-              <div className="absolute top-4 right-4 z-30">
-                <div className="bg-black bg-opacity-50 text-white px-3 py-1 rounded-full text-sm">
-                  {currentReelIndex + 1} / {videoReels.length}
+              {/* مؤشر الفيديو الحالي - محسن */}
+              <div className="absolute top-6 right-6 z-30">
+                <div className="bg-black bg-opacity-60 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-medium border border-white border-opacity-20">
+                  <span className="text-blue-400">{currentReelIndex + 1}</span>
+                  <span className="text-gray-300 mx-1">/</span>
+                  <span>{videoReels.length}</span>
                 </div>
               </div>
 
-              {/* مؤشر التحميل - ثابت */}
+              {/* مؤشر التقدم */}
+              <div className="absolute top-20 right-6 z-30">
+                <div className="w-1 bg-white bg-opacity-20 rounded-full overflow-hidden" style={{ height: '120px' }}>
+                  <div
+                    className="w-full bg-gradient-to-b from-blue-400 to-purple-500 rounded-full transition-all duration-300"
+                    style={{
+                      height: `${((currentReelIndex + 1) / videoReels.length) * 100}%`
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* مؤشر التحميل - محسن */}
               {loading && (
-                <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
-                  <div className="bg-black bg-opacity-50 text-white px-4 py-2 rounded-full flex items-center space-x-2 rtl:space-x-reverse">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm">تحميل المزيد...</span>
+                <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
+                  <div className="bg-black bg-opacity-60 backdrop-blur-sm text-white px-6 py-3 rounded-full flex items-center space-x-3 rtl:space-x-reverse border border-white border-opacity-20">
+                    <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
+                    <span className="text-sm font-medium">تحميل المزيد من الفيديوهات...</span>
                   </div>
                 </div>
               )}
-            </div>
+              </div>
+            </>
           )}
         </div>
       ) : (
-        /* Grid Mode - العرض التقليدي */
-        <div className="publications-content flex-1 px-4 pb-20">
+        /* Grid Mode - العرض التقليدي المتجاوب */
+        <div className="flex-1 px-4 pb-20">
           {loading && posts.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : posts.length > 0 ? (
             <>
-              {/* Grid Layout للمنشورات - عرض الجوال فقط */}
-              <div className="publications-grid">
+              {/* Grid Layout للمنشورات - متجاوب */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
                 {posts.map((post, index) => (
                   <PostCard
                     key={index.toString()}
