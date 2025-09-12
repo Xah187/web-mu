@@ -12,6 +12,8 @@ import DeleteMemberModal from '@/components/branch/DeleteMemberModal';
 
 import AddProjectsModal from '@/components/branch/AddProjectsModal';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Types
 interface BranchMember {
   id: number;
@@ -39,10 +41,10 @@ export default function BranchMembersPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const branchId = parseInt(params.id as string);
   const branchName = searchParams.get('branchName') || 'الفرع';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
@@ -215,25 +217,29 @@ export default function BranchMembersPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4" style={{ paddingTop: '35px' }}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <div className="text-center">
-            <h1 className="text-lg font-ibm-arabic-bold text-gray-900">اعضاء الفرع</h1>
-            <p className="text-sm font-ibm-arabic-medium text-gray-600">{branchName}</p>
-          </div>
-          
-          {/* زر إضافة عضو - مطابق للتطبيق المحمول */}
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="2739362721 2744413139"
+          backButton={
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg"
+              aria-label="312c4839"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
+
+
+      {/* Content */}
+      <div className="p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="text-sm font-ibm-arabic-medium text-gray-600">{branchName}</div>
           {(user?.data?.job === 'Admin' || user?.data?.job === 'مدير الفرع') && (
             <button
               onClick={handleAddMember}
@@ -249,23 +255,14 @@ export default function BranchMembersPage() {
             </button>
           )}
         </div>
-
-        {/* Stats */}
-        <div className="mt-6">
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-blue-600 mb-1">
-                {members.length}
-              </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
-                إجمالي الأعضاء
-              </div>
-            </div>
+        <div className="mb-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+            <div className="text-2xl font-ibm-arabic-bold text-blue-600 mb-1">{members.length}</div>
+            <div className="text-sm font-ibm-arabic-medium text-gray-600">إجمالي الأعضاء</div>
           </div>
         </div>
       </div>
 
-      {/* Content */}
       <div className="p-4">
         {loading && members.length === 0 ? (
           <div className="space-y-3">
@@ -289,7 +286,7 @@ export default function BranchMembersPage() {
                 />
               ))}
             </div>
-            
+
             {hasMore && (
               <div className="mt-6 text-center">
                 <button
@@ -477,7 +474,8 @@ export default function BranchMembersPage() {
           setSelectedMember(null);
         }}
       />
-    </div>
+    </ContentSection>
+    </ResponsiveLayout>
   );
 }
 
@@ -512,7 +510,7 @@ function MemberCard({
                 </svg>
               )}
             </div>
-            
+
             <div className="flex-1">
               <h3 className="font-ibm-arabic-semibold text-gray-900 text-right">
                 {member.userName}
@@ -527,7 +525,7 @@ function MemberCard({
               </div>
             </div>
           </div>
-          
+
           <button
             onClick={onOptions}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors"

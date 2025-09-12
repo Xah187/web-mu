@@ -8,6 +8,8 @@ import { verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import ArrowIcon from '@/components/icons/ArrowIcon';
 import Image from 'next/image';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 
 export default function AboutPage() {
   const router = useRouter();
@@ -76,32 +78,19 @@ export default function AboutPage() {
   };
 
   return (
-    <div className="min-h-screen bg-home">
-      {/* Header */}
-      <div className="bg-white rounded-b-3xl w-full justify-end p-4" style={{ height: '15%' }}>
-        <div 
-          className="h-3/5 justify-around items-center"
-          style={{
-            top: verticalScale(20),
-            marginTop: verticalScale(30),
-            marginBottom: verticalScale(30)
-          }}
-        >
-          <button 
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors self-start"
-          >
-            <ArrowIcon size={24} />
-          </button>
-          
-          <p
-            className="font-ibm-arabic-semibold text-black text-center"
-            style={{ fontSize: verticalScale(16 + size) }}
-          >
-            حول منصة مشرف
-          </p>
-        </div>
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="حول منصة مشرف"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <ArrowIcon size={24} />
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
 
       {/* Content */}
       <div className="flex-1 p-5 bg-home">
@@ -151,22 +140,22 @@ export default function AboutPage() {
               <p style={{ ...textStyle, color: colors.BLUE }}>- تسجيل المشروع</p>
               <p style={textStyle}>يقوم المالك أو المقاول بإدخال بيانات المشروع وتفاصيله عبر المنصة.</p>
             </div>
-            
+
             <div>
               <p style={{ ...textStyle, color: colors.BLUE }}>- إضافة الفرق والأدوار</p>
               <p style={textStyle}>يتم تحديد المشرفين والمهندسين المسؤولين عن التنفيذ والمتابعة.</p>
             </div>
-            
+
             <div>
               <p style={{ ...textStyle, color: colors.BLUE }}>- تحديث مستمر</p>
               <p style={textStyle}>يتم تسجيل مراحل المشروع خطوة بخطوة مع توثيق كافة العمليات إلكترونيًا.</p>
             </div>
-            
+
             <div>
               <p style={{ ...textStyle, color: colors.BLUE }}>- إصدار التقارير</p>
               <p style={textStyle}>يمكن استخراج التقارير المالية والفنية بدقة عالية عند الحاجة.</p>
             </div>
-            
+
             <div>
               <p style={{ ...textStyle, color: colors.BLUE }}>- التواصل الفعّال</p>
               <p style={textStyle}>تتيح المنصة قنوات اتصال مباشرة بين جميع الأطراف لضمان تحقيق الأهداف.</p>
@@ -175,25 +164,25 @@ export default function AboutPage() {
         </div>
 
         {/* Footer with Logo and Version */}
-        <div 
+        <div
           className="items-center justify-center mb-20"
-          style={{ 
-            alignItems: 'center', 
-            margin: verticalScale(10), 
-            marginBottom: verticalScale(100) 
+          style={{
+            alignItems: 'center',
+            margin: verticalScale(10),
+            marginBottom: verticalScale(100)
           }}
         >
           <div className="flex justify-center mb-4">
-            <Image 
-              src="/images/figma/moshrif.png" 
-              alt="Moshrif Logo" 
-              width={70} 
-              height={70} 
+            <Image
+              src="/images/figma/moshrif.png"
+              alt="Moshrif Logo"
+              width={70}
+              height={70}
               className="object-contain"
             />
           </div>
 
-          <p 
+          <p
             className="text-center"
             style={{
               color: colors.BLUE,
@@ -205,6 +194,8 @@ export default function AboutPage() {
           </p>
         </div>
       </div>
-    </div>
+      </ContentSection>
+
+    </ResponsiveLayout>
   );
 }

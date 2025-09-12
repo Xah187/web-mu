@@ -21,14 +21,43 @@ export default function useApiPosts() {
       throw new Error('Missing authentication or company ID');
     }
 
-    const url = `posts/BringPost?CompanyID=${companyId}&PostID=${lastPostId}&user=${userName || user.data?.userName}`;
-    
-    const response = await axiosInstance.get(url, {
-      headers: {
-        'Authorization': `Bearer ${user.accessToken}`
-      }
-    });
+    // Try different URL formats to see what works
+    const userParam = userName || user.data?.userName || '';
+    const urls = [
+      `posts/BringPost?CompanyID=${companyId}&PostID=${lastPostId}&user=${userParam}`,
+      `posts/BringPost?CompanyID=${companyId}&PostID=${lastPostId}`,
+      `posts/BringPost?CompanyID=${companyId}&PostID=${lastPostId}&user=`
+    ];
 
+    console.log('API BringPost trying URLs:', urls);
+
+    // Try first URL (with user)
+    let url = urls[0];
+    let response;
+
+    try {
+      response = await axiosInstance.get(url, {
+        headers: {
+          'Authorization': `Bearer ${user.accessToken}`
+        }
+      });
+      console.log('API BringPost response:', response.data);
+
+      // If empty result, try without user parameter
+      if (!response.data?.data || response.data.data.length === 0) {
+        console.log('Trying BringPost without user parameter...');
+        url = urls[1]; // Without user
+        response = await axiosInstance.get(url, {
+          headers: {
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        });
+        console.log('API BringPost (no user) response:', response.data);
+      }
+    } catch (error) {
+      console.error('Error in BringPost:', error);
+      throw error;
+    }
     return response.data;
   };
 
@@ -41,24 +70,19 @@ export default function useApiPosts() {
       throw new Error('Missing authentication');
     }
 
-    const queryParams = new URLSearchParams({
-      CompanyID: filterData.CompanyID.toString(),
-      DateStart: filterData.DateStart || '',
-      DateEnd: filterData.DateEnd || '',
-      type: filterData.type || 'بحسب التاريخ',
-      nameProject: filterData.nameProject || '',
-      userName: filterData.userName || '',
-      PostID: filterData.PostID?.toString() || '0',
-      branch: filterData.branch || '',
-      user: user.data?.userName || ''
-    });
+    // Build URL exactly like mobile app without URLSearchParams encoding
+    const url = `posts/SearchPosts?CompanyID=${filterData.CompanyID}&DateStart=${filterData.DateStart || ''}&DateEnd=${filterData.DateEnd || ''}&type=${filterData.type || 'بحسب التاريخ'}&nameProject=${filterData.nameProject || ''}&userName=${filterData.userName || ''}&PostID=${filterData.PostID || 0}&branch=${filterData.branch || ''}&user=${user.data?.userName || ''}`;
 
-    const response = await axiosInstance.get(`posts/SearchPost?${queryParams}`, {
+    console.log('API SearchPosts URL:', url);
+    console.log('API SearchPosts filterData:', filterData);
+
+    const response = await axiosInstance.get(url, {
       headers: {
         'Authorization': `Bearer ${user.accessToken}`
       }
     });
 
+    console.log('API SearchPosts response:', response.data);
     return response.data;
   };
 

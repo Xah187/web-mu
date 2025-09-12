@@ -7,6 +7,8 @@ import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 import useValidityUser from '@/hooks/useValidityUser';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Types
 interface Request {
   RequestsID: number;
@@ -38,17 +40,17 @@ export default function ProjectRequestsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const projectId = parseInt(params.id as string);
   const projectName = searchParams.get('projectName') || 'المشروع';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
   const [requestCounts, setRequestCounts] = useState<RequestCounts>({ Close: 0, Open: 0 });
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
   const [sectionStates, setSectionStates] = useState<{ [key: string]: { isExpanded: boolean; requests: Request[]; lastID: number; hasMore: boolean } }>({});
-  
+
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -73,12 +75,12 @@ export default function ProjectRequestsPage() {
 
   const initializeSections = () => {
     const initialStates: { [key: string]: { isExpanded: boolean; requests: Request[]; lastID: number; hasMore: boolean } } = {};
-    
+
     REQUEST_TYPES.forEach(type => {
       initialStates[`${type.key}-open`] = { isExpanded: false, requests: [], lastID: 0, hasMore: true };
       initialStates[`${type.key}-closed`] = { isExpanded: false, requests: [], lastID: 0, hasMore: true };
     });
-    
+
     setSectionStates(initialStates);
   };
 
@@ -102,13 +104,13 @@ export default function ProjectRequestsPage() {
   const fetchSectionData = async (typeKey: string, typeName: string, doneValue: string, isInitial = false) => {
     const sectionKey = `${typeKey}-${doneValue === 'false' ? 'open' : 'closed'}`;
     const currentSection = sectionStates[sectionKey];
-    
+
     if (!currentSection?.hasMore && !isInitial) return;
 
     const lastID = isInitial ? 0 : currentSection?.lastID || 0;
-    
+
     setLoading(prev => ({ ...prev, [sectionKey]: true }));
-    
+
     try {
       const response = await axiosInstance.get(
         `/brinshCompany/v2/BringDataRequests?ProjectID=${projectId}&Type=${typeName}&kind=part&Done=${doneValue}&lastID=${lastID}`,
@@ -120,7 +122,7 @@ export default function ProjectRequestsPage() {
       if (response.data?.data) {
         const newRequests = response.data.data;
         const hasMore = newRequests.length === 10; // Assuming 10 is the page size
-        
+
         setSectionStates(prev => ({
           ...prev,
           [sectionKey]: {
@@ -142,14 +144,14 @@ export default function ProjectRequestsPage() {
   const toggleSection = async (typeKey: string, typeName: string, doneValue: string) => {
     const sectionKey = `${typeKey}-${doneValue === 'false' ? 'open' : 'closed'}`;
     const currentSection = sectionStates[sectionKey];
-    
+
     if (!currentSection?.isExpanded) {
       // Expanding section - fetch data if empty
       if (currentSection?.requests.length === 0) {
         await fetchSectionData(typeKey, typeName, doneValue, true);
       }
     }
-    
+
     setSectionStates(prev => ({
       ...prev,
       [sectionKey]: {
@@ -199,7 +201,7 @@ export default function ProjectRequestsPage() {
       setRequestData('');
       setSelectedType('مواد خفيفة');
       setSelectedImages([]);
-      
+
       // Refresh counts and relevant section
       await fetchRequestCounts();
       const typeKey = REQUEST_TYPES.find(t => t.name === selectedType)?.key;
@@ -219,33 +221,33 @@ export default function ProjectRequestsPage() {
 
   const closeRequest = async (requestId: number, type: string, request: Request) => {
     setLoading(prev => ({ ...prev, [`close_${requestId}`]: true }));
-    
+
     try {
       const data = {
         RequestsID: requestId,
         user: user?.data?.PhoneNumber || user?.data?.userName || ''
       };
-      
+
       await axiosInstance.put(
         '/brinshCompany/UPDATEImplementRquestsORCansle',
         data,
         {
-          headers: { 
+          headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.accessToken}` 
+            Authorization: `Bearer ${user?.accessToken}`
           }
         }
       );
 
       Tostget('تمت العملية بنجاح');
       await fetchRequestCounts();
-      
+
       // Refresh both open and closed sections if expanded
       const typeKey = REQUEST_TYPES.find(t => t.name === type)?.key;
       if (typeKey) {
         const openSectionKey = `${typeKey}-open`;
         const closedSectionKey = `${typeKey}-closed`;
-        
+
         if (sectionStates[openSectionKey]?.isExpanded) {
           await fetchSectionData(typeKey, type, 'false', true);
         }
@@ -428,100 +430,69 @@ export default function ProjectRequestsPage() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4" style={{ paddingTop: '35px' }}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
+    <ResponsiveLayout>
+      <PageHeader
+        title="الطلبات"
+        subtitle={projectName}
+        backButton={
+          <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-          
-          <div className="text-center">
-            <h1 className="text-lg font-ibm-arabic-bold text-gray-900">الطلبات</h1>
-            <p className="text-sm font-ibm-arabic-medium text-gray-600">{projectName}</p>
+        }
+        actions={
+          <div className="flex items-center gap-2">
+            {/* Project Requests Chat Button */}
+            <button
+              onClick={() => {
+                const chatParams = new URLSearchParams({
+                  ProjectID: projectId.toString(),
+                  typess: 'طلبات',
+                  nameRoom: 'الطلبات',
+                  nameProject: projectName
+                });
+                router.push(`/chat?${chatParams.toString()}`);
+              }}
+              className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+              title="محادثة طلبات المشروع"
+              aria-label="محادثة طلبات المشروع"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+            </button>
+
+            {/* Create Request Button */}
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
+              title="إضافة طلب جديد"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 5v14m-7-7h14"/>
+              </svg>
+              إضافة طلب
+            </button>
           </div>
+        }
+      />
 
-          <div className="w-10"></div>
-        </div>
-
-        {/* Stats */}
-        <div className="mt-6 grid grid-cols-2 gap-4">
-          <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-green-600 mb-1">
-                {requestCounts.Close}
-              </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
-                الطلبات المفتوحة
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-blue-600 mb-1">
-                {requestCounts.Open}
-              </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
-                الطلبات المغلقة
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="mt-4 flex gap-3">
-          {/* Chat Button - matching mobile app NavbarRequests */}
-          <button
-            onClick={() => {
-              // مطابق للتطبيق: navigation.navigate('Chate', { typess: 'طلبات', ProjectID: idProject, nameRoom: 'الطلبات' })
-              const chatParams = new URLSearchParams({
-                ProjectID: projectId.toString(),
-                typess: 'طلبات',
-                nameRoom: 'الطلبات',
-                nameProject: projectName
-              });
-              router.push(`/chat?${chatParams.toString()}`);
-            }}
-            className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 p-3 rounded-xl transition-colors font-ibm-arabic-semibold flex items-center justify-center gap-2"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-            </svg>
-            تواصل
-          </button>
-
-          {/* Add Request Button */}
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-xl transition-colors font-ibm-arabic-semibold flex items-center justify-center gap-2"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
-            إضافة طلب
-          </button>
-        </div>
-      </div>
 
       {/* Content */}
+      <ContentSection>
+
       <div className="p-4 space-y-6">
         {/* Open Requests */}
         <div>
           <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
             الطلبات المفتوحة
           </h2>
-          
+
           {REQUEST_TYPES.map((type) => {
             const sectionKey = `${type.key}-open`;
             const section = sectionStates[sectionKey];
-            
+
             return (
               <RequestSection
                 key={sectionKey}
@@ -547,11 +518,11 @@ export default function ProjectRequestsPage() {
           <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
             الطلبات المغلقة
           </h2>
-          
+
           {REQUEST_TYPES.map((type) => {
             const sectionKey = `${type.key}-closed`;
             const section = sectionStates[sectionKey];
-            
+
             return (
               <RequestSection
                 key={sectionKey}
@@ -572,6 +543,8 @@ export default function ProjectRequestsPage() {
           })}
         </div>
       </div>
+      </ContentSection>
+
 
       {/* Create Request Modal */}
       {showCreateModal && (
@@ -777,8 +750,8 @@ export default function ProjectRequestsPage() {
                 }}
                 className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
               >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-600">
+                  <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
                 <span className="font-ibm-arabic-semibold text-gray-900">محادثة الطلبات</span>
               </button>
@@ -971,7 +944,7 @@ export default function ProjectRequestsPage() {
           </div>
         </div>
       )}
-    </div>
+    </ResponsiveLayout>
   );
 }
 

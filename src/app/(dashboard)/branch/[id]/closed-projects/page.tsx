@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 import useValidityUser from '@/hooks/useValidityUser';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
 // Types
 interface ClosedProject {
@@ -25,16 +26,26 @@ export default function ClosedProjectsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const branchId = parseInt(params.id as string);
   const branchName = searchParams.get('branchName') || 'الفرع';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
   const [projects, setProjects] = useState<ClosedProject[]>([]);
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  // Responsive grid like Home/Projects pages
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
 
   useEffect(() => {
@@ -116,44 +127,39 @@ export default function ClosedProjectsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4" style={{ paddingTop: '35px' }}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <div className="text-center">
-            <h1 className="text-lg font-ibm-arabic-bold text-gray-900">المشاريع المغلقة</h1>
-            <p className="text-sm font-ibm-arabic-medium text-gray-600">{branchName}</p>
-          </div>
-          
-          <div className="w-10"></div>
-        </div>
-
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="المشاريع المغلقة"
+          subtitle={branchName}
+          backButton={
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+              aria-label="الرجوع"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
         {/* Stats */}
-        <div className="mt-6">
-          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-red-600 mb-1">
-                {projects.length}
-              </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
-                إجمالي المشاريع المغلقة
-              </div>
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6">
+          <div className="text-center">
+            <div className="text-2xl font-ibm-arabic-bold text-red-600 mb-1">
+              {projects.length}
+            </div>
+            <div className="text-sm font-ibm-arabic-medium text-gray-600">
+              إجمالي المشاريع المغلقة
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="p-4">
+        {/* Content */}
         {loading && projects.length === 0 ? (
           <div className="space-y-3">
             {[1, 2, 3, 4, 5].map((i) => (
@@ -164,10 +170,18 @@ export default function ClosedProjectsPage() {
           </div>
         ) : projects.length > 0 ? (
           <>
-            <div className="space-y-3">
-              {projects.map((project) => (
+            <div
+              className="projects-grid"
+              style={{
+                display: 'grid',
+                gridTemplateColumns: screenWidth < 640 ? '1fr' : screenWidth < 1024 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                gap: screenWidth < 640 ? '0.75rem' : '1rem',
+                width: '100%'
+              }}
+            >
+              {projects.map((project, index) => (
                 <ClosedProjectCard
-                  key={project.id}
+                  key={`${project.id}-${index}`}
                   project={project}
                   onReopen={() => reopenProject(project.id)}
                   loading={actionLoading[project.id]}
@@ -175,7 +189,7 @@ export default function ClosedProjectsPage() {
                 />
               ))}
             </div>
-            
+
             {hasMore && (
               <div className="mt-6 text-center">
                 <button
@@ -211,8 +225,8 @@ export default function ClosedProjectsPage() {
             <p className="text-gray-500 font-ibm-arabic-medium">لا توجد مشاريع مغلقة</p>
           </div>
         )}
-      </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }
 
@@ -233,13 +247,13 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
             <h3 className="font-ibm-arabic-bold text-gray-900 text-lg mb-2">
               {project.Nameproject}
             </h3>
-            
+
             {project.Note && (
               <p className="text-gray-600 font-ibm-arabic-medium text-sm mb-3">
                 {project.Note}
               </p>
             )}
-            
+
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
                 <span className="text-gray-500">نوع العقد:</span>
@@ -247,21 +261,21 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
                   {project.TypeOFContract}
                 </span>
               </div>
-              
+
               <div>
                 <span className="text-gray-500">عدد المباني:</span>
                 <span className="font-ibm-arabic-bold text-gray-900 mr-2">
                   {project.numberBuilding}
                 </span>
               </div>
-              
+
               <div>
                 <span className="text-gray-500">الرقم المرجعي:</span>
                 <span className="font-ibm-arabic-bold text-gray-900 mr-2">
                   {project.Referencenumber}
                 </span>
               </div>
-              
+
               <div>
                 <span className="text-gray-500">تاريخ الإنشاء:</span>
                 <span className="font-ibm-arabic-medium text-gray-900 mr-2">
@@ -270,7 +284,7 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
               </div>
             </div>
           </div>
-          
+
           <button
             onClick={onReopen}
             disabled={loading}

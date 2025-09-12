@@ -15,6 +15,8 @@ import PermissionGuard, { AdminGuard } from '@/components/auth/PermissionGuard';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // User selection modal component
 interface User {
   id: string;
@@ -33,13 +35,13 @@ interface UserSelectionModalProps {
   selectedCount: number;
 }
 
-function UserSelectionModal({ 
-  isOpen, 
-  onClose, 
-  type, 
-  onSelectUser, 
+function UserSelectionModal({
+  isOpen,
+  onClose,
+  type,
+  onSelectUser,
   onSelectUsers,
-  selectedCount 
+  selectedCount
 }: UserSelectionModalProps) {
   const { user } = useAppSelector(state => state.user);
   const [users, setUsers] = useState<User[]>([]);
@@ -88,13 +90,13 @@ function UserSelectionModal({
       // Multiple selection for members
       const isSelected = selectedUserIds.includes(selectedUser.id);
       let newSelectedIds: string[];
-      
+
       if (isSelected) {
         newSelectedIds = selectedUserIds.filter(id => id !== selectedUser.id);
       } else {
         newSelectedIds = [...selectedUserIds, selectedUser.id];
       }
-      
+
       setSelectedUserIds(newSelectedIds);
     }
   };
@@ -115,7 +117,7 @@ function UserSelectionModal({
         {/* Header - Fixed */}
         <div className="p-3 sm:p-4 border-b border-bordercolor bg-white rounded-t-lg flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
-            <h2 
+            <h2
               className="font-bold text-lg sm:text-xl"
               style={{
                 fontFamily: fonts.IBMPlexSansArabicBold,
@@ -131,11 +133,11 @@ function UserSelectionModal({
               ✕
             </button>
           </div>
-          
+
           {/* Bulk Selection Controls for UserSub */}
           {type === 'UserSub' && users.length > 0 && !loading && (
             <div className="flex items-center gap-4">
-              <span 
+              <span
                 className="text-sm text-gray-600"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicMedium
@@ -143,7 +145,7 @@ function UserSelectionModal({
               >
                 تم اختيار {selectedUserIds.length} من {users.length}
               </span>
-              
+
               <div className="flex gap-2">
                 <button
                   onClick={() => setSelectedUserIds(users.map(u => u.id))}
@@ -154,7 +156,7 @@ function UserSelectionModal({
                 >
                   اختيار الكل
                 </button>
-                
+
                 <button
                   onClick={() => setSelectedUserIds([])}
                   className="px-3 py-1 text-xs bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors"
@@ -170,7 +172,7 @@ function UserSelectionModal({
         </div>
 
         {/* Scrollable Content */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto overflow-x-hidden p-3 sm:p-4 min-h-0"
           style={{
             scrollbarWidth: 'thin',
@@ -193,7 +195,7 @@ function UserSelectionModal({
               background: #A0AEC0;
             }
           `}</style>
-          
+
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue"></div>
@@ -230,7 +232,7 @@ function UserSelectionModal({
                   {selectedUserIds.includes(u.id) && (
                     <div className="absolute right-0 top-0 bottom-0 w-1 bg-blue rounded-r-xl"></div>
                   )}
-                  
+
                   {/* Multi-select hint for UserSub */}
                   {type === 'UserSub' && (
                     <div className="absolute top-2 left-2 text-xs text-gray-400">
@@ -241,7 +243,7 @@ function UserSelectionModal({
                   )}
                   <div className="flex items-center justify-between">
                     <div className="flex-1 text-right">
-                      <p 
+                      <p
                         className="font-medium mb-1 text-sm sm:text-base"
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
@@ -250,7 +252,7 @@ function UserSelectionModal({
                       >
                         {u.userName}
                       </p>
-                      <p 
+                      <p
                         className="text-xs sm:text-sm mb-1"
                         style={{
                           color: colors.GREAY,
@@ -259,7 +261,7 @@ function UserSelectionModal({
                       >
                         {u.job}
                       </p>
-                      <p 
+                      <p
                         className="text-xs"
                         style={{
                           color: colors.BLUE,
@@ -269,16 +271,16 @@ function UserSelectionModal({
                         {u.PhoneNumber}
                       </p>
                     </div>
-                    
+
                     {type === 'UserSub' && (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         {/* Multiple Selection Indicator */}
                         <div className="flex flex-col items-center">
-                          <div 
+                          <div
                             className={`
                               w-5 h-5 sm:w-6 sm:h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200
-                              ${selectedUserIds.includes(u.id) 
-                                ? 'bg-blue border-blue scale-110 shadow-lg' 
+                              ${selectedUserIds.includes(u.id)
+                                ? 'bg-blue border-blue scale-110 shadow-lg'
                                 : 'border-bordercolor hover:border-blue/50 hover:scale-105'
                               }
                             `}
@@ -287,7 +289,7 @@ function UserSelectionModal({
                               <span className="text-white text-sm sm:text-base font-bold">✓</span>
                             )}
                           </div>
-                          
+
                           {/* Multi-select icon hint */}
                           <div className="flex gap-1 mt-1">
                             <div className="w-1 h-1 bg-blue/40 rounded-full"></div>
@@ -295,7 +297,7 @@ function UserSelectionModal({
                             <div className="w-1 h-1 bg-blue/40 rounded-full"></div>
                           </div>
                         </div>
-                        
+
                         {/* Selection count badge */}
                         {selectedUserIds.includes(u.id) && (
                           <div className="bg-blue text-white text-xs px-2 py-1 rounded-full animate-pulse">
@@ -337,8 +339,8 @@ function UserSelectionModal({
                 disabled={selectedUserIds.length === 0}
                 className={`
                   flex-1 py-2 sm:py-3 rounded-xl text-white transition-all duration-200 text-sm font-medium shadow-lg active:scale-98 cursor-pointer relative
-                  ${selectedUserIds.length === 0 
-                    ? 'opacity-50 cursor-not-allowed' 
+                  ${selectedUserIds.length === 0
+                    ? 'opacity-50 cursor-not-allowed'
                     : 'hover:shadow-xl hover:scale-105'
                   }
                 `}
@@ -354,24 +356,24 @@ function UserSelectionModal({
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                       </svg>
-                      
+
                       {/* Selection count badge */}
                       <span className="bg-white text-blue text-xs px-2 py-1 rounded-full font-bold">
                         {selectedUserIds.length}
                       </span>
                     </div>
                   )}
-                  
+
                   <span>
-                    {selectedUserIds.length === 0 
-                      ? 'اختر المستخدمين' 
+                    {selectedUserIds.length === 0
+                      ? 'اختر المستخدمين'
                       : selectedUserIds.length === 1
                         ? 'إضافة عضو واحد'
                         : `إضافة ${selectedUserIds.length} أعضاء`
                     }
                   </span>
                 </div>
-                
+
                 {/* Animated selection indicator */}
                 {selectedUserIds.length > 0 && (
                   <div className="absolute top-0 right-0 -mt-2 -mr-2">
@@ -392,7 +394,7 @@ export default function CreateBranchPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
   const { checkPermission } = useUserPermissions();
-  
+
   // Form states - matching mobile app exactly
   const [start, setStart] = useState({
     NameSub: false,
@@ -400,7 +402,7 @@ export default function CreateBranchPage() {
     Email: false,
     PhoneNumber: false,
   });
-  
+
   const [title, setTitle] = useState({
     NameSub: '',
     BranchAddress: '',
@@ -443,7 +445,7 @@ export default function CreateBranchPage() {
       acc[user.id] = user;
       return acc;
     }, {} as {[key: string]: User});
-    
+
     // Keep branch manager if exists, add members
     setCheckGloble(prev => {
       const newCheckGloble = { ...membersObject };
@@ -507,7 +509,7 @@ export default function CreateBranchPage() {
 
       if (response.status === 200) {
         Tostget(response.data?.success || 'تم إنشاء الفرع بنجاح');
-        
+
         // Navigate back to home and trigger refresh
         setTimeout(() => {
           router.push('/home?refresh=branches');
@@ -518,7 +520,7 @@ export default function CreateBranchPage() {
 
     } catch (error: any) {
       console.error('Create branch error:', error);
-      
+
       if (error.response?.data?.message) {
         Tostget(error.response.data.message);
       } else {
@@ -557,39 +559,32 @@ export default function CreateBranchPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div 
-        className="flex items-center justify-between px-4 py-6 sm:px-6 lg:px-8"
-        style={{
-          backgroundColor: colors.HOME,
-          paddingTop: 35
-        }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-        >
-          <ArrowIcon size={24} color={colors.BLACK} />
-        </button>
-        
-        <h1 
-          className="font-bold text-center flex-1 text-lg sm:text-xl"
-          style={{
-            fontFamily: fonts.IBMPlexSansArabicSemiBold,
-            color: colors.BORDER
-          }}
-        >
-          انشاء فرع
-        </h1>
-        
-        <div className="w-10" />
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="انشاء فرع"
+          backButton={
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="رجوع"
+            >
+              <ArrowIcon size={24} color={colors.BLACK} />
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
+
+
+
+
 
       {/* Form Content - Centered Container with Scroll */}
       <div className="flex justify-center px-4 py-6 sm:px-6 lg:px-8 overflow-y-auto">
         <div className="w-full max-w-md sm:max-w-lg lg:max-w-xl">
-          
+
           {/* Form Fields */}
           <div className="space-y-6">
             {/* Branch Name */}
@@ -635,7 +630,7 @@ export default function CreateBranchPage() {
                 value={title.PhoneNumber}
                 onChange={(value) => {
                   // Convert Arabic to English numbers like mobile app
-                  const convertedValue = value.replace(/[٠-٩]/g, (d) => 
+                  const convertedValue = value.replace(/[٠-٩]/g, (d) =>
                     String.fromCharCode(d.charCodeAt(0) - 1584)
                   );
                   handleInputChange(convertedValue, 'PhoneNumber');
@@ -648,7 +643,7 @@ export default function CreateBranchPage() {
 
             {/* Optional User Selection Buttons */}
             <div className="space-y-4 mt-8">
-              
+
               {/* Add Branch Manager Button */}
               <button
                 onClick={() => setStartUser({ kind: 'AdminSub', boolen: true })}
@@ -657,7 +652,7 @@ export default function CreateBranchPage() {
               >
                 <div className="flex flex-col items-center justify-center gap-2">
                   {/* Label */}
-                  <p 
+                  <p
                     className="text-xs sm:text-sm text-gray-500 mb-1"
                     style={{
                       fontFamily: fonts.IBMPlexSansArabicMedium
@@ -665,7 +660,7 @@ export default function CreateBranchPage() {
                   >
                     إضافة مشرف فرع (اختياري)
                   </p>
-                  
+
                   {/* Content */}
                   <div className="flex items-center justify-center gap-3">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -682,8 +677,8 @@ export default function CreateBranchPage() {
                         strokeWidth="1.5"
                       />
                     </svg>
-                    
-                    <span 
+
+                    <span
                       className="text-sm sm:text-base font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -704,7 +699,7 @@ export default function CreateBranchPage() {
               >
                 <div className="flex flex-col items-center justify-center gap-2">
                   {/* Label */}
-                  <p 
+                  <p
                     className="text-xs sm:text-sm text-gray-500 mb-1"
                     style={{
                       fontFamily: fonts.IBMPlexSansArabicMedium
@@ -712,7 +707,7 @@ export default function CreateBranchPage() {
                   >
                     إضافة اعضاء (اختياري)
                   </p>
-                  
+
                   {/* Content */}
                   <div className="flex items-center justify-center gap-3">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -729,8 +724,8 @@ export default function CreateBranchPage() {
                         strokeWidth="1.5"
                       />
                     </svg>
-                    
-                    <span 
+
+                    <span
                       className="text-sm sm:text-base font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -758,6 +753,7 @@ export default function CreateBranchPage() {
           </div>
         </div>
       </div>
-    </div>
+    </ContentSection>
+  </ResponsiveLayout>
   );
 }

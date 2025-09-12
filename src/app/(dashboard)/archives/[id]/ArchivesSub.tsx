@@ -12,6 +12,8 @@ import CreateFolderChildrenModal from '@/components/archives/CreateFolderChildre
 import OperationFileModal from '@/components/archives/OperationFileModal';
 import FileViewerModal from '@/components/archives/FileViewerModal';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 interface ArchiveFile {
   id: number;
   name: string;
@@ -27,7 +29,7 @@ export default function ArchivesSub() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const archiveId = parseInt(params.id as string);
   const idHome = parseInt(searchParams.get('idHome') || '0');
   const idSub = parseInt(searchParams.get('idSub') || archiveId.toString());
@@ -35,7 +37,7 @@ export default function ArchivesSub() {
   const projectId = parseInt(searchParams.get('projectId') || '0');
   const projectName = searchParams.get('projectName') || 'المشروع';
   const folderName = searchParams.get('folderName') || 'المجلد';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
@@ -191,55 +193,30 @@ export default function ArchivesSub() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - مطابق للتطبيق المحمول */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4 rtl:space-x-reverse">
-              <button
-                onClick={() => router.back()}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-              </button>
-              <div className="flex items-center space-x-2 rtl:space-x-reverse">
-                <h1 className="text-xl font-ibm-arabic-bold text-gray-900">الأرشيف</h1>
-                <span className="text-gray-400">/</span>
-                <span className="text-lg font-ibm-arabic-medium text-gray-700">{folderName}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Controls */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleGoBack}
-              className="bg-white text-gray-700 px-4 py-2 rounded-lg border hover:bg-gray-50 transition-colors font-ibm-arabic-medium flex items-center space-x-2 rtl:space-x-reverse"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="الأرشيف"
+          subtitle={folderName}
+          backButton={
+            <button onClick={handleGoBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="رجوع">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
-              <span>رجوع</span>
             </button>
-
+          }
+          actions={
             <button
               onClick={handleCreateFile}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
             >
               إنشاء
             </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
+          }
+        />
+      }
+    >
+      <ContentSection>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         {/* Loading State */}
         {loading && (
@@ -324,6 +301,8 @@ export default function ArchivesSub() {
           </div>
         )}
       </div>
+      </ContentSection>
+
 
       {/* Modals */}
       <CreateFolderChildrenModal
@@ -390,6 +369,6 @@ export default function ArchivesSub() {
           </div>
         </div>
       )}
-    </div>
+    </ResponsiveLayout>
   );
 }

@@ -22,11 +22,18 @@
 .reels-container {
   position: fixed !important;
   top: 0 !important;
+  /* Pin bottom above the app bottom navigation (runtime or fallback) */
+  bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
   left: 50% !important;
   transform: translateX(-50%) !important;
   width: 100% !important;
   max-width: 450px !important;
-  height: 100vh !important;
+  /* Keep height calc as a safety net on platforms lacking bottom support */
+  height: calc(
+    var(--reels-available-height, 100dvh)
+    - var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom)))
+  ) !important;
+  padding-bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
   background: linear-gradient(135deg, #000 0%, #1a1a1a 100%) !important;
   z-index: 50 !important;
   touch-action: none !important;
@@ -204,10 +211,17 @@
   .reels-container {
     border-radius: 0 !important;
     max-width: 100% !important;
-    height: 100vh !important;
+    /* Hard-pin bottom above nav on phones too */
+    bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
+    /* Safety height calc */
+    height: calc(
+      var(--reels-available-height, 100dvh)
+      - var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom)))
+    ) !important;
+    padding-bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
     top: 0 !important;
   }
-  
+
   .reels-backdrop {
     display: none !important;
   }

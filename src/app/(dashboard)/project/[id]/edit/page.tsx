@@ -9,6 +9,8 @@ import useValidityUser from '@/hooks/useValidityUser';
 import { colors } from '@/constants/colors';
 import { verticalScale, scale } from '@/utils/responsiveSize';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Types
 interface ProjectData {
   id: number;
@@ -39,7 +41,7 @@ export default function EditProjectPage() {
   const params = useParams();
   const router = useRouter();
   const projectId = parseInt(params.id as string);
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
@@ -48,7 +50,7 @@ export default function EditProjectPage() {
   const [project, setProject] = useState<ProjectData | null>(null);
   const [contractOption, setContractOption] = useState(1); // 1: عظم, 2: تشطيب
   const [basementOption, setBasementOption] = useState(1); // 1: بدون قبو, 2: مع قبو, 3: حر
-  
+
   const [formData, setFormData] = useState<FormData>({
     Nameproject: '',
     Note: '',
@@ -96,11 +98,11 @@ export default function EditProjectPage() {
         const projectData = response.data.data;
         console.log('Project Data:', projectData);
         setProject(projectData);
-        
+
         // Parse contract type
         let contractType = 'عظم';
         let subType = 'بدون قبو';
-        
+
         if (projectData.TypeOFContract === 'حر') {
           contractType = 'حر';
           subType = 'حر';
@@ -154,7 +156,7 @@ export default function EditProjectPage() {
       Tostget('لايمكن تعديل نوع العقد');
       return;
     }
-    
+
     setContractOption(option);
     if (option === 1) {
       setFormData(prev => ({ ...prev, TypeOFContract: 'عظم' }));
@@ -168,15 +170,15 @@ export default function EditProjectPage() {
       Tostget('لايمكن تعديل نوع العقد');
       return;
     }
-    
+
     setBasementOption(option);
     if (option === 1) {
       setFormData(prev => ({ ...prev, TypeSub: 'بدون قبو' }));
     } else if (option === 2) {
       setFormData(prev => ({ ...prev, TypeSub: 'مع قبو' }));
     } else if (option === 3) {
-      setFormData(prev => ({ 
-        ...prev, 
+      setFormData(prev => ({
+        ...prev,
         TypeOFContract: 'حر',
         TypeSub: 'حر'
       }));
@@ -212,8 +214,8 @@ export default function EditProjectPage() {
 
     setLoading(true);
     try {
-      const typeOfContract = formData.TypeOFContract.includes('حر') 
-        ? 'حر' 
+      const typeOfContract = formData.TypeOFContract.includes('حر')
+        ? 'حر'
         : `${formData.TypeOFContract} ${formData.TypeSub}`;
 
       const updateData = {
@@ -287,29 +289,23 @@ export default function EditProjectPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-4" style={{ paddingTop: '35px' }}>
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <h1 className="text-lg font-ibm-arabic-bold text-gray-900">
-            تعديل بيانات المشروع
-          </h1>
-          
-          <div className="w-10"></div>
-        </div>
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="تعديل بيانات المشروع"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
 
       {/* Content */}
-      <div className="p-6">
+      <ContentSection>
 
 
 
@@ -675,7 +671,7 @@ export default function EditProjectPage() {
             )}
           </button>
         </div>
-      </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

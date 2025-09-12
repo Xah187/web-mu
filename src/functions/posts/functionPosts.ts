@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAppSelector } from '@/store';
 import useApiPosts from '@/lib/api/posts/ApiPosts';
 import { Tostget } from '@/components/ui/Toast';
@@ -55,7 +55,8 @@ export default function useFunctionPosts(companyId: number) {
   const [error, setError] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
   const [branches, setBranches] = useState<any[]>([]);
-  
+  const isFetchingRef = useRef(false); // يمنع الطلبات المتزامنة والتكرار
+
   // Filter state - matching mobile app structure
   const [filterData, setFilterData] = useState<FilterData>({
     CompanyID: companyId,
@@ -85,11 +86,46 @@ export default function useFunctionPosts(companyId: number) {
     return allPosts;
   };
 
-  // Fetch posts with pagination
+  // Helper: unique by PostID
+  const dedupeByPostId = (arr: Post[]) => {
+    const map = new Map<number, Post>();
+    for (const p of arr) {
+      if (!map.has(p.PostID)) map.set(p.PostID, p);
+    }
+    return Array.from(map.values());
+  };
+
+  // Helper: format date like mobile (yy-MM-DD)
+  const formatDateForAPIHelper = (date?: Date | string) => {
+    if (!date) return '';
+
+    // If it's already a string, return as is (might be pre-formatted)
+    if (typeof date === 'string') {
+      return date;
+    }
+
+    // If it's a Date object, format it
+    const year = date.getFullYear().toString().slice(-2);
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  // Fetch posts with pagination - use SearchPosts (date range) + PostID paging
   const fetchPosts = async (reset = false) => {
     if (!user?.accessToken || !companyId) return;
+    if (isFetchingRef.current) {
+      console.log('Skip fetch: already fetching');
+      return;
+    }
 
-    console.log('Fetching posts...', { reset, companyId, userName: user.data?.userName });
+    console.log('Fetching posts...', {
+      reset,
+      companyId,
+      userName: user?.data?.userName,
+      userJob: user?.data?.jobdiscrption,
+      isEmployee
+    });
 
     if (reset) {
       setLoading(true);
@@ -97,30 +133,87 @@ export default function useFunctionPosts(companyId: number) {
     }
 
     try {
+      isFetchingRef.current = true;
       const lastPostId = reset ? 0 : (posts.length > 0 ? posts[posts.length - 1].PostID : 0);
-      
-      const data = await apiFetchPosts(companyId, lastPostId, user.data?.userName);
-      
+
+      console.log('Fetch posts params:', {
+        reset,
+        lastPostId,
+        currentPostsCount: posts.length,
+        lastPost: posts.length > 0 ? posts[posts.length - 1] : null
+      });
+
+      // Use BringPost by default; if a filter is active, page SearchPosts with same filter
+      let data;
+      if (!filterData.Done) {
+        console.log('Using BringPost for default feed...');
+        data = await apiFetchPosts(companyId, lastPostId, user?.data?.userName);
+
+        // If BringPost returns empty (no posts today), try SearchPosts with wide date range
+        if (!data?.data || data.data.length === 0) {
+          console.log('BringPost returned empty, trying SearchPosts with wide date range...');
+          const fallbackParams = {
+            CompanyID: companyId,
+            DateStart: '24-01-01', // Wide range from 2024
+            DateEnd: '25-12-31',   // To 2025
+            type: 'بحسب التاريخ',
+            nameProject: '',
+            userName: '',
+            PostID: lastPostId,
+            branch: '',
+            user: user?.data?.userName || ''
+          };
+          data = await apiSearchPosts(fallbackParams);
+          console.log('Fallback SearchPosts result:', data);
+        }
+      } else {
+        const params = {
+          CompanyID: companyId,
+          DateStart: formatDateForAPIHelper(filterData.DateStart as any),
+          DateEnd: formatDateForAPIHelper(filterData.DateEnd as any),
+          type: filterData.type || 'بحسب التاريخ',
+          nameProject: filterData.nameProject || '',
+          userName: filterData.userName || '',
+          PostID: lastPostId,
+          branch: filterData.branch || '',
+          user: user?.data?.userName || ''
+        };
+        console.log('Using SearchPosts for active filter paging:', params);
+        data = await apiSearchPosts(params);
+      }
+
+      console.log('API Response full data:', data);
+
       if (data?.data && Array.isArray(data.data)) {
         const newPosts = data.data as Post[];
-        const filteredPosts = filterPostsForUser(newPosts);
-        
+        console.log('Raw posts from API:', newPosts.slice(0, 3)); // Log first 3 posts
+
+        // Add isLiked property for compatibility with ReelItem
+        const postsWithLikeStatus = newPosts.map(post => ({
+          ...post,
+          isLiked: post.Likeuser || false
+        }));
+
+        const filteredPosts = filterPostsForUser(postsWithLikeStatus);
+
         if (reset) {
           setPosts(filteredPosts);
         } else {
-          setPosts(prev => [...prev, ...filteredPosts]);
+          setPosts(prev => dedupeByPostId([...prev, ...filteredPosts]));
         }
-        
-        // Check if there are more posts
-        setHasMore(newPosts.length > 0);
-        
+
+        // Check if there are more posts - like mobile app: continue until 0 results
+        const hasMorePosts = newPosts.length > 0;
+        setHasMore(hasMorePosts);
+
         console.log('Posts fetched successfully:', {
           newPostsCount: newPosts.length,
-          totalPosts: reset ? filteredPosts.length : posts.length + filteredPosts.length,
-          hasMore: newPosts.length > 0
+          totalPosts: reset ? filteredPosts.length : dedupeByPostId([...posts, ...filteredPosts]).length,
+          hasMore: hasMorePosts,
+          lastPostId: newPosts.length > 0 ? newPosts[newPosts.length - 1].PostID : 'none'
         });
       } else {
-        console.log('No posts data received');
+        console.log('No posts data received:', data);
         setHasMore(false);
       }
     } catch (error: any) {
@@ -128,6 +221,7 @@ export default function useFunctionPosts(companyId: number) {
       setError('خطأ في جلب اليوميات');
       Tostget('خطأ في جلب اليوميات');
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
       setRefreshing(false);
     }
@@ -139,59 +233,199 @@ export default function useFunctionPosts(companyId: number) {
     await fetchPosts(true);
   };
 
-  // Load more posts
+  // Load more posts - exactly like mobile app handallBring
   const loadMorePosts = async () => {
-    console.log('loadMorePosts called:', { loading, hasMore, postsCount: posts.length });
-    if (!loading && hasMore) {
-      console.log('Fetching more posts...');
-      await fetchPosts(false);
-    } else {
-      console.log('Cannot load more:', { loading, hasMore });
+    console.log('loadMorePosts called:', { loading, postsCount: posts.length, isFetching: isFetchingRef.current, filterDone: filterData.Done });
+    if (isFetchingRef.current || !hasMore) {
+      console.log('Cannot load more now - already fetching or no more data');
+      return;
+    }
+
+    try {
+      isFetchingRef.current = true;
+      setLoading(true);
+
+      // Exactly like mobile app handallBring logic
+      if (filterData.Done === true) {
+        // Like mobile: BringSearchPosts with current filter + last PostID
+        const lastId = posts.length > 0 ? posts[posts.length - 1]?.PostID : 0;
+        const data = {
+          ...filterData,
+          PostID: lastId,
+        };
+        await BringSearchPostsLikeMobile(data, posts);
+      } else {
+        // Like mobile: BringDataPost
+        await BringDataPostLikeMobile();
+      }
+    } catch (error) {
+      console.error('Error in loadMorePosts:', error);
+    } finally {
+      isFetchingRef.current = false;
+      setLoading(false);
     }
   };
 
-  // Search posts
+  // Exactly like mobile app BringDataPost
+  const BringDataPostLikeMobile = async () => {
+    try {
+      const lastPostId = posts.length > 0 ? posts[posts.length - 1]?.PostID : 0;
+      const result = await apiFetchPosts(companyId, lastPostId, user?.data?.userName);
+
+      if (result?.data && result.data.length > 0) {
+        const newPosts = result.data as Post[];
+        const postsWithLikeStatus = newPosts.map(post => ({ ...post, isLiked: post.Likeuser || false }));
+        const filtered = filterPostsForUser(postsWithLikeStatus);
+        // Like mobile: let arrays = [...arrayPosts, ...result];
+        setPosts(prev => dedupeByPostId([...prev, ...filtered]));
+        console.log('BringDataPost fetched:', { count: newPosts.length });
+      }
+    } catch (error) {
+      console.error('Error in BringDataPostLikeMobile:', error);
+    }
+  };
+
+  // Exactly like mobile app BringSearchPosts
+  const BringSearchPostsLikeMobile = async (Datafilter: any, arrayPost: Post[]) => {
+    try {
+      const data = {
+        ...Datafilter,
+        DateStart: formatDateForAPIHelper(Datafilter.DateStart),
+        DateEnd: formatDateForAPIHelper(Datafilter.DateEnd),
+      };
+
+      // Like mobile: dispatch(setFilterData({...data, Done: true}));
+      setFilterData({ ...data, Done: true });
+
+      const result = await apiSearchPosts(data);
+      if (result?.data && Array.isArray(result.data)) {
+        const newPosts = result.data as Post[];
+        const postsWithLikeStatus = newPosts.map(post => ({ ...post, isLiked: post.Likeuser || false }));
+        const filtered = filterPostsForUser(postsWithLikeStatus);
+
+        // If no new posts, stop loading more (like mobile app behavior)
+        if (newPosts.length === 0) {
+          setHasMore(false);
+          console.log('BringSearchPosts: No more posts available');
+          return;
+        }
+
+        // Exactly like mobile app logic:
+        let arrays;
+        if (arrayPost.length > 0) {
+          arrays = [...arrayPost, ...filtered];
+        } else {
+          arrays = filtered;
+        }
+        setPosts(dedupeByPostId(arrays));
+        console.log('BringSearchPosts fetched:', { count: newPosts.length });
+      } else {
+        // No data received, stop loading
+        setHasMore(false);
+      }
+    } catch (error) {
+      console.error('Error in BringSearchPostsLikeMobile:', error);
+      setHasMore(false);
+    }
+  };
+
+  // Search posts - exactly like mobile app BringSearchPosts
   const searchPosts = async (searchData: Partial<FilterData>) => {
     if (!user?.accessToken || !companyId) return;
+    if (isFetchingRef.current) {
+      console.log('Skip search: already fetching');
+      return;
+    }
 
     setLoading(true);
     setError(null);
+    isFetchingRef.current = true;
 
     try {
-      // Merge current filter with new search data
+      // Merge current filter with new search data exactly like mobile app
       const finalFilterData = {
         ...filterData,
         ...searchData,
         CompanyID: companyId
       };
 
-      // Format dates for API
-      const formatDateForAPI = (date: Date | undefined) => {
+      // Format helpers
+      const formatYY = (date?: Date) => {
         if (!date) return '';
-        return date.toISOString().split('T')[0]; // YYYY-MM-DD format
+        const year = date.getFullYear().toString().slice(-2);
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+      };
+      const formatYYYY = (date?: Date) => {
+        if (!date) return '';
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
       };
 
-      const searchParams = {
+      // Build primary (yy) params
+      const yyParams = {
         ...finalFilterData,
-        DateStart: formatDateForAPI(finalFilterData.DateStart),
-        DateEnd: formatDateForAPI(finalFilterData.DateEnd),
-        user: user.data?.userName || ''
+        DateStart: formatYY(finalFilterData.DateStart),
+        DateEnd: formatYY(finalFilterData.DateEnd),
+        PostID: 0,
+        user: user?.data?.userName || ''
       };
 
-      const data = await apiSearchPosts(searchParams);
-      
+      console.log('Searching posts with params:', yyParams);
+
+      // Track which params we finally used (to persist exact strings into filter state)
+      let usedParams = yyParams;
+      let data = await apiSearchPosts(yyParams);
+
+      // Fallback: if no results with yy-MM-DD, try YYYY-MM-DD
+      if (!data?.data || data.data.length === 0) {
+        const yyyyParams = {
+          ...finalFilterData,
+          DateStart: formatYYYY(finalFilterData.DateStart),
+          DateEnd: formatYYYY(finalFilterData.DateEnd),
+          PostID: 0,
+          user: user?.data?.userName || ''
+        };
+        console.log('Primary search empty, trying fallback YYYY-MM-DD:', yyyyParams);
+        usedParams = yyyyParams;
+        data = await apiSearchPosts(yyyyParams);
+      }
+
       if (data?.data && Array.isArray(data.data)) {
         const searchResults = data.data as Post[];
-        const filteredResults = filterPostsForUser(searchResults);
+
+        // Add isLiked property for compatibility with ReelItem
+        const postsWithLikeStatus = searchResults.map(post => ({
+          ...post,
+          isLiked: post.Likeuser || false
+        }));
+
+        const filteredResults = filterPostsForUser(postsWithLikeStatus);
+
+        // Exactly like mobile app BringSearchPosts: replace posts completely
         setPosts(filteredResults);
-        setHasMore(false); // Search results don't support pagination
-        
+        // Allow loading more after first page
+        setHasMore(true);
+
+        // Persist the exact date strings we used (yy or yyyy) so pagination uses same
+        setFilterData({
+          ...finalFilterData,
+          DateStart: usedParams.DateStart as any,
+          DateEnd: usedParams.DateEnd as any,
+          Done: true
+        });
+
         console.log('Search completed:', {
           resultsCount: filteredResults.length,
-          searchParams: finalFilterData
+          searchParams: usedParams
         });
       } else {
+        console.log('No search results');
         setPosts([]);
+        setFilterData({ ...finalFilterData, Done: true });
         setHasMore(false);
       }
     } catch (error: any) {
@@ -199,6 +433,7 @@ export default function useFunctionPosts(companyId: number) {
       setError('خطأ في البحث');
       Tostget('خطأ في البحث');
     } finally {
+      isFetchingRef.current = false;
       setLoading(false);
     }
   };
@@ -268,7 +503,12 @@ export default function useFunctionPosts(companyId: number) {
   };
 
   // Clear filter
-  const clearFilter = () => {
+  // Clear filter exactly like mobile app CanselFilter
+  const clearFilter = async () => {
+    // Clear posts array first like mobile app
+    setPosts([]);
+
+    // Reset filter data exactly like mobile app CanselFilter
     setFilterData({
       CompanyID: companyId,
       DateStart: new Date(),
@@ -280,8 +520,12 @@ export default function useFunctionPosts(companyId: number) {
       branch: '',
       PostID: 0
     });
-    fetchPosts(true);
+
+    // Fetch fresh posts using BringPost like mobile app BringDataPost
+    await fetchPosts(true);
   };
+
+
 
   // Initial load
   useEffect(() => {

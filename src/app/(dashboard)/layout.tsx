@@ -67,10 +67,19 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen bg-home">
-      <div className="content-with-bottom-nav">
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--color-background)' }}>
+      {/* Main Content with proper spacing */}
+      <div
+        className="min-h-screen"
+        style={{
+          paddingBottom: 'var(--content-padding-bottom)',
+          paddingTop: 'var(--safe-area-top)'
+        }}
+      >
         {children}
       </div>
+
+      {/* Bottom Navigation */}
       <BottomNavigation />
     </div>
   );

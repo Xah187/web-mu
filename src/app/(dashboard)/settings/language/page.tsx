@@ -8,6 +8,8 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 export default function LanguageSettingsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
@@ -31,47 +33,29 @@ export default function LanguageSettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div 
-        className="bg-white shadow-sm border-b border-gray-200"
-        style={{
-          borderBottomLeftRadius: '24px',
-          borderBottomRightRadius: '24px',
-        }}
-      >
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          </button>
-          
-          <h1 
-            className="text-lg font-bold text-gray-900"
-            style={{ 
-              fontFamily: fonts.IBMPlexSansArabicBold,
-              fontSize: verticalScale(18 + size)
-            }}
-          >
-            اللغة
-          </h1>
-          
-          <div className="w-10"></div>
-        </div>
-      </div>
-
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="اللغة"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15,18 9,12 15,6" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection className="p-4">
       {/* Content */}
       <div className="p-4">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 
+          <h2
             className="font-semibold text-gray-900 mb-4"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(16 + size) 
+              fontSize: scale(16 + size)
             }}
           >
             اختر اللغة
@@ -79,20 +63,20 @@ export default function LanguageSettingsPage() {
 
           <div className="space-y-3">
             {languages.map((lang) => (
-              <div 
+              <div
                 key={lang.value}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                  selectedLanguage === lang.value 
-                    ? 'border-blue-500 bg-blue-50' 
+                  selectedLanguage === lang.value
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
                 onClick={() => setSelectedLanguage(lang.value as 'ar' | 'en')}
               >
                 <div className="flex items-center gap-3">
-                  <div 
+                  <div
                     className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                      selectedLanguage === lang.value 
-                        ? 'border-blue-500 bg-blue-500' 
+                      selectedLanguage === lang.value
+                        ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
                     }`}
                   >
@@ -100,11 +84,11 @@ export default function LanguageSettingsPage() {
                       <div className="w-2 h-2 bg-white rounded-full"></div>
                     )}
                   </div>
-                  <span 
+                  <span
                     className="text-gray-900"
-                    style={{ 
+                    style={{
                       fontFamily: fonts.IBMPlexSansArabicRegular,
-                      fontSize: scale(14 + size) 
+                      fontSize: scale(14 + size)
                     }}
                   >
                     {lang.label}
@@ -129,7 +113,9 @@ export default function LanguageSettingsPage() {
             إلغاء
           </button>
         </div>
-      </div>
-    </div>
+        </div>
+
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

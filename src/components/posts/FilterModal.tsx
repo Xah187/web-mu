@@ -62,15 +62,22 @@ export default function FilterModal({
         branch: currentFilter.branch || ''
       });
       
-      // Format dates
-      const formatDate = (date: Date | string | undefined) => {
+      // Format dates with defaults
+      const formatDate = (date: Date | string | undefined, defaultDate?: Date) => {
+        if (!date && defaultDate) {
+          return defaultDate.toISOString().split('T')[0];
+        }
         if (!date) return '';
         const d = new Date(date);
         return d.toISOString().split('T')[0];
       };
-      
-      setDateStart(formatDate(currentFilter.DateStart));
-      setDateEnd(formatDate(currentFilter.DateEnd));
+
+      // Use wide date range to capture existing data (since posts might be from past dates)
+      const today = new Date();
+      const startDate = new Date('2024-01-01'); // Wide range to capture all existing posts
+
+      setDateStart(formatDate(currentFilter.DateStart, startDate));
+      setDateEnd(formatDate(currentFilter.DateEnd, today));
     }
   }, [isOpen, currentFilter]);
 

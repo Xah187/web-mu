@@ -9,6 +9,7 @@ import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
 import Image from 'next/image';
 import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
 // Types
 interface Request {
@@ -835,70 +836,60 @@ export default function RequestsPage() {
   };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f6f8fe' }}>
-      {/* Header - Matching Mobile App Design */}
-      <div className="bg-white shadow-md border-b border-gray-100" style={{ 
-        borderBottomLeftRadius: '24px', 
-        borderBottomRightRadius: '24px',
-        paddingBottom: '16px'
-      }}>
-        {/* Top Navigation Bar */}
-        <div className="flex items-center justify-between px-4 py-3" style={{ paddingTop: '35px' }}>
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <div className="flex-1 text-center">
-            <h1 className="text-lg font-ibm-arabic-bold text-gray-900">
-              الطلبات
-            </h1>
-            <p className="text-sm font-ibm-arabic-medium text-gray-600">
-              {nameproject}
-            </p>
-          </div>
-          
-          <button 
-            onClick={() => {
-              if (typepage === 'all') {
-                router.push(`/chat?typess=طلبات&ProjectID=${idProject}&nameRoom=الطلبات`);
-              }
-            }}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Request Counts - Fixed based on backend logic */}
-        <div className="px-4 flex justify-center gap-6">
-          <div className="text-center">
-            <div className="text-2xl font-ibm-arabic-bold text-green-600">
-              {requestCounts.Close}
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="الطلبات"
+          subtitle={nameproject || undefined}
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+          actions={
+            typepage === 'all' ? (
+              <button
+                onClick={() => router.push(`/chat?typess=طلبات&ProjectID=${idProject}&nameRoom=الطلبات`)}
+                className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
+                aria-label="دردشة الطلبات"
+                title="دردشة الطلبات"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+            ) : null
+          }
+        />
+      }
+    >
+      <ContentSection className="p-0">
+        {/* Counts */}
+        <div className="px-4 pt-2 pb-1">
+          <div className="flex justify-center gap-6">
+            <div className="text-center">
+              <div className="text-2xl font-ibm-arabic-bold text-green-600">
+                {requestCounts.Close}
+              </div>
+              <div className="text-sm font-ibm-arabic-medium text-gray-600">
+                مفتوحة
+              </div>
             </div>
-            <div className="text-sm font-ibm-arabic-medium text-gray-600">
-              مفتوحة
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-ibm-arabic-bold text-gray-600">
-              {requestCounts.Open}
-            </div>
-            <div className="text-sm font-ibm-arabic-medium text-gray-600">
-              مغلقة
+            <div className="text-center">
+              <div className="text-2xl font-ibm-arabic-bold text-gray-600">
+                {requestCounts.Open}
+              </div>
+              <div className="text-sm font-ibm-arabic-medium text-gray-600">
+                مغلقة
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Content */}
-      <div className="px-4 py-4">
+        {/* Content */}
+        <div className="px-4 py-4">
         {/* Create Request Button - Only for 'part' type and employees like mobile app */}
         {typepage === 'part' && (
           <EmployeeOnly>
@@ -1243,6 +1234,7 @@ export default function RequestsPage() {
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
       />
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

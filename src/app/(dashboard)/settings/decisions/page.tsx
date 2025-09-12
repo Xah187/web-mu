@@ -11,6 +11,8 @@ import { Tostget } from '@/components/ui/Toast';
 // This page represents the "قرارات" section from mobile app
 // It's a separate chat interface for decisions at company level
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 export default function DecisionsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
@@ -41,38 +43,21 @@ export default function DecisionsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div 
-        className="bg-white shadow-sm border-b border-gray-200"
-        style={{
-          borderBottomLeftRadius: '24px',
-          borderBottomRightRadius: '24px',
-        }}
-      >
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          </button>
-          
-          <h1 
-            className="text-lg font-bold text-gray-900"
-            style={{ 
-              fontFamily: fonts.IBMPlexSansArabicBold,
-              fontSize: verticalScale(18 + size)
-            }}
-          >
-            قرارات
-          </h1>
-          
-          <div className="w-10"></div> {/* Spacer for centering */}
-        </div>
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="قرارات"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15,18 9,12 15,6" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection className="p-4">
 
       {/* Content */}
       <div className="p-4">
@@ -264,6 +249,7 @@ export default function DecisionsPage() {
           </div>
         )}
       </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

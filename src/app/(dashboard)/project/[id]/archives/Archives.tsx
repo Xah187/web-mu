@@ -11,6 +11,8 @@ import { Tostget } from '@/components/ui/Toast';
 import CreateFolderModal from '@/components/archives/CreateFolderModal';
 import FilterModal from '@/components/archives/FilterModal';
 import OperationFileModal from '@/components/archives/OperationFileModal';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 
 interface ArchiveFolder {
   ArchivesID: number;
@@ -25,10 +27,10 @@ export default function Archives() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  
+
   const projectId = parseInt(params.id as string);
   const projectName = searchParams.get('projectName') || 'المشروع';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
 
@@ -99,84 +101,75 @@ export default function Archives() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - مطابق للتطبيق المحمول */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-4 rtl:space-x-reverse">
-              <button
-                onClick={() => router.back()}
-                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M19 12H5M12 19l-7-7 7-7"/>
-                </svg>
-              </button>
-              <h1 className="text-xl font-ibm-arabic-bold text-gray-900">الأرشيف</h1>
-            </div>
-          </div>
-        </div>
-      </div>
+    <ResponsiveLayout>
 
-      {/* Controls - مطابق للتطبيق المحمول */}
-      <div className="bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <button
-              onClick={handleCreateFolder}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
-            >
-              إنشاء
-            </button>
-
+      <PageHeader
+        title="الأرشيف"
+        subtitle={projectName}
+        backButton={
+          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="رجوع">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+        }
+        actions={
+          <div className="flex items-center gap-2">
             {tilte.length > 0 && (
               <button
                 onClick={() => setTitle('')}
-                className="bg-white text-gray-700 px-4 py-2 rounded-lg border hover:bg-gray-50 transition-colors font-ibm-arabic-medium"
+                className="bg-white text-gray-700 px-3 py-1.5 rounded-lg border hover:bg-gray-50 transition-colors font-ibm-arabic-medium"
               >
                 إلغاء فلتر
               </button>
             )}
-
             <button
               onClick={() => setShowFilterModal(true)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
               title="فلترة"
+              aria-label="فلترة"
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
               </svg>
             </button>
+            <button
+              onClick={handleRefresh}
+              disabled={refreshing}
+              className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+              title="تحديث"
+              aria-label="تحديث"
+            >
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                className={refreshing ? 'animate-spin' : ''}
+              >
+                <polyline points="23 4 23 10 17 10"/>
+                <polyline points="1 20 1 14 7 14"/>
+                <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
+              </svg>
+            </button>
+            <button
+              onClick={handleCreateFolder}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+            >
+              إنشاء
+            </button>
           </div>
-        </div>
-      </div>
+        }
+      />
+      <ContentSection>
+
+
 
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        {/* Refresh Button */}
-        <div className="mb-4">
-          <button
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="flex items-center space-x-2 rtl:space-x-reverse text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50"
-          >
-            <svg 
-              width="16" 
-              height="16" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2"
-              className={refreshing ? 'animate-spin' : ''}
-            >
-              <polyline points="23 4 23 10 17 10"/>
-              <polyline points="1 20 1 14 7 14"/>
-              <path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/>
-            </svg>
-            <span className="font-ibm-arabic-medium">تحديث</span>
-          </button>
-        </div>
+
 
         {/* Loading State */}
         {loading && (
@@ -242,6 +235,8 @@ export default function Archives() {
             {tilte.length === 0 && (
               <button
                 onClick={handleCreateFolder}
+
+
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
               >
                 إنشاء مجلد جديد
@@ -250,6 +245,8 @@ export default function Archives() {
           </div>
         )}
       </div>
+      </ContentSection>
+
 
       {/* Modals */}
       <CreateFolderModal
@@ -281,6 +278,6 @@ export default function Archives() {
         setInput={setInput}
         type="folder"
       />
-    </div>
+    </ResponsiveLayout>
   );
 }

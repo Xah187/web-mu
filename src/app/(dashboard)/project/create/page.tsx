@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useCreateProject } from '@/hooks/useCreateProject';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
 // Helper function for scaling (matching mobile app)
 const scale = (size: number) => size;
@@ -108,29 +109,21 @@ const CreateProjectPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50" style={{ backgroundColor: '#f6f8fe' }}>
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-4 py-3">
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M15 18L9 12L15 6"
-                stroke="#2117FB"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <h1 className="text-lg font-ibm-arabic-bold text-gray-900">إنشاء مشروع جديد</h1>
-          <div className="w-10"></div>
-        </div>
-      </div>
-
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="إنشاء مشروع جديد"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+                <path d="M15 18L9 12L15 6" stroke="#2117FB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
       <div className="p-4 space-y-6">
         {/* Form Fields */}
         <div className="space-y-6">
@@ -277,7 +270,8 @@ const CreateProjectPage = () => {
           </button>
         </div>
       </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 };
 

@@ -12,11 +12,13 @@ import Input from '@/components/design/Input';
 import { useCompanyData, type CompanyData } from '@/hooks/useCompanyData';
 import { Tostget } from '@/components/ui/Toast';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Helper function to convert Arabic numbers to English
 const convertArabicToEnglish = (str: string): string => {
   const arabicNumerals = '٠١٢٣٤٥٦٧٨٩';
   const englishNumerals = '0123456789';
-  
+
   return str.split('').map(char => {
     const index = arabicNumerals.indexOf(char);
     return index !== -1 ? englishNumerals[index] : char;
@@ -27,7 +29,7 @@ export default function CompanyInfoPage() {
   const router = useRouter();
   const { user, size } = useAppSelector((state: any) => state.user);
   const { companyData, updateCompanyData, loading } = useCompanyData();
-  
+
   const [formData, setFormData] = useState<Partial<CompanyData>>({
     NameCompany: '',
     BuildingNumber: '',
@@ -80,7 +82,7 @@ export default function CompanyInfoPage() {
       ...prev,
       [field]: value
     }));
-    
+
     // Clear error when user starts typing
     if (errors[field]) {
       setErrors(prev => ({
@@ -116,7 +118,7 @@ export default function CompanyInfoPage() {
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const success = await updateCompanyData({
         ...formData,
@@ -138,36 +140,28 @@ export default function CompanyInfoPage() {
   };
 
   return (
-    <div className="min-h-screen bg-home">
-      {/* Header */}
-      <div 
-        className="flex items-center justify-between px-4 py-6 sm:px-6 lg:px-8 bg-white rounded-b-2xl"
-        style={{ paddingTop: 35 }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <ArrowIcon size={24} color={colors.BLACK} />
-        </button>
-        
-        <h1 
-          className="font-bold text-center flex-1 text-lg sm:text-xl"
-          style={{
-            fontFamily: fonts.IBMPlexSansArabicSemiBold,
-            color: colors.BORDER
-          }}
-        >
-          تعديل بيانات الشركة
-        </h1>
-        
-        <div className="w-10" />
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="تعديل بيانات الشركة"
+          backButton={
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="رجوع"
+            >
+              <ArrowIcon size={24} color={colors.BLACK} />
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
 
       {/* Form Content */}
       <div className="flex justify-center px-4 py-6 sm:px-6 lg:px-8">
         <div className="w-full max-w-4xl">
-          
+
           {/* Loading indicator for company data */}
           {loading && !companyData && (
             <div className="flex items-center justify-center py-8">
@@ -175,9 +169,9 @@ export default function CompanyInfoPage() {
               <span className="mr-3 text-gray-600">جاري تحميل بيانات الشركة...</span>
             </div>
           )}
-          
 
-          
+
+
           {/* Company Name - Full Width */}
           <div className="mb-6">
             <Input
@@ -200,7 +194,7 @@ export default function CompanyInfoPage() {
 
           {/* Two Column Layout for Desktop */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 mb-6">
-            
+
             {/* Building Number */}
             <Input
               name="رقم المبنى"
@@ -277,6 +271,7 @@ export default function CompanyInfoPage() {
           </div>
         </div>
       </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

@@ -9,6 +9,8 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 
 
 interface ChatMessage {
@@ -441,35 +443,22 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div
-        className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0"
-        style={{ borderBottomLeftRadius: '24px', borderBottomRightRadius: '24px' }}
-      >
-        <div className="flex items-center justify-between p-4">
-          <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          </button>
-          <div className="text-center">
-            <h1
-              className="text-lg font-bold text-gray-900"
-              style={{ fontFamily: fonts.IBMPlexSansArabicBold, fontSize: verticalScale(18 + (size||0)) }}
-            >
-              {nameRoom}
-            </h1>
-            {nameProject ? (
-              <p className="text-sm text-gray-600" style={{ fontFamily: fonts.IBMPlexSansArabicRegular }}>
-                {nameProject}
-              </p>
-            ) : null}
-
-          </div>
-          <div className="w-10"></div>
-        </div>
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title={nameRoom || 'الدردشة'}
+          subtitle={nameProject || undefined}
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15,18 9,12 15,6" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection className="p-0">
       {uploading && (
         <div className="fixed bottom-20 right-4 bg-white shadow-lg border border-gray-200 rounded-xl p-3">
           <div className="flex items-center gap-3">
@@ -596,6 +585,8 @@ export default function ChatPage() {
         {/* مرجع للتمرير لآخر رسالة */}
         <div ref={messagesEndRef} className="h-4" />
       </div>
+      </ContentSection>
+
 
       {/* Chat Input Bar - Fixed at Bottom */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-300 shadow-lg z-50">
@@ -607,10 +598,14 @@ export default function ChatPage() {
                 رد على: {(replyToMessage as any).Sender || (replyToMessage as any).userName || 'غير معروف'}
               </div>
               <button
+
+
                 onClick={() => setReplyToMessage(null)}
                 className="text-blue-400 hover:text-blue-600"
                 title="إلغاء الرد"
               >
+
+
                 ✕
               </button>
             </div>
@@ -676,7 +671,7 @@ export default function ChatPage() {
           </div>
         </div>
       )}
-    </div>
+    </ResponsiveLayout>
   );
 }
 

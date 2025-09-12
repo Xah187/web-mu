@@ -7,14 +7,16 @@ import useFinance, { FinanceItem, Totaltofixt, truncateNumber, convertArabicToEn
 import useValidityUser from '@/hooks/useValidityUser';
 import { scale } from '@/utils/responsiveSize';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Header Component - Exactly matching mobile app
-const FinanceHeader = ({ 
-  onBack, 
-  onArchive, 
-  onShare, 
+const FinanceHeader = ({
+  onBack,
+  onArchive,
+  onShare,
   onChat,
   projectName,
-  totals 
+  totals
 }: {
   onBack: () => void;
   onArchive: () => void;
@@ -53,7 +55,7 @@ const FinanceHeader = ({
           {/* العهد */}
           <div className="flex flex-col items-center flex-1 px-3">
             <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>العهد</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1" 
+            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
                style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
               {Totaltofixt(totals?.TotalRevenue || 0)}
             </p>
@@ -65,7 +67,7 @@ const FinanceHeader = ({
           {/* المصروفات */}
           <div className="flex flex-col items-center flex-1 px-3">
             <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>المصروفات</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1" 
+            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
                style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
               {Totaltofixt(totals?.TotalExpense || 0)}
             </p>
@@ -77,7 +79,7 @@ const FinanceHeader = ({
           {/* المرتجعات */}
           <div className="flex flex-col items-center flex-1 px-3">
             <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>المرتجعات</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1" 
+            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
                style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
               {Totaltofixt(totals?.TotalReturns || 0)}
             </p>
@@ -91,7 +93,7 @@ const FinanceHeader = ({
         <div className="flex items-center justify-center h-12">
           <div className="flex flex-col items-center">
             <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>الرصيد المتبقي</p>
-            <p className="font-ibm-arabic-semibold text-gray-900" 
+            <p className="font-ibm-arabic-semibold text-gray-900"
                style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
               {Totaltofixt(totals?.RemainingBalance || 0)}
             </p>
@@ -146,12 +148,12 @@ const FinanceHeader = ({
 
 
 // Collapsible Finance Section - Exactly matching mobile app
-const FinanceSection = ({ 
-  title, 
-  items, 
-  type, 
-  onLoadMore, 
-  hasMore, 
+const FinanceSection = ({
+  title,
+  items,
+  type,
+  onLoadMore,
+  hasMore,
   loading,
   onItemEdit,
   onItemDelete,
@@ -195,10 +197,10 @@ const FinanceSection = ({
         {loading ? (
           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
         ) : (
-          <svg 
-            width="20" 
-            height="20" 
-            viewBox="0 0 24 24" 
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
             fill="none"
             className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
           >
@@ -433,16 +435,47 @@ export default function FinancePage() {
   }
 
   return (
-    <div className="min-h-screen bg-home">
-      <FinanceHeader
-        onBack={handleBack}
-        onArchive={handleArchive}
-        onShare={handleShare}
-        onChat={handleChat}
-        projectName={totals?.Nameproject || 'المشروع'}
-        totals={totals}
-      />
-
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="المالية"
+          subtitle={totals?.Nameproject || 'المشروع'}
+          backButton={
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              <button onClick={handleChat} className="p-2 hover:bg-gray-100 rounded-lg" title="تواصل" aria-label="تواصل">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <button onClick={handleArchive} className="p-2 hover:bg-gray-100 rounded-lg" title="أرشيف" aria-label="أرشيف">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M21 8V21H3V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M23 3H1V8H23V3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M10 12H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+              <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg" title="كشف الحساب" aria-label="كشف الحساب">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 6.65685 16.3431 8 18 8Z" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M6 15C7.65685 15 9 13.6569 9 12C9 10.3431 7.65685 9 6 9C4.34315 9 3 10.3431 3 12C3 13.6569 4.34315 15 6 15Z" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M18 22C19.6569 22 21 20.6569 21 19C21 17.3431 19.6569 16 18 16C16.3431 16 15 17.3431 15 19C15 20.6569 16.3431 22 18 22Z" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M8.59 13.51L15.42 17.49" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M15.41 6.51L8.59 10.49" stroke="currentColor" strokeWidth="2"/>
+                </svg>
+              </button>
+            </div>
+          }
+        />
+      }
+    >
+      <ContentSection>
       {/* Action Buttons */}
       <div className="flex items-center justify-between px-4 py-3">
         <button
@@ -455,7 +488,7 @@ export default function FinancePage() {
           </svg>
           إنشاء عملية
         </button>
-        
+
         {searchResults.length > 0 && (
           <button
             onClick={clearSearch}
@@ -464,7 +497,7 @@ export default function FinancePage() {
             إلغاء فلتر
           </button>
         )}
-        
+
         <button
           onClick={handleFilter}
           className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
@@ -504,7 +537,7 @@ export default function FinancePage() {
                 onItemView={handleItemView}
                 onFetchData={() => fetchRevenues(projectId)}
               />
-              
+
               <FinanceSection
                 title="مصروفات"
                 items={expenses}
@@ -517,7 +550,7 @@ export default function FinancePage() {
                 onItemView={handleItemView}
                 onFetchData={() => fetchExpenses(projectId)}
               />
-              
+
               <FinanceSection
                 title="إعادة مرتجع"
                 items={returns}
@@ -536,6 +569,7 @@ export default function FinancePage() {
 
       {/* Modals would go here */}
       {/* TODO: Add Add/Edit, Filter, Share, and View modals */}
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

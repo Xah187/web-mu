@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Import Design System */
+@import '../styles/design-system.css';
+
 /* Safe Area and Viewport Support */
 :root {
   --bottom-safe-area: env(safe-area-inset-bottom, 0px);

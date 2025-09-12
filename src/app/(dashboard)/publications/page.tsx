@@ -2,13 +2,14 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { colors } from '@/constants/colors';
-import { fonts } from '@/constants/fonts';
+import { colors as _colors } from '@/constants/colors';
+import { fonts as _fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import '@/styles/mobile-layout.css';
 
 import FilterIcon from '@/components/icons/FilterIcon';
+import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid } from '@/components/layout/ResponsiveLayout';
 
 import PostCard from '@/components/posts/PostCard';
 import FilterModal from '@/components/posts/FilterModal';
@@ -21,9 +22,9 @@ import { Tostget } from '@/components/ui/Toast';
 
 export default function PublicationsPage() {
   const router = useRouter();
-  const { user, size } = useAppSelector((state: any) => state.user);
-  const { isEmployee } = useJobBasedPermissions();
-  
+  const { user } = useAppSelector((state: any) => state.user);
+  const { isEmployee: _isEmployee } = useJobBasedPermissions();
+
   const [showFilter, setShowFilter] = useState(false);
   const [showComments, setShowComments] = useState<{ postId: number; show: boolean }>({ postId: 0, show: false });
   const [showVideoPlayer, setShowVideoPlayer] = useState<{ show: boolean; videoUrl: string; title: string }>({
@@ -35,7 +36,6 @@ export default function PublicationsPage() {
   // Reels mode states
   const [viewMode, setViewMode] = useState<'grid' | 'reels'>('grid');
   const [currentReelIndex, setCurrentReelIndex] = useState(0);
-  const [reelHeight, setReelHeight] = useState(0); // ارتفاع كل فيديو
   const containerRef = useRef<HTMLDivElement>(null);
   const touchStartY = useRef<number>(0);
   const isScrolling = useRef<boolean>(false);
@@ -54,7 +54,7 @@ export default function PublicationsPage() {
     loadMorePosts,
     searchPosts,
     toggleLike,
-    addComment,
+    addComment: _addComment,
     clearFilter,
     setFilterData,
     fetchBranches
@@ -69,21 +69,60 @@ export default function PublicationsPage() {
     return isVideo && post.url;
   });
 
-  // حساب ارتفاع كل فيديو (ارتفاع الشاشة ناقص الشريط السفلي)
+  // حساب ارتفاع متوافق مع أشرطة المتصفح + قياس ارتفاع شريط التنقل السفلي فعلياً
   useEffect(() => {
-    const calculateReelHeight = () => {
-      const bottomNavHeight = 64; // ارتفاع الشريط السفلي
-      const calculatedHeight = window.innerHeight - bottomNavHeight;
-      setReelHeight(calculatedHeight);
+    const root = document.documentElement;
+
+    const updateViewportVar = () => {
+      const vv = (window as any).visualViewport;
+      const vh = vv?.height ?? window.innerHeight;
+      root.style.setProperty('--reels-available-height', `${vh}px`);
     };
 
-    // حساب الارتفاع عند التحميل
-    calculateReelHeight();
+    const updateBottomOffset = () => {
+      const nav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+      const offset = nav ? nav.getBoundingClientRect().height : 64; // fallback
+      root.style.setProperty('--reels-bottom-offset', `${offset}px`);
+    };
 
-    // إعادة حساب عند تغيير حجم الشاشة
-    window.addEventListener('resize', calculateReelHeight);
-    return () => window.removeEventListener('resize', calculateReelHeight);
+    // مبدئياً
+    updateViewportVar();
+    updateBottomOffset();
+
+    // مستمعون للتغييرات
+    (window as any).visualViewport?.addEventListener('resize', () => {
+      updateViewportVar();
+      updateBottomOffset();
+    });
+    window.addEventListener('resize', () => {
+      updateViewportVar();
+      updateBottomOffset();
+    });
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        updateViewportVar();
+        updateBottomOffset();
+      }, 50);
+    });
+
+    return () => {
+      (window as any).visualViewport?.removeEventListener('resize', () => {});
+      window.removeEventListener('resize', () => {});
+      window.removeEventListener('orientationchange', () => {});
+    };
   }, []);
+
+  // أعِد القياسات عند التبديل لوضع الريلز
+  useEffect(() => {
+    if (viewMode === 'reels') {
+      const vv = (window as any).visualViewport;
+      const vh = vv?.height ?? window.innerHeight;
+      document.documentElement.style.setProperty('--reels-available-height', `${vh}px`);
+      const nav = document.querySelector('.bottom-navigation') as HTMLElement | null;
+      const offset = nav ? nav.getBoundingClientRect().height : 64;
+      document.documentElement.style.setProperty('--reels-bottom-offset', `${offset}px`);
+    }
+  }, [viewMode]);
 
   // التعامل مع التمرير بالماوس في Reels mode (مطابق للتيك توك)
   const handleWheel = useCallback((e: WheelEvent) => {
@@ -168,7 +207,7 @@ export default function PublicationsPage() {
       <div className="flex flex-col h-full bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 
+            <h1
               className="font-cairo-bold text-gray-900"
               style={{ fontSize: verticalScale(20) }}
             >
@@ -176,7 +215,7 @@ export default function PublicationsPage() {
             </h1>
           </div>
         </div>
-        
+
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
@@ -315,7 +354,7 @@ export default function PublicationsPage() {
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [viewMode, hasMore, loading, refreshing, loadMorePosts]);
+  }, [viewMode, hasMore, loading, refreshing, posts.length, loadMorePosts]);
 
   const handleRefresh = async () => {
     await refreshPosts();
@@ -326,20 +365,10 @@ export default function PublicationsPage() {
   };
 
   const handleApplyFilter = (newFilter: Partial<FilterData>) => {
-    // Check if filter is just default date filter
-    const isDefaultFilter = newFilter.type === 'بحسب التاريخ' && 
-                            !newFilter.nameProject && 
-                            !newFilter.userName && 
-                            !newFilter.branch;
-    
-    if (isDefaultFilter) {
-      // Use regular fetch for date-only filter
-      setFilterData({ ...filterData, ...newFilter });
-      refreshPosts();
-    } else {
-      // Use search for complex filters
-      searchPosts(newFilter);
-    }
+    console.log('Applying filter:', newFilter);
+
+    // Always use searchPosts like mobile app - all filters go through SearchPosts API
+    searchPosts(newFilter);
   };
 
   const handleClearFilter = () => {
@@ -392,7 +421,7 @@ export default function PublicationsPage() {
       <div className="flex flex-col h-full bg-gray-50">
         <div className="bg-white border-b border-gray-200 px-4 py-3">
           <div className="flex items-center justify-between">
-            <h1 
+            <h1
               className="font-cairo-bold text-gray-900"
               style={{ fontSize: verticalScale(20) }}
             >
@@ -400,7 +429,7 @@ export default function PublicationsPage() {
             </h1>
           </div>
         </div>
-        
+
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
@@ -427,8 +456,9 @@ export default function PublicationsPage() {
   return (
     <div className={`flex flex-col h-full bg-gray-50 ${viewMode === 'reels' ? 'publications-mobile-container' : ''}`}>
       {/* Header */}
-      <div className={`bg-white border-b border-gray-200 px-4 py-3 ${viewMode === 'reels' ? 'publications-header' : ''}`}>
-        <div className="flex items-center justify-between">
+      {viewMode === 'reels' && (
+        <div className={`bg-white border-b border-gray-200 px-4 py-3 publications-header`}>
+        <div className="flex items-center justify-between max-w-screen-2xl mx-auto">
           <h1
             className="font-cairo-bold text-gray-900"
             style={{ fontSize: verticalScale(20) }}
@@ -437,30 +467,21 @@ export default function PublicationsPage() {
           </h1>
 
           <div className="flex items-center gap-3">
-            {/* زر تبديل نمط العرض */}
+            {/* زر العودة إلى الشبكة في وضع Reels */}
             <button
               onClick={() => {
-                setViewMode(viewMode === 'grid' ? 'reels' : 'grid');
-                setCurrentReelIndex(0); // إعادة تعيين الفيديو الحالي
+                setViewMode('grid');
+                setCurrentReelIndex(0);
               }}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors"
-              title={viewMode === 'grid' ? 'عرض الفيديوهات' : 'عرض الشبكة'}
+              title="عرض الشبكة"
             >
-              {viewMode === 'grid' ? (
-                // أيقونة الفيديو للتبديل إلى Reels
-                <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                  <polygon points="10,8 16,12 10,16" fill="currentColor"/>
-                </svg>
-              ) : (
-                // أيقونة الشبكة للتبديل إلى Grid
-                <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="7" height="7"/>
-                  <rect x="14" y="3" width="7" height="7"/>
-                  <rect x="3" y="14" width="7" height="7"/>
-                  <rect x="14" y="14" width="7" height="7"/>
-                </svg>
-              )}
+              <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="3" y="3" width="7" height="7"/>
+                <rect x="14" y="3" width="7" height="7"/>
+                <rect x="3" y="14" width="7" height="7"/>
+                <rect x="14" y="14" width="7" height="7"/>
+              </svg>
             </button>
 
             <button
@@ -509,6 +530,8 @@ export default function PublicationsPage() {
           </div>
         )}
       </div>
+      )}
+
 
 
 
@@ -631,15 +654,46 @@ export default function PublicationsPage() {
         </div>
       ) : (
         /* Grid Mode - العرض التقليدي المتجاوب */
-        <div className="flex-1 px-4 pb-20">
+        <ResponsiveLayout
+          header={
+            <PageHeader
+              title="اليوميات"
+              actions={
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setViewMode('reels');
+                      setCurrentReelIndex(0);
+                    }}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    title="عرض الفيديوهات"
+                  >
+                    <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                      <polygon points="10,8 16,12 10,16" fill="currentColor"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={handleFilterPress}
+                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                  >
+                    <FilterIcon size={scale(20)} />
+                  </button>
+
+                </div>
+              }
+            />
+          }
+        >
+          <ContentSection>
           {loading && posts.length === 0 ? (
             <div className="flex items-center justify-center py-20">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : posts.length > 0 ? (
             <>
-              {/* Grid Layout للمنشورات - متجاوب */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 md:gap-6">
+              {/* Grid Layout للمنشورات - متجاوب وموحّد عبر ResponsiveGrid */}
+              <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
                 {posts.map((post, index) => (
                   <PostCard
                     key={index.toString()}
@@ -658,7 +712,7 @@ export default function PublicationsPage() {
                     }}
                   />
                 ))}
-              </div>
+              </ResponsiveGrid>
 
               {/* Load More Indicator */}
               {hasMore && (
@@ -676,11 +730,7 @@ export default function PublicationsPage() {
                 </div>
               )}
 
-              {!hasMore && posts.length > 5 && (
-                <div className="text-center py-4">
-                  <span className="text-gray-500 text-sm">تم عرض جميع اليوميات</span>
-                </div>
-              )}
+              {/* Remove "all posts shown" message - mobile app never shows this */}
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
@@ -704,7 +754,43 @@ export default function PublicationsPage() {
               )}
             </div>
           )}
-        </div>
+          {/* Active Filter Indicator (Grid mode) */}
+          {(filterData.nameProject || filterData.userName || filterData.branch || filterData.type !== 'بحسب التاريخ') && (
+            <div className="mb-4 flex items-center gap-2">
+              <span className="text-xs text-gray-500">الفلاتر النشطة:</span>
+              <div className="flex gap-2 flex-wrap">
+                {filterData.type !== 'بحسب التاريخ' && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    {filterData.type}
+                  </span>
+                )}
+                {filterData.nameProject && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    مشروع: {filterData.nameProject}
+                  </span>
+                )}
+                {filterData.userName && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    مستخدم: {filterData.userName}
+                  </span>
+                )}
+                {filterData.branch && (
+                  <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-full">
+                    فرع: {filterData.branch}
+                  </span>
+                )}
+                <button
+                  onClick={handleClearFilter}
+                  className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full hover:bg-gray-200"
+                >
+                  مسح الكل
+                </button>
+              </div>
+            </div>
+          )}
+
+          </ContentSection>
+        </ResponsiveLayout>
       )}
 
       {/* Filter Modal */}

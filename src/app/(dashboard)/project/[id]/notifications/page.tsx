@@ -5,11 +5,13 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import useNotifications from '@/hooks/useNotifications';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 const ProjectNotificationsPage = () => {
   const router = useRouter();
   const params = useParams();
   const projectId = parseInt(params.id as string);
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { notifications, loading, hasMore, fetchInitial, loadMore } = useNotifications();
 
@@ -22,30 +24,21 @@ const ProjectNotificationsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 p-4">
-        <div className="flex items-center space-x-4 rtl:space-x-reverse">
-          <button
-            onClick={handleBack}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="rotate-180">
-              <path
-                d="M9 18L15 12L9 6"
-                stroke="#374151"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
-          <h1 className="text-xl font-bold text-gray-900">إشعارات المشروع</h1>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="p-4">
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="إشعارات المشروع"
+          backButton={
+            <button onClick={handleBack} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="rotate-180">
+                <path d="M9 18L15 12L9 6" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
         {loading && notifications.length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
@@ -91,8 +84,8 @@ const ProjectNotificationsPage = () => {
             )}
           </div>
         )}
-      </div>
-    </div>
+      </ContentSection>
+    </ResponsiveLayout>
   );
 };
 

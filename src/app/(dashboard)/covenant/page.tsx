@@ -14,6 +14,8 @@ import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
 import Image from 'next/image';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Types
 interface CovenantRequest {
   id: number;
@@ -41,7 +43,7 @@ export default function CovenantPage() {
   const { user, size } = useAppSelector((state: any) => state.user);
   const { canManageCovenant } = usePermissionCheck();
   const { Uservalidation } = useValidityUser();
-  
+
   const [covenantData, setCovenantData] = useState<CovenantData>({
     arrayOpen: [],
     arrayClosed: [],
@@ -74,10 +76,10 @@ export default function CovenantPage() {
 
   const fetchCovenantData = async (kindarray: string = 'arrayOpen', IDfinlty: number = 0) => {
     if (!IDCompanyBransh) return;
-    
+
     const requestType = getRequestType(kindarray);
     setLoading(prev => ({ ...prev, [requestType]: true }));
-    
+
     try {
       const response = await axiosInstance.get(
         `company/brinsh/BringDataFinancialCustody?IDCompanySub=${IDCompanyBransh}&kindRequest=${requestType}&LastID=${IDfinlty}`,
@@ -314,32 +316,23 @@ export default function CovenantPage() {
   const currentData = covenantData[getArrayKey(activeTab)];
 
   return (
-    <div className="min-h-screen bg-home">
-
-      {/* Header */}
-      <div
-        className="flex items-center justify-between px-4 py-6 sm:px-6 lg:px-8 bg-white rounded-b-2xl"
-        style={{ paddingTop: 35 }}
-      >
-        <button
-          onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <ArrowIcon size={24} color={colors.BLACK} />
-        </button>
-
-        <h1
-          className="font-bold text-center flex-1 text-lg sm:text-xl"
-          style={{
-            fontFamily: fonts.IBMPlexSansArabicSemiBold,
-            color: colors.BLACK
-          }}
-        >
-          طلبات العهد
-        </h1>
-
-        <div className="w-10" />
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="طلبات العهد"
+          backButton={
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="رجوع"
+            >
+              <ArrowIcon size={24} color={colors.BLACK} />
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
 
       {/* Create Request Button */}
       {IDCompanyBransh && (
@@ -402,13 +395,13 @@ export default function CovenantPage() {
                     {/* Request Card */}
                     <div className="bg-gray-50 rounded-xl overflow-hidden">
                       {/* Branch Header */}
-                      <div 
+                      <div
                         className="p-3 text-center text-white font-semibold"
                         style={{
-                          backgroundColor: item.RejectionStatus === 'true' 
-                            ? colors.RED 
-                            : item.OrderStatus === 'true' 
-                              ? colors.SOFTMINTGREEN 
+                          backgroundColor: item.RejectionStatus === 'true'
+                            ? colors.RED
+                            : item.OrderStatus === 'true'
+                              ? colors.SOFTMINTGREEN
                               : colors.BLUE,
                           fontFamily: fonts.IBMPlexSansArabicSemiBold
                         }}
@@ -469,7 +462,7 @@ export default function CovenantPage() {
                                     'قبول'
                                   )}
                                 </button>
-                                
+
                                 <button
                                   onClick={() => {
                                     setCreateRequest({
@@ -504,7 +497,7 @@ export default function CovenantPage() {
                                 >
                                   تعديل
                                 </button>
-                                
+
                                 <button
                                   onClick={() => deleteRequest(item.id)}
                                   disabled={loading[`delete_${item.id}`]}
@@ -571,6 +564,8 @@ export default function CovenantPage() {
           </div>
         ))}
       </div>
+
+      </ContentSection>
 
       {/* Create/Edit Request Modal */}
       {showCreateModal && (
@@ -691,7 +686,7 @@ export default function CovenantPage() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg w-full max-w-md p-6">
             <h2 className="text-lg font-bold mb-4 text-center">تأكيد القبول</h2>
-            
+
             <p className="text-center text-gray-600 mb-6">
               هل ترغب بالفعل بقبول الطلب؟
             </p>
@@ -733,6 +728,6 @@ export default function CovenantPage() {
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
       />
-    </div>
+    </ResponsiveLayout>
   );
 }

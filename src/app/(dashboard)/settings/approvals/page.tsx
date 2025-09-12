@@ -34,6 +34,8 @@ interface ChatMessage {
   Reply?: any;
 }
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 export default function ApprovalsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
@@ -453,38 +455,21 @@ export default function ApprovalsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div
-        className="bg-white shadow-sm border-b border-gray-200 flex-shrink-0"
-        style={{
-          borderBottomLeftRadius: '24px',
-          borderBottomRightRadius: '24px',
-        }}
-      >
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          </button>
-
-          <h1
-            className="text-lg font-bold text-gray-900"
-            style={{
-              fontFamily: fonts.IBMPlexSansArabicBold,
-              fontSize: verticalScale(18 + size)
-            }}
-          >
-            اعتمادات
-          </h1>
-
-          <div className="w-10"></div> {/* Spacer for centering */}
-        </div>
-      </div>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="اعتمادات"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15,18 9,12 15,6" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection>
 
       {/* Chat Messages */}
       <div className="p-4 space-y-4" style={{ paddingBottom: '180px' }}>
@@ -594,6 +579,8 @@ export default function ApprovalsPage() {
         <div ref={messagesEndRef} className="h-4" />
       </div>
 
+      </ContentSection>
+
       {/* Chat Input Bar - Fixed at Bottom */}
       <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-300 shadow-lg z-50">
         {/* Reply Preview - داخل البار الثابت */}
@@ -682,6 +669,7 @@ export default function ApprovalsPage() {
         />
         </div>
       </div>
-    </div>
+
+    </ResponsiveLayout>
   );
 }

@@ -20,6 +20,8 @@ import EditMemberModal from '@/components/members/EditMemberModal';
 import DeleteMemberModal from '@/components/members/DeleteMemberModal';
 import FilterModal from '@/components/members/FilterModal';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 interface User {
   id: string;
   userName: string;
@@ -36,14 +38,14 @@ export default function MembersPage() {
   const router = useRouter();
   const { user, size } = useAppSelector((state: any) => state.user);
   const { isAdmin, isBranchManager } = useUserPermissions();
-  
+
   // New validity-based permission system
-  const { 
+  const {
     isAdmin: isValidityAdmin,
     Uservalidation,
     hasPermission: hasValidityPermission
   } = useValidityUser();
-  
+
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
@@ -52,7 +54,7 @@ export default function MembersPage() {
   const [filter, setFilter] = useState('all');
   const [hasMore, setHasMore] = useState(true);
   const [lastUserId, setLastUserId] = useState<string | null>(null);
-  
+
   // Modal states
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -73,11 +75,11 @@ export default function MembersPage() {
   useEffect(() => {
     const handleScroll = () => {
       if (
-        window.innerHeight + document.documentElement.scrollTop >= 
+        window.innerHeight + document.documentElement.scrollTop >=
         document.documentElement.offsetHeight - 1000 && // تحميل عند الوصول لـ 1000px من النهاية
-        hasMore && 
-        !loadingMore && 
-        !loading && 
+        hasMore &&
+        !loadingMore &&
+        !loading &&
         filter === 'all'
       ) {
         loadMoreUsers();
@@ -90,7 +92,7 @@ export default function MembersPage() {
 
   const fetchUsers = async (reset = true) => {
     if (!user?.data?.IDCompany) return;
-    
+
     if (reset) {
       setLoading(true);
       setLastUserId(null);
@@ -98,16 +100,16 @@ export default function MembersPage() {
     } else {
       setLoadingMore(true);
     }
-    
+
     try {
       const number = reset ? 0 : (lastUserId || 0);
       const response = await axiosInstance.get(
         `user/BringUserCompany?IDCompany=${user.data.IDCompany}&number=${number}&kind_request=${filter}`
       );
-      
+
       if (response.data && response.data.success) {
         const newUsers = response.data.data || [];
-        
+
         if (reset) {
           setUsers(newUsers);
         } else {
@@ -118,12 +120,12 @@ export default function MembersPage() {
             return [...prev, ...uniqueNewUsers];
           });
         }
-        
+
         // تحديث معرف آخر مستخدم
         if (newUsers.length > 0) {
           setLastUserId(newUsers[newUsers.length - 1].id);
         }
-        
+
         // التحقق من وجود المزيد من البيانات
         setHasMore(newUsers.length >= 20); // افتراض أن API يرجع 20 عنصر كحد أقصى
       }
@@ -146,7 +148,7 @@ export default function MembersPage() {
     if (filter === 'all') {
       setFilteredUsers(users);
     } else {
-      const filtered = users.filter(u => 
+      const filtered = users.filter(u =>
         u.job === filter || u.jobdiscrption === filter
       );
       setFilteredUsers(filtered);
@@ -218,7 +220,7 @@ export default function MembersPage() {
           onSuccess={handleMemberAdded}
         />
       )}
-      
+
       {showEditModal && selectedUser && (
         <EditMemberModal
           user={selectedUser}
@@ -229,7 +231,7 @@ export default function MembersPage() {
           onSuccess={handleMemberUpdated}
         />
       )}
-      
+
       {showDeleteModal && selectedUser && (
         <DeleteMemberModal
           user={selectedUser}
@@ -327,7 +329,7 @@ export default function MembersPage() {
           </div>
         </div>
       )}
-      
+
       {showFilterModal && (
         <FilterModal
           currentFilter={filter}
@@ -340,33 +342,23 @@ export default function MembersPage() {
       )}
 
       {/* Main Content */}
-      <div className="min-h-screen bg-home">
-        {/* Header */}
-        <div className="bg-white rounded-b-3xl shadow-sm">
-          <div className="pt-12 pb-6 px-4">
-            <div className="flex items-center justify-between">
+      <ResponsiveLayout
+        header={
+          <PageHeader
+            title="الأعضاء"
+            backButton={
               <button
                 onClick={() => router.back()}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                aria-label="رجوع"
               >
                 <ArrowIcon size={24} color={colors.BLACK} />
               </button>
-              
-              <h1 
-                className="font-bold text-xl"
-                style={{
-                  fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: verticalScale(16 + size),
-                  color: colors.BLACK
-                }}
-              >
-                الأعضاء
-              </h1>
-              
-              <div className="w-10" />
-            </div>
-          </div>
-        </div>
+            }
+          />
+        }
+      >
+        <ContentSection>
 
         {/* Action Bar */}
         <div className="flex justify-between items-center px-4 py-4">
@@ -377,7 +369,7 @@ export default function MembersPage() {
               onpress={handleAddMember}
             />
           </AdminGuard>
-          
+
           {filter !== 'all' && (
             <button
               onClick={() => setFilter('all')}
@@ -391,7 +383,7 @@ export default function MembersPage() {
               إلغاء الفلتر
             </button>
           )}
-          
+
           <button
             onClick={() => setShowFilterModal(true)}
             className="p-3 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
@@ -410,15 +402,15 @@ export default function MembersPage() {
             ) : filteredUsers.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20">
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <svg 
-                    width="40" 
-                    height="40" 
-                    viewBox="0 0 24 24" 
-                    fill="none" 
-                    stroke="currentColor" 
-                    strokeWidth="2" 
-                    strokeLinecap="round" 
-                    strokeLinejoin="round" 
+                  <svg
+                    width="40"
+                    height="40"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     className="text-gray-500"
                   >
                     <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -450,13 +442,13 @@ export default function MembersPage() {
                     />
                   ))}
                 </div>
-                
+
                 {/* Loading More Indicator */}
                 {loadingMore && (
                   <div className="p-6 border-t border-gray-100">
                     <div className="flex items-center justify-center gap-3">
                       <div className="w-6 h-6 border-2 border-blue border-t-transparent rounded-full animate-spin"></div>
-                      <span 
+                      <span
                         className="text-gray-600"
                         style={{
                           fontFamily: fonts.CAIROBOLD,
@@ -490,7 +482,7 @@ export default function MembersPage() {
                 {!hasMore && users.length > 0 && filter === 'all' && (
                   <div className="p-4 border-t border-gray-100">
                     <div className="text-center">
-                      <span 
+                      <span
                         className="text-gray-500"
                         style={{
                           fontFamily: fonts.CAIROBOLD,
@@ -517,14 +509,14 @@ export default function MembersPage() {
             {refreshing ? (
               <div className="animate-spin w-6 h-6 border-2 border-white border-t-transparent rounded-full"></div>
             ) : (
-              <svg 
-                width="24" 
-                height="24" 
-                viewBox="0 0 24 24" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2" 
-                strokeLinecap="round" 
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
                 strokeLinejoin="round"
               >
                 <polyline points="23 4 23 10 17 10"></polyline>
@@ -534,7 +526,8 @@ export default function MembersPage() {
             )}
           </button>
         )}
-      </div>
+        </ContentSection>
+      </ResponsiveLayout>
     </>
   );
 }

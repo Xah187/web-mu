@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { colors } from '@/constants/colors';
@@ -17,6 +17,17 @@ interface NavItem {
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { size } = useAppSelector(state => state.user);
+
+  // Track the real current path to avoid highlight glitches on hard reload/hydration
+  const [currentPath, setCurrentPath] = useState<string>('');
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentPath(window.location.pathname);
+    }
+  }, []);
+  useEffect(() => {
+    if (pathname) setCurrentPath(pathname);
+  }, [pathname]);
 
   const navItems: NavItem[] = [
     {
@@ -118,35 +129,51 @@ export default function BottomNavigation() {
   ];
 
   const isActive = (name: string) => {
-    if (name === 'home' && pathname === '/home') return true;
-    if (name === 'reports' && pathname === '/reports') return true;
-    if (name === 'publications' && pathname === '/publications') return true;
-    if (name === 'settings' && pathname === '/settings') return true;
+    const current = currentPath; // use stable client path
+    if (!current) return false; // avoid false highlight before mount
+
+    const match = (base: string) =>
+      current === base || current.startsWith(base + '/') || current.startsWith(base + '?');
+
+    if (name === 'home') return match('/home');
+    if (name === 'reports') return match('/reports');
+    if (name === 'publications') return match('/publications');
+    if (name === 'settings') return match('/settings');
     return false;
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 bottom-navigation-safe">
-      <div className="flex justify-around items-center h-16 px-2">
+    <nav className="bottom-navigation">
+      <div
+        className="flex justify-around items-center h-full px-2"
+        style={{
+          paddingBottom: 'var(--safe-area-bottom)',
+          paddingTop: 'var(--spacing-sm)'
+        }}
+      >
         {navItems.map((item) => {
           const focused = isActive(item.name);
           return (
             <Link
               key={item.name}
               href={`/${item.name === 'home' ? 'home' : item.name}`}
-              className={`
-                flex flex-col items-center justify-center
-                px-3 py-2 rounded-lg transition-all duration-200
-                ${focused ? 'bg-lightmist' : 'hover:bg-gray-50'}
-              `}
+              className="flex flex-col items-center justify-center flex-1 min-w-0 focus-ring transition-all duration-200 hover:scale-105"
+              style={{
+                padding: 'var(--spacing-sm)',
+                borderRadius: 'var(--radius-md)',
+                backgroundColor: focused ? 'var(--color-secondary)' : 'transparent'
+              }}
             >
-              {item.icon(focused)}
+              <div className="mb-1 transition-transform duration-200">
+                {item.icon(focused)}
+              </div>
               <span
-                className={`
-                  text-xs mt-1 font-ibm-arabic-semibold
-                  ${focused ? 'text-blue' : 'text-border'}
-                `}
-                style={{ fontSize: `${10 + size}px` }}
+                className="text-xs font-medium text-center leading-tight transition-colors duration-200"
+                style={{
+                  fontSize: 'var(--font-size-xs)',
+                  lineHeight: 'var(--line-height-tight)',
+                  color: focused ? 'var(--color-primary)' : 'var(--color-text-secondary)'
+                }}
               >
                 {item.label}
               </span>
@@ -154,6 +181,6 @@ export default function BottomNavigation() {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 }

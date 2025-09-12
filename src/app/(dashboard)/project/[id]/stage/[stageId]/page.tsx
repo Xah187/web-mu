@@ -17,9 +17,11 @@ import SubStageOptionsModal from '@/components/stages/SubStageOptionsModal';
 import SubStageEditModal from '@/components/stages/SubStageEditModal';
 import StageEditModal from '@/components/stages/StageEditModal';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // Stage Header Component with progress bar and action buttons
-const StageHeader = ({ 
-  stageName, 
+const StageHeader = ({
+  stageName,
   progress,
   startDate,
   endDate,
@@ -172,9 +174,9 @@ const StageHeader = ({
 };
 
 // Sub Stage Card Component
-const SubStageCard = ({ 
-  subStage, 
-  isSelected, 
+const SubStageCard = ({
+  subStage,
+  isSelected,
   isSelectMode,
   onToggleComplete,
   onToggleSelect,
@@ -193,7 +195,7 @@ const SubStageCard = ({
 }) => {
   const isCompleted = subStage.Done === 'true';
   let completedBy: ClosingOperation | null = null;
-  
+
   if (isCompleted && subStage.closingoperations) {
     try {
       const operations: ClosingOperation[] = JSON.parse(subStage.closingoperations);
@@ -207,7 +209,7 @@ const SubStageCard = ({
   const hasNotes = notes.length > 0;
 
   return (
-    <div className="bg-white rounded-2xl mx-4 mb-3 shadow-sm">
+    <div className="group relative bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden mb-3">
       <div className="p-4">
         {/* Top Row */}
         <div className="flex items-center justify-between mb-3">
@@ -216,7 +218,7 @@ const SubStageCard = ({
             <button
               onClick={isSelectMode ? onToggleSelect : onToggleComplete}
               className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
-                isSelectMode 
+                isSelectMode
                   ? (isSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300')
                   : (isCompleted ? 'bg-green-500 border-green-500' : 'border-gray-300')
               }`}
@@ -229,9 +231,21 @@ const SubStageCard = ({
             </button>
 
             {/* Title */}
-            <p className={`font-ibm-arabic-semibold flex-1 ${
-              isCompleted ? 'text-green-600' : 'text-gray-900'
-            }`}>
+            <p
+              className={`font-ibm-arabic-semibold flex-1 min-w-0 ${
+                isCompleted ? 'text-green-600' : 'text-gray-900'
+              }`}
+              style={{
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: '1.25rem',
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere'
+              }}
+              title={subStage.StageSubName}
+            >
               {subStage.StageSubName}
             </p>
           </div>
@@ -245,7 +259,7 @@ const SubStageCard = ({
                 </svg>
               </button>
             )}
-            
+
             <button onClick={onSettings} className="p-1">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
@@ -295,15 +309,15 @@ const SubStageCard = ({
 const StageDetailsPage = () => {
   const params = useParams();
   const router = useRouter();
-  
+
   const projectId = parseInt(params.id as string);
   const stageId = params.stageId as string;
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation, hasPermission } = useValidityUser();
 
   const { project, fetchProjectDetails } = useProjectDetails();
-  const { subStages, loading: loadingSub, hasMore, fetchInitial, loadMore, error: subError } = useSubStages();
+  const { subStages, loading: loadingSub, hasMore, fetchInitial, loadMore, error: subError, setSubStages } = useSubStages();
 
   const [stageDetails, setStageDetails] = useState<any>(null);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -316,15 +330,20 @@ const StageDetailsPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingSubStage, setEditingSubStage] = useState<SubStage | null>(null);
   const [showStageEditModal, setShowStageEditModal] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(false);
 
   // Load stage details and sub-stages
   useEffect(() => {
     if (projectId && stageId && user?.accessToken) {
+      // تفريغ الحالة القديمة فوراً حتى لا يظهر اسم/بيانات مرحلة سابقة أثناء التحميل
+      setStageDetails(null);
+      setSubStages([]);
       fetchStageDetails();
     }
   }, [projectId, stageId, user?.accessToken, fetchInitial]);
 
   const fetchStageDetails = async () => {
+    setLoadingStage(true);
     try {
       const response = await axiosInstance.get(
         `/brinshCompany/BringStageOneObject?ProjectID=${projectId}&StageID=${stageId}`,
@@ -351,6 +370,8 @@ const StageDetailsPage = () => {
       console.error('Error fetching stage details:', error);
       // If API fails, still try to fetch sub-stages with URL stageId
       fetchInitial(projectId, stageId);
+    } finally {
+      setLoadingStage(false);
     }
   };
 
@@ -399,8 +420,8 @@ const StageDetailsPage = () => {
   };
 
   const handleToggleSelect = (subStageId: number) => {
-    setSelectedItems(prev => 
-      prev.includes(subStageId) 
+    setSelectedItems(prev =>
+      prev.includes(subStageId)
         ? prev.filter(id => id !== subStageId)
         : [...prev, subStageId]
     );
@@ -571,62 +592,100 @@ const StageDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <StageHeader
-        stageName={stageDetails?.StageName || `المرحلة ${stageId}`}
-        progress={typeof stageDetails?.rate === 'number' && !isNaN(stageDetails.rate) ? stageDetails.rate : 0}
-        startDate={stageDetails?.StartDate}
-        endDate={stageDetails?.EndDate}
-        onBack={() => router.back()}
-        onChat={() => router.push(`/chat?ProjectID=${projectId}&typess=${encodeURIComponent(String(stageId))}&nameRoom=${encodeURIComponent('تواصل')}&nameProject=${encodeURIComponent(stageDetails?.StageName || '')}`)}
-        onDelays={() => router.push(`/project/${projectId}/stage/${stageId}/delays`)}
-        onEdit={handleEditStage}
-        onClose={handleCloseStage}
-        isCompleted={stageDetails?.Done === 'true'}
-        canClose={stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null}
-        user={user}
-      />
-
-      {/* Stage Status Badge */}
-      {stageDetails && (
-        <div className="px-4">
-          <StageStatusBadge stage={stageDetails} />
-        </div>
-      )}
-
-      {/* Action Buttons */}
-      <div className="flex justify-between p-4">
-        {hasPermission('اضافة مرحلة فرعية') && (
-          <button
-            onClick={() => setShowAddModal(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
-          >
-            انشاء مهمة فرعية جديدة
-          </button>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title={stageDetails?.StageName || 'جارٍ التحميل...'}
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+          actions={
+            <div className="flex items-center gap-3">
+              {hasPermission('اقفال المرحلة') && (
+                <button
+                  onClick={handleCloseStage}
+                  className={`px-3 py-1.5 rounded-lg border text-sm font-ibm-arabic-semibold ${
+                    stageDetails?.Done === 'true'
+                      ? 'bg-green-50 border-green-200 text-green-700'
+                      : (typeof stageDetails?.rate === 'number' && stageDetails.rate === 100)
+                        ? 'bg-red-50 border-red-200 text-red-600'
+                        : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={(typeof stageDetails?.rate === 'number' ? stageDetails.rate : 0) < 100 && stageDetails?.Done !== 'true'}
+                >
+                  {stageDetails?.Done === 'true'
+                    ? ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? 'عمليات الفتح' : 'فتح المرحلة')
+                    : ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? 'عمليات الاقفال' : 'اقفال المرحلة')}
+                </button>
+              )}
+              {hasPermission('إضافة تأخيرات') && (
+                <button onClick={() => router.push(`/project/${projectId}/stage/${stageId}/delays`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="التأخيرات">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </button>
+              )}
+              <button onClick={() => router.push(`/chat?ProjectID=${projectId}&typess=${encodeURIComponent(String(stageId))}&nameRoom=${encodeURIComponent('تواصل')}&nameProject=${encodeURIComponent(stageDetails?.StageName || '')}`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تواصل">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </button>
+              {hasPermission('تعديل مرحلة رئيسية') && (
+                <button onClick={handleEditStage} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تعديل">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
+            </div>
+          }
+        />
+      }
+    >
+      <ContentSection>
+        {/* Stage Status Badge */}
+        {stageDetails && (
+          <div className="mb-4">
+            <StageStatusBadge stage={stageDetails} />
+          </div>
         )}
 
-        <div className="flex space-x-3 space-x-reverse">
-          {isSelectMode && (
+        {/* Action Buttons */}
+        <div className="flex justify-between items-center mb-4">
+          {hasPermission('اضافة مرحلة فرعية') && (
             <button
-              onClick={handleCancelSelect}
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+              onClick={() => setShowAddModal(true)}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
             >
-              إلغاء
+              انشاء مهمة فرعية جديدة
             </button>
           )}
-          <button
-            onClick={handleSelectAll}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
-          >
-            {isSelectMode ? 'حفظ' : 'تحديد'}
-          </button>
-        </div>
-      </div>
 
-      {/* Sub Stages List */}
-      <div className="pb-4 page-content">
-        {loadingSub && subStages.length === 0 ? (
+          <div className="flex items-center gap-3">
+            {isSelectMode && (
+              <button
+                onClick={handleCancelSelect}
+                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+              >
+                إلغاء
+              </button>
+            )}
+            <button
+              onClick={handleSelectAll}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+            >
+              {isSelectMode ? 'حفظ' : 'تحديد'}
+            </button>
+          </div>
+        </div>
+
+        {/* Sub Stages List */}
+        <div className="pb-4">
+        {(loadingStage || (loadingSub && subStages.length === 0)) ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
             <span className="mr-3 text-gray-600 font-ibm-arabic-medium">جاري تحميل المراحل الفرعية...</span>
@@ -641,7 +700,7 @@ const StageDetailsPage = () => {
             <p className="text-gray-500 font-ibm-arabic-medium">لا توجد مراحل فرعية</p>
           </div>
         ) : (
-          <div className="list-container">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {subStages.map((subStage) => (
               <SubStageCard
                 key={subStage.StageSubID}
@@ -659,10 +718,10 @@ const StageDetailsPage = () => {
                 user={user}
               />
             ))}
-            
+
             {hasMore && (
               <div className="px-4 pt-6 text-center">
-                <button 
+                <button
                   onClick={() => loadMore(projectId, stageId)}
                   disabled={loadingSub}
                   className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center mx-auto"
@@ -685,6 +744,9 @@ const StageDetailsPage = () => {
           </div>
         )}
       </div>
+
+      </ContentSection>
+
 
       {/* Add Modal */}
       {showAddModal && (
@@ -804,7 +866,7 @@ const StageDetailsPage = () => {
           loading={loadingSub}
         />
       )}
-    </div>
+    </ResponsiveLayout>
   );
 };
 

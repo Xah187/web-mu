@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { scale } from '@/utils/responsiveSize';
@@ -11,6 +11,8 @@ import { Tostget } from '@/components/ui/Toast';
 import ReorderStagesModal from '@/components/project/ReorderStagesModal';
 import AddProjectUsersModal from '@/components/project/AddProjectUsersModal';
 import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 
 // Enhanced Project Header with proper data display
 const ProjectHeader = ({
@@ -23,7 +25,8 @@ const ProjectHeader = ({
   onRequests,
   onStartProject,
   isStarted,
-  user
+  user,
+  showTopNav = true,
 }: {
   project: ProjectDetails | null;
   onBack: () => void;
@@ -35,6 +38,7 @@ const ProjectHeader = ({
   onStartProject: () => void;
   isStarted: boolean;
   user: any;
+  showTopNav?: boolean;
 }) => {
   if (!project) {
     return (
@@ -60,6 +64,7 @@ const ProjectHeader = ({
   return (
     <div className="bg-white rounded-b-3xl px-4 pb-6">
       {/* Top Navigation */}
+      {showTopNav && (
       <div className="flex items-center justify-between pt-4 pb-4">
         <button onClick={onBack} className="p-2">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -74,8 +79,10 @@ const ProjectHeader = ({
           </svg>
         </button>
       </div>
+      )}
 
-      {/* Project Title and Edit */}
+      {/* Project Title and Edit (hidden when using PageHeader) */}
+      {showTopNav && (
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3 space-x-reverse flex-1">
           <h1 className="font-ibm-arabic-bold text-gray-900 flex-1" style={{ fontSize: scale(16) }}>
@@ -87,6 +94,8 @@ const ProjectHeader = ({
             </svg>
           </button>
         </div>
+      </div>
+      )}
 
         {/* Start Project Button */}
         {!isStarted && user?.data?.jobdiscrption === 'موظف' && (
@@ -98,7 +107,7 @@ const ProjectHeader = ({
             بدء تنفيذ المشروع
           </button>
         )}
-      </div>
+
 
       {/* Stats Container */}
       <div className="border border-gray-200 rounded-2xl p-4 mb-6">
@@ -151,7 +160,7 @@ const ProjectHeader = ({
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center space-x-8 space-x-reverse gap-4">
+      <div className="flex justify-center gap-10 sm:gap-16">
         <button
           onClick={onRequests}
           className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
@@ -201,84 +210,88 @@ const StageCard = ({
   const progress = stage.rate || 0;
 
   return (
-    <div className="flex flex-col items-center mb-6">
-      {/* Stage Name */}
-      <h3
-        className="font-ibm-arabic-bold text-gray-900 mb-4 text-center"
-        style={{ fontSize: scale(14) }}
-      >
-        {stage.StageName}
-      </h3>
+    <div className="group relative h-full bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
+      {/* Subtle top cover */}
+      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-blue-50/70 to-transparent pointer-events-none" />
 
-      {/* Circular Progress */}
-      <div
-        className="relative cursor-pointer hover:scale-105 transition-transform duration-200 mb-3"
-        onClick={onPress}
-      >
-        <div className="relative w-24 h-24">
-          <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
-            {/* Background Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="35"
-              stroke="#E5E7EB"
-              strokeWidth="6"
-              fill="none"
-            />
-            {/* Progress Circle */}
-            <circle
-              cx="50"
-              cy="50"
-              r="35"
-              stroke="#3B82F6"
-              strokeWidth="6"
-              fill="none"
-              strokeLinecap="round"
-              strokeDasharray={`${2 * Math.PI * 35}`}
-              strokeDashoffset={`${2 * Math.PI * 35 * (1 - progress / 100)}`}
-              className="transition-all duration-500"
-            />
-          </svg>
-          {/* Percentage Text */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span
-              className="font-ibm-arabic-bold text-blue-600"
-              style={{ fontSize: scale(16) }}
-            >
-              {Math.round(progress)}%
-            </span>
+      <div className="relative p-5 pt-6 flex flex-col items-center">
+        {/* Title centered above progress */}
+        <div className="w-full mb-3 text-center px-2">
+          <h3
+            className="font-ibm-arabic-bold text-gray-900 text-base"
+            style={{
+              fontSize: scale(14),
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.25rem',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+            }}
+            title={stage.StageName}
+          >
+            {stage.StageName}
+          </h3>
+          <span
+            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-ibm-arabic-medium ${
+              isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+            }`}
+          >
+            {isCompleted ? 'تم إنجاز' : 'غير منجز'}
+          </span>
+        </div>
+
+        {/* Circular Progress */}
+        <div
+          className="relative cursor-pointer hover:scale-105 transition-transform duration-200 mb-2"
+          onClick={onPress}
+        >
+          <div className="relative w-24 h-24">
+            <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 100 100">
+              {/* Background Circle */}
+              <circle cx="50" cy="50" r="35" stroke="#E5E7EB" strokeWidth="6" fill="none" />
+              {/* Progress Circle */}
+              <circle
+                cx="50"
+                cy="50"
+                r="35"
+                stroke="#3B82F6"
+                strokeWidth="6"
+                fill="none"
+                strokeLinecap="round"
+                strokeDasharray={`${2 * Math.PI * 35}`}
+                strokeDashoffset={`${2 * Math.PI * 35 * (1 - progress / 100)}`}
+                className="transition-all duration-500"
+              />
+            </svg>
+            {/* Percentage Text */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="font-ibm-arabic-bold text-blue-600" style={{ fontSize: scale(16) }}>
+                {Math.round(progress)}%
+              </span>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Status Badge */}
-      <div className="mb-2">
-        <span
-          className={`px-3 py-1 rounded-full text-xs font-ibm-arabic-medium ${
-            isCompleted
-              ? 'bg-green-100 text-green-700'
-              : 'bg-orange-100 text-orange-700'
-          }`}
-        >
-          {isCompleted ? 'تم إنجاز' : 'غير منجز'}
-        </span>
-      </div>
+        <div className="text-xs text-gray-500 mb-1">نسبة الإنجاز</div>
 
-      {/* Delete Button - Only if has permission */}
-      {hasPermission('حذف مرحلة رئيسية') && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onDelete();
-          }}
-          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-          </svg>
-        </button>
-      )}
+        {/* Delete Button - Only if has permission */}
+        {hasPermission('حذف مرحلة رئيسية') && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="absolute top-3 left-3 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+            aria-label="حذف المرحلة"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            </svg>
+          </button>
+        )}
+      </div>
     </div>
   );
 };
@@ -319,6 +332,28 @@ const ProjectDetailsPage = () => {
   const [newStageName, setNewStageName] = useState('');
   const [newStageDays, setNewStageDays] = useState('');
   const [startDate, setStartDate] = useState<string>('');
+
+  const [sortOption, setSortOption] = useState<'default' | 'progress' | 'name' | 'status'>('default');
+
+  const sortedStages = useMemo(() => {
+    const arr = [...(stages || [])];
+    switch (sortOption) {
+      case 'progress':
+        return arr.sort((a, b) => (b.rate || 0) - (a.rate || 0));
+      case 'name':
+        return arr.sort((a, b) => (a.StageName || '').localeCompare(b.StageName || ''));
+      case 'status':
+        // Open first (Done !== 'true'), then by progress desc
+        return arr.sort((a, b) => {
+          const aOpen = a.Done !== 'true' ? 0 : 1;
+          const bOpen = b.Done !== 'true' ? 0 : 1;
+          if (aOpen !== bOpen) return aOpen - bOpen;
+          return (b.rate || 0) - (a.rate || 0);
+        });
+      default:
+        return arr;
+    }
+  }, [stages, sortOption]);
 
 
   // Load project data on mount
@@ -479,30 +514,75 @@ const ProjectDetailsPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <ProjectHeader
-        project={project}
-        onBack={handleBack}
-        onEdit={handleEdit}
-        onNotifications={handleNotifications}
-        onArchives={handleArchives}
-        onFinance={handleFinance}
-        onRequests={handleRequests}
-        onStartProject={handleStartProject}
-        isStarted={isProjectStarted}
-        user={user}
-      />
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title={project?.Nameproject || 'المشروع'}
+          backButton={
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الرجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+          actions={
+            <div className="flex items-center gap-4 sm:gap-6">
+              {hasPermission('تعديل بيانات المشروع') && (
+                <button onClick={handleEdit} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تعديل المشروع">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </button>
+              )}
+              <button onClick={handleArchives} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الأرشيف">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M3 7h18M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M5 7h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7z"></path>
+                </svg>
+              </button>
+              {hasPermission('انشاء عمليات مالية') && (
+                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="المالية">
+                  <span className="text-green-600 font-bold text-base">$</span>
+                </button>
+              )}
+              {hasPermission('إنشاء طلبات') && (
+                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الطلبات">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 00-2 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  </svg>
+                </button>
+              )}
+              <button onClick={handleNotifications} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الإشعارات">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                </svg>
+              </button>
+            </div>
+          }
+        />
+      }
+    >
+      <ContentSection>
+        <ProjectHeader
+          project={project}
+          onBack={handleBack}
+          onEdit={handleEdit}
+          onNotifications={handleNotifications}
+          onArchives={handleArchives}
+          onFinance={handleFinance}
+          onRequests={handleRequests}
+          onStartProject={handleStartProject}
+          isStarted={isProjectStarted}
+          user={user}
+          showTopNav={false}
+        />
 
       {/* Pull to refresh indicator */}
-      <div
-        className="p-4 text-center cursor-pointer hover:bg-gray-50 transition-colors"
-        onClick={handleRefresh}
-      >
-        <p className="text-sm text-gray-600">
-          {refreshing ? 'جاري التحديث...' : 'اضغط للتحديث'}
-        </p>
-      </div>
+      {refreshing && (
+        <div className="p-4 text-center">
+          <p className="text-sm text-gray-600">جاري التحديث...</p>
+        </div>
+      )}
 
       {/* Action Buttons - Show for employees only like mobile app */}
       <EmployeeOnly>
@@ -591,6 +671,7 @@ const ProjectDetailsPage = () => {
                     </button>
                     <button
                       className="w-full text-right px-4 py-2 hover:bg-gray-50"
+
                       onClick={async () => {
                         if (await Uservalidation('تعديل بيانات المشروع', projectId)) {
                           setShowEditStartDateModal(true);
@@ -610,9 +691,49 @@ const ProjectDetailsPage = () => {
       </EmployeeOnly>
 
       {/* Stages Grid */}
-      <div className="px-6 pb-8 page-content">
+      <div className="pb-8">
         {/* Spacer before stages */}
         <div className="h-4"></div>
+        {/* Quick Stats + Sorting */}
+        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          {/* Stats Card */}
+          <div className="bg-white border rounded-xl px-4 py-3 shadow-sm flex-1">
+            <div className="grid grid-cols-3 gap-2 text-center">
+              <div>
+                <div className="text-xs text-gray-500">إجمالي المراحل</div>
+                <div className="text-lg font-ibm-arabic-bold">{stages?.length || 0}</div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">المفتوحة / المكتملة</div>
+                <div className="text-lg font-ibm-arabic-bold">
+                  {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
+                </div>
+              </div>
+              <div>
+                <div className="text-xs text-gray-500">الأيام المتبقية</div>
+                <div className={`text-lg font-ibm-arabic-bold ${((project?.Daysremaining ?? 0) < 0) ? 'text-red-600' : 'text-blue-600'}`}>
+                  {project?.Daysremaining ?? 0}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sort Control */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-gray-600">ترتيب:</label>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as any)}
+              className="border rounded-lg px-3 py-2 text-sm bg-white"
+            >
+              <option value="default">الافتراضي</option>
+              <option value="status">الحالة (المفتوحة أولاً)</option>
+              <option value="progress">التقدم (الأعلى أولاً)</option>
+              <option value="name">الاسم (أ-ي)</option>
+            </select>
+          </div>
+        </div>
+
 
         {loading && stages.length === 0 ? (
           <div className="flex items-center justify-center py-16">
@@ -637,9 +758,9 @@ const ProjectDetailsPage = () => {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 list-container">
-              {stages.map((stage) => (
-                <div key={stage.StageCustID} className="transform transition-all duration-200 hover:scale-105">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 list-container">
+              {sortedStages.map((stage, index) => (
+                <div key={`${stage.StageCustID || stage.StageID}-${index}`} className="h-full">
                   <StageCard
                     stage={stage}
                     onPress={() => handleStagePress(stage)}
@@ -652,6 +773,7 @@ const ProjectDetailsPage = () => {
             {/* Load More Button */}
             {hasMoreStages && (
               <div className="mt-10 text-center">
+
                 <button
                   onClick={() => loadMoreStages(projectId)}
                   disabled={loading}
@@ -814,7 +936,8 @@ const ProjectDetailsPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </ContentSection>
+    </ResponsiveLayout>
   );
 };
 

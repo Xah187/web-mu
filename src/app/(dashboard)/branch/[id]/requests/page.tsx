@@ -10,6 +10,8 @@ import useValidityUser from '@/hooks/useValidityUser';
 import Image from 'next/image';
 
 // Types
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 interface Request {
   RequestsID: number;
   ProjectID: number;
@@ -33,7 +35,7 @@ interface RequestsData {
 // Request Types - matching mobile app exactly
 const REQUEST_TYPES = [
   'مواد خفيفة',
-  'مواد ثقيلة', 
+  'مواد ثقيلة',
   'كهربائي',
   'سباك',
   'حداد'
@@ -75,7 +77,7 @@ export default function BranchRequestsPage() {
       const response = await axiosInstance.get(`/brinshCompany/BringProject?IDCompanySub=${branchId}`, {
         headers: { Authorization: `Bearer ${user?.accessToken}` }
       });
-      
+
       if (response.data?.data) {
         setProjects(response.data.data);
       }
@@ -86,10 +88,10 @@ export default function BranchRequestsPage() {
 
   const fetchRequestsData = async () => {
     if (!branchId) return;
-    
+
     const done = activeTab === 'open' ? 'false' : 'true';
     setLoading(prev => ({ ...prev, [activeTab]: true }));
-    
+
     try {
       const response = await axiosInstance.get(
         `/brinshCompany/v2/BringDataRequests?ProjectID=${branchId}&Type=${selectedType}&kind=all&Done=${done}&lastID=0`,
@@ -161,67 +163,20 @@ export default function BranchRequestsPage() {
   const currentData = requestsData[activeTab === 'open' ? 'arrayOpen' : 'arrayClosed'];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f6f8fe' }}>
-      {/* Header - Matching Branch Page Design */}
-      <div className="bg-white shadow-md border-b border-gray-100" style={{ 
-        borderBottomLeftRadius: '24px', 
-        borderBottomRightRadius: '24px',
-        paddingBottom: '16px'
-      }}>
-        {/* Top Navigation Bar */}
-        <div className="flex items-center justify-between px-4 py-3">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          
-          <h1 className="text-lg font-ibm-arabic-bold text-gray-900">
-            الطلبات
-          </h1>
-          
-          <button className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </span>
-            )}
-          </button>
-        </div>
-
-        {/* User Info Section */}
-        <div className="px-4 pb-2">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 border-2 border-white shadow-sm">
-              <Image
-                src="/images/figma/male.png"
-                alt="User Avatar"
-                width={48}
-                height={48}
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <button
-              onClick={() => setShowUserProfile(true)}
-              className="text-right hover:bg-gray-50 rounded-lg p-2 transition-colors"
-            >
-              <p className="font-ibm-arabic-semibold text-gray-900 text-sm">
-                {user?.data?.userName || 'المستخدم'}
-              </p>
-              <p className="font-ibm-arabic-medium text-gray-600 text-xs">
-                {user?.data?.job || 'الوظيفة'}
-              </p>
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="2744372e272a"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg" aria-label="312c4839">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
-          </div>
-        </div>
-      </div>
+          }
+        />
+      }
+    >
+      <ContentSection>
+
 
       {/* Content */}
       <div className="px-6 py-4">
@@ -299,19 +254,19 @@ export default function BranchRequestsPage() {
                     </p>
                   </div>
                   <div className={`px-3 py-1 rounded-full text-xs font-ibm-arabic-semibold ${
-                    request.Done === 'false' 
-                      ? 'bg-green-100 text-green-800' 
+                    request.Done === 'false'
+                      ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
                     {request.Done === 'false' ? 'مفتوح' : 'مغلق'}
                   </div>
                 </div>
-                
+
                 <div className="flex justify-between items-center text-sm text-gray-500">
                   <span>بواسطة: {request.InsertBy}</span>
                   <span>{new Date(request.Date).toLocaleDateString('ar-SA')}</span>
                 </div>
-                
+
                 {request.Nameproject && (
                   <div className="mt-2 text-sm text-blue-600 font-ibm-arabic-medium">
                     المشروع: {request.Nameproject}
@@ -422,6 +377,7 @@ export default function BranchRequestsPage() {
         isOpen={showUserProfile}
         onClose={() => setShowUserProfile(false)}
       />
-    </div>
+    </ContentSection>
+    </ResponsiveLayout>
   );
 }

@@ -3,18 +3,20 @@
 import React, { useState } from 'react';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { scale, verticalScale } from '@/utils/responsiveSize';
+import { scale as _scale, verticalScale } from '@/utils/responsiveSize';
 import useReports, { Branch, Project } from '@/hooks/useReports';
 import SelectionModal from '@/components/reports/SelectionModal';
 import ProgressChart from '@/components/reports/ProgressChart';
 import { FinancialBarChart } from '@/components/reports/BarChart';
 import PDFPreview from '@/components/reports/PDFPreview';
 import { Tostget } from '@/components/ui/Toast';
+import Image from 'next/image';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import { useAppSelector } from '@/store';
 
 export default function ReportsPage() {
   const userState = useAppSelector((state) => state.user);
-  const user = userState?.user; // Extract the actual user object
+  const _user = userState?.user; // Extract the actual user object
 
   const {
     branches,
@@ -27,7 +29,7 @@ export default function ReportsPage() {
     projectsLoading,
     selectBranch,
     selectProject,
-    loadMoreProjects,
+
     fetchBranches
   } = useReports();
 
@@ -64,52 +66,32 @@ export default function ReportsPage() {
     return num.toLocaleString('en-US');
   };
 
-  const calculateProgress = () => {
+  const _calculateProgress = () => {
     if (!reportData?.countStageall || !reportData?.countSTageTrue) return 0;
     return ((reportData.countSTageTrue / reportData.countStageall) * 100);
   };
 
   return (
-    <div className="flex flex-col h-full bg-gray-50" style={{ backgroundColor: colors.HOME }}>
-      {/* Header */}
-      <div 
-        className="bg-white rounded-b-2xl shadow-sm"
-        style={{ backgroundColor: colors.WHITE }}
-      >
-        <div className="p-6">
-          {/* Title and Action Buttons */}
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center">
-              <h1 
-                className="text-2xl font-bold"
-                style={{
-                  fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: verticalScale(20),
-                  color: colors.BLACK
-                }}
-                dir="rtl"
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="التقارير"
+          actions={
+            reportData ? (
+              <button
+                onClick={() => setShowPDFPreview(true)}
+                className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
+                style={{ backgroundColor: colors.BLUE }}
               >
-                التقارير
-              </h1>
-              {reportData && (
-                <button
-                  onClick={() => setShowPDFPreview(true)}
-                  className="mr-4 px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
-                  style={{
-                    backgroundColor: colors.BLUE,
-                    fontSize: verticalScale(12),
-                    fontFamily: fonts.IBMPlexSansArabicMedium
-                  }}
-                >
-                  تصدير PDF
-                </button>
-              )}
-            </div>
-            
-
-          </div>
-
-          {/* Selection Buttons */}
+                تصدير PDF
+              </button>
+            ) : null
+          }
+        />
+      }
+    >
+      <ContentSection>
+        {/* Selection Buttons */}
           <div className="flex flex-col md:flex-row gap-4">
             {/* Branch Selection */}
             <div className="flex-1 flex gap-2">
@@ -275,11 +257,7 @@ export default function ReportsPage() {
               </span>
             </div>
           )}
-        </div>
-      </div>
 
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
         
         {!reportData ? (
           <div className="flex flex-col items-center justify-center h-full">
@@ -316,13 +294,14 @@ export default function ReportsPage() {
             >
               <div className="flex flex-col items-center">
                 <div className="bg-white rounded-2xl p-5 shadow-md mb-4">
-                  <img
+                  <Image
                     src="/logo-new.png"
                     alt="شعار مُشرِف"
+                    width={160}
+                    height={80}
                     className="h-20 w-auto"
-                    style={{
-                      imageRendering: 'crisp-edges' as any
-                    }}
+                    priority
+                    style={{ imageRendering: 'crisp-edges' as any }}
                   />
                 </div>
                 <h1
@@ -818,7 +797,7 @@ export default function ReportsPage() {
             )}
           </div>
         )}
-      </div>
+      </ContentSection>
 
       {/* Selection Modals */}
       <SelectionModal
@@ -840,6 +819,6 @@ export default function ReportsPage() {
           onClose={() => setShowPDFPreview(false)}
         />
       )}
-    </div>
+    </ResponsiveLayout>
   );
 }

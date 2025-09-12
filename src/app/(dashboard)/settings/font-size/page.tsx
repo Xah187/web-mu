@@ -9,11 +9,15 @@ import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
 
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
+
+
 export default function FontSizePage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { size } = useAppSelector(state => state.user);
-  
+
   const [selectedSize, setSelectedSize] = useState(size);
 
   const fontSizeOptions = [
@@ -50,51 +54,34 @@ export default function FontSizePage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div 
-        className="bg-white shadow-sm border-b border-gray-200"
-        style={{
-          borderBottomLeftRadius: '24px',
-          borderBottomRightRadius: '24px',
-        }}
-      >
-        <div className="flex items-center justify-between p-4">
-          <button
-            onClick={() => router.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <polyline points="15,18 9,12 15,6" />
-            </svg>
-          </button>
-          
-          <h1 
-            className="text-lg font-bold text-gray-900"
-            style={{ 
-              fontFamily: fonts.IBMPlexSansArabicBold,
-              fontSize: verticalScale(18 + size)
-            }}
-          >
-            حجم الخط
-          </h1>
-          
-          <div className="w-10"></div>
-        </div>
-      </div>
-
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title="حجم الخط"
+          backButton={
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="15,18 9,12 15,6" />
+              </svg>
+            </button>
+          }
+        />
+      }
+    >
+      <ContentSection className="p-4">
       <div className="p-4">
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 
+          <h2
             className="font-semibold text-gray-900 mb-4"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(16 + size) 
+              fontSize: scale(16 + size)
             }}
           >
             معاينة النص الحالي
           </h2>
           <div className="bg-gray-50 rounded-lg p-4">
-            <p 
+            <p
               className="text-gray-800 leading-relaxed"
               style={getSampleText(selectedSize)}
             >
@@ -104,23 +91,23 @@ export default function FontSizePage() {
         </div>
 
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 
+          <h2
             className="font-semibold text-gray-900 mb-4"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(16 + size) 
+              fontSize: scale(16 + size)
             }}
           >
             اختر حجم الخط
           </h2>
-          
+
           <div className="space-y-3">
             {fontSizeOptions.map((option) => (
-              <div 
+              <div
                 key={option.value}
                 className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                  selectedSize === option.value 
-                    ? 'border-blue-500 bg-blue-50' 
+                  selectedSize === option.value
+                    ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
                 onClick={() => handleSizeChange(option.value)}
@@ -128,10 +115,10 @@ export default function FontSizePage() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <div 
+                      <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
-                          selectedSize === option.value 
-                            ? 'border-blue-500 bg-blue-500' 
+                          selectedSize === option.value
+                            ? 'border-blue-500 bg-blue-500'
                             : 'border-gray-300'
                         }`}
                       >
@@ -139,26 +126,26 @@ export default function FontSizePage() {
                           <div className="w-2 h-2 bg-white rounded-full"></div>
                         )}
                       </div>
-                      <h3 
+                      <h3
                         className="font-medium text-gray-900"
-                        style={{ 
+                        style={{
                           fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                          fontSize: scale(14 + size) 
+                          fontSize: scale(14 + size)
                         }}
                       >
                         {option.label}
                       </h3>
                     </div>
-                    <p 
+                    <p
                       className="text-gray-600 text-sm mb-2"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
-                        fontSize: scale(12 + size) 
+                        fontSize: scale(12 + size)
                       }}
                     >
                       {option.description}
                     </p>
-                    <p 
+                    <p
                       className="text-gray-800"
                       style={getSampleText(option.value)}
                     >
@@ -175,9 +162,9 @@ export default function FontSizePage() {
           <button
             onClick={handleReset}
             className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicMedium,
-              fontSize: scale(14 + size) 
+              fontSize: scale(14 + size)
             }}
           >
             إعادة تعيين
@@ -185,9 +172,9 @@ export default function FontSizePage() {
           <button
             onClick={handleSave}
             className="flex-1 py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicMedium,
-              fontSize: scale(14 + size) 
+              fontSize: scale(14 + size)
             }}
           >
             حفظ التغييرات
@@ -204,28 +191,31 @@ export default function FontSizePage() {
               </svg>
             </div>
             <div>
-              <h4 
+              <h4
                 className="font-medium text-blue-900 mb-1"
-                style={{ 
+                style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: scale(14 + size) 
+                  fontSize: scale(14 + size)
                 }}
               >
                 ملاحظة مهمة
               </h4>
-              <p 
+              <p
                 className="text-blue-800 text-sm leading-relaxed"
-                style={{ 
+                style={{
                   fontFamily: fonts.IBMPlexSansArabicRegular,
-                  fontSize: scale(12 + size) 
+                  fontSize: scale(12 + size)
                 }}
               >
                 سيتم تطبيق حجم الخط المختار على جميع النصوص في التطبيق. يمكنك تغيير الحجم في أي وقت من هذه الصفحة.
               </p>
             </div>
+            </div>
           </div>
+
         </div>
-      </div>
-    </div>
+
+      </ContentSection>
+    </ResponsiveLayout>
   );
 }

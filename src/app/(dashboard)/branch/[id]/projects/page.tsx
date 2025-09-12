@@ -13,143 +13,14 @@ import BranchDataEditModal from '@/components/branches/BranchDataEditModal';
 import { Tostget } from '@/components/ui/Toast';
 import useValidityUser from '@/hooks/useValidityUser';
 import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import Image from 'next/image';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
-// Branch Header Component - Exactly matching mobile app
-const BranchHeader = ({
-  onBack,
-  onNotifications,
-  onSettings,
-  notificationCount,
-  branchName,
-  user,
-  onUserProfile,
-  onRequests,
-  onFinance,
-  canShowEmployee
-}: {
-  onBack: () => void;
-  onNotifications: () => void;
-  onSettings: () => void;
-  notificationCount: number;
-  branchName: string;
-  user: any;
-  onUserProfile: () => void;
-  onRequests: () => void;
-  onFinance: () => void;
-  canShowEmployee: boolean;
-}) => {
-  const { hasPermission } = useValidityUser();
-  return (
-    <div className="bg-white shadow-md border-b border-gray-100" style={{
-      borderBottomLeftRadius: '24px',
-      borderBottomRightRadius: '24px',
-      paddingBottom: '16px'
-    }}>
-      {/* Top Navigation Bar - Compact */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <button
-          onClick={onBack}
-          className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
 
-        <div className="flex items-center gap-2">
-          {canShowEmployee && (
-            <button
-              onClick={onSettings}
-              className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <path d="M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
-                <path d="M21.011 14.0968C21.5329 13.9561 21.7939 13.8857 21.8969 13.7511C22 13.6166 22 13.4001 22 12.9672V11.0335C22 10.6006 22 10.3841 21.8969 10.2496C21.7938 10.115 21.5329 10.0446 21.011 9.90389C19.0606 9.3779 17.8399 7.33882 18.3433 5.40118C18.4817 4.8683 18.5509 4.60187 18.4848 4.4456C18.4187 4.28933 18.2291 4.18165 17.8497 3.96627L16.125 2.98704C15.7528 2.7757 15.5667 2.67003 15.3997 2.69253C15.2326 2.71503 15.0442 2.90304 14.6672 3.27904C13.208 4.73479 10.7936 4.73473 9.33434 3.27895C8.95743 2.90294 8.76898 2.71494 8.60193 2.69243C8.43489 2.66993 8.24877 2.7756 7.87653 2.98694L6.15184 3.96618C5.77253 4.18154 5.58287 4.28922 5.51678 4.44546C5.45068 4.60171 5.51987 4.86818 5.65825 5.40111C6.16137 7.33881 4.93972 9.37794 2.98902 9.90391C2.46712 10.0446 2.20617 10.115 2.10308 10.2495C2 10.3841 2 10.6006 2 11.0335V12.9672C2 13.4001 2 13.6166 2.10308 13.7511C2.20615 13.8857 2.46711 13.9561 2.98902 14.0968C4.9394 14.6228 6.16008 16.6619 5.65672 18.5995C5.51829 19.1324 5.44907 19.3988 5.51516 19.5551C5.58126 19.7114 5.77092 19.8191 6.15025 20.0344L7.87495 21.0137C8.24721 21.225 8.43334 21.3307 8.6004 21.3082C8.76746 21.2857 8.95588 21.0976 9.33271 20.7216C10.7927 19.2647 13.2088 19.2646 14.6689 20.7215C15.0457 21.0976 15.2341 21.2856 15.4012 21.3081C15.5682 21.3306 15.7544 21.2249 16.1266 21.0136L17.8513 20.0343C18.2307 19.819 18.4204 19.7113 18.4864 19.555C18.5525 19.3987 18.4833 19.1323 18.3448 18.5994C17.8412 16.6619 19.0609 14.6229 21.011 14.0968Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
-              </svg>
-            </button>
-          )}
-
-          <button
-            onClick={onNotifications}
-            className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            {notificationCount > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                {notificationCount > 99 ? '99+' : notificationCount}
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* User Info Section - Compact for Web */}
-      <div className="px-4 pb-2">
-        <div className="flex items-center justify-between">
-          {/* User Avatar and Info */}
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden bg-gradient-to-br from-blue-100 to-blue-200 border-2 border-white shadow-sm">
-              <img
-                src="/images/figma/male.png"
-                alt="User Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <button
-              onClick={onUserProfile}
-              className="text-right hover:bg-gray-50 rounded-lg p-2 transition-colors"
-            >
-              <p className="font-ibm-arabic-semibold text-gray-900 text-sm">
-                {user?.data?.userName || 'المستخدم'}
-              </p>
-              <p className="font-ibm-arabic-medium text-gray-600 text-xs">
-                {user?.data?.job || 'الوظيفة'}
-              </p>
-            </button>
-          </div>
-
-          {/* Action Buttons - Horizontal Layout for Web */}
-          <div className="flex items-center gap-2">
-            {hasPermission('إنشاء طلبات') && (
-              <button
-                onClick={onRequests}
-                className="p-2 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
-                title="الطلبات"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                </svg>
-              </button>
-            )}
-            {hasPermission('انشاء عمليات مالية') && (
-              <button
-                onClick={onFinance}
-                className="p-2 bg-green-100 rounded-lg hover:bg-green-200 transition-colors"
-                title="المالية"
-              >
-                <span className="text-green-600 font-bold text-lg">$</span>
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* Branch Name */}
-        <div className="mt-3 mr-2">
-          <h1 className="font-ibm-arabic-bold text-gray-900 text-lg">
-            {branchName}
-          </h1>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Project Card Component - Exactly matching mobile app BoxProject
-const ProjectCardMobile = ({ 
-  project, 
+const ProjectCardMobile = ({
+  project,
   notificationCount,
   onPress,
   onNotifications,
@@ -181,16 +52,36 @@ const ProjectCardMobile = ({
         className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
         onClick={onPress}
       >
-        <div className="flex-1 mr-4">
+        <div className="flex-1 min-w-0 mr-4">
           <h3
             className="font-ibm-arabic-semibold text-gray-900 mb-1"
-            style={{ fontSize: scale(13) }}
+            style={{
+              fontSize: scale(13),
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1.2rem',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+            }}
+            title={project.Nameproject}
           >
             {project.Nameproject}
           </h3>
           <p
             className="font-ibm-arabic-regular text-gray-600 text-sm"
-            style={{ fontSize: scale(10) }}
+            style={{
+              fontSize: scale(10),
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1rem',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+            }}
+            title={project.Note || ''}
           >
             {project.Note}
           </p>
@@ -248,7 +139,7 @@ const ProjectCardMobile = ({
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center">
           {showFullCost && (
-            <div 
+            <div
               className="absolute bg-white border border-gray-200 rounded-lg px-3 py-2 z-10 shadow-lg"
               onClick={() => setShowFullCost(false)}
             >
@@ -269,7 +160,7 @@ const ProjectCardMobile = ({
             </p>
           </button>
         </div>
-        
+
         <div className="text-center">
           <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13) }}>
             بداية المشروع
@@ -378,10 +269,10 @@ const BranchProjectsPage = () => {
   const router = useRouter();
   const params = useParams();
   const searchParams = useSearchParams();
-  
+
   const branchId = parseInt(params.id as string);
   const branchName = searchParams.get('name') || 'الفرع';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation, hasPermission } = useValidityUser();
 
@@ -410,6 +301,16 @@ const BranchProjectsPage = () => {
   const [showEditBranchModal, setShowEditBranchModal] = useState(false);
   const [branchData, setBranchData] = useState<any>(null);
   const [actionType, setActionType] = useState<'close' | 'delete' | null>(null);
+
+  // Responsive grid like Home page
+  const [screenWidth, setScreenWidth] = useState(
+    typeof window !== 'undefined' ? window.innerWidth : 1024
+  );
+  useEffect(() => {
+    const handleResize = () => setScreenWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Check permissions
   const canShowEmployee = hasPermission('تعديل بيانات الفرغ') || hasPermission('إنشاء المشروع') || hasPermission('إشعارات المالية') || hasPermission('انشاء عمليات مالية') || hasPermission('إنشاء طلبات');
@@ -500,7 +401,7 @@ const BranchProjectsPage = () => {
   };
 
   const handleProjectNotifications = (projectId: number) => {
-    router.push(`/notifications?ProjectID=${projectId}`);
+    router.push(`/project/${projectId}/notifications`);
   };
 
   const handleProjectLocation = async (project: Project) => {
@@ -683,23 +584,69 @@ const BranchProjectsPage = () => {
   }
 
   return (
-    <div style={{ backgroundColor: '#f6f8fe' }}>
-      {/* Header */}
-      <BranchHeader
-        onBack={handleBack}
-        onNotifications={handleNotificationsBranch}
-        onSettings={handleSettings}
-        notificationCount={Object.values(notificationCounts).reduce((a, b) => a + b, 0)}
-        branchName={branchName}
-        user={user}
-        onUserProfile={handleUserProfile}
-        onRequests={handleRequests}
-        onFinance={handleFinance}
-        canShowEmployee={canShowEmployee}
-      />
+    <ResponsiveLayout
+      header={
+        <PageHeader
+          title={branchName}
+          backButton={
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          }
+          actions={
+            <div className="flex items-center gap-2">
+              {canShowEmployee && (
+                <button onClick={handleSettings} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإعدادات">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M15.5 12C15.5 13.933 13.933 15.5 12 15.5C10.067 15.5 8.5 13.933 8.5 12C8.5 10.067 10.067 8.5 12 8.5C13.933 8.5 15.5 10.067 15.5 12Z" stroke="currentColor" strokeWidth="1.5"/>
+                    <path d="M21.011 14.0968C21.5329 13.9561 21.7939 13.8857 21.8969 13.7511C22 13.6166 22 13.4001 22 12.9672V11.0335C22 10.6006 22 10.3841 21.8969 10.2496C21.7938 10.115 21.5329 10.0446 21.011 9.90389C19.0606 9.3779 17.8399 7.33882 18.3433 5.40118C18.4817 4.8683 18.5509 4.60187 18.4848 4.4456C18.4187 4.28933 18.2291 4.18165 17.8497 3.96627L16.125 2.98704C15.7528 2.7757 15.5667 2.67003 15.3997 2.69253C15.2326 2.71503 15.0442 2.90304 14.6672 3.27904C13.208 4.73479 10.7936 4.73473 9.33434 3.27895C8.95743 2.90294 8.76898 2.71494 8.60193 2.69243C8.43489 2.66993 8.24877 2.7756 7.87653 2.98694L6.15184 3.96618C5.77253 4.18154 5.58287 4.28922 5.51678 4.44546C5.45068 4.60171 5.51987 4.86818 5.65825 5.40111C6.16137 7.33881 4.93972 9.37794 2.98902 9.90391C2.46712 10.0446 2.20617 10.115 2.10308 10.2495C2 10.3841 2 10.6006 2 11.0335V12.9672C2 13.4001 2 13.6166 2.10308 13.7511C2.20615 13.8857 2.46711 13.9561 2.98902 14.0968C4.9394 14.6228 6.16008 16.6619 5.65672 18.5995C5.51829 19.1324 5.44907 19.3988 5.51516 19.5551C5.58126 19.7114 5.77092 19.8191 6.15025 20.0344L7.87495 21.0137C8.24721 21.225 8.43334 21.3307 8.6004 21.3082C8.76746 21.2857 8.95588 21.0976 9.33271 20.7216C10.7927 19.2647 13.2088 19.2646 14.6689 20.7215C15.0457 21.0976 15.2341 21.2856 15.4012 21.3081C15.5682 21.3306 15.7544 21.2249 16.1266 21.0136L17.8513 20.0343C18.2307 19.819 18.4204 19.7113 18.4864 19.555C18.5525 19.3987 18.4833 19.1323 18.3448 18.5994C17.8412 16.6619 19.0609 14.6229 21.011 14.0968Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              )}
 
-      {/* Spacer after header */}
-      <div className="h-8"></div>
+              {/* Branch Requests in Header */}
+              <PermissionBasedVisibility permission="إنشاء طلبات">
+                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="طلبات الفرع">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </button>
+              </PermissionBasedVisibility>
+
+              {/* Branch Covenant (Finance) in Header */}
+              <PermissionBasedVisibility permission="انشاء عمليات مالية">
+                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="عهد الفرع">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2" strokeWidth="1.8"/>
+                    <circle cx="16" cy="12" r="2" strokeWidth="1.8"/>
+                    <path d="M6 10h4" strokeWidth="1.8" strokeLinecap="round"/>
+                    <path d="M6 14h3" strokeWidth="1.8" strokeLinecap="round"/>
+                  </svg>
+                </button>
+              </PermissionBasedVisibility>
+
+              <button onClick={handleNotificationsBranch} className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإشعارات">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                </svg>
+                {Object.values(notificationCounts).reduce((a, b) => a + b, 0) > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    {Object.values(notificationCounts).reduce((a, b) => a + b, 0) > 99 ? '99+' : Object.values(notificationCounts).reduce((a, b) => a + b, 0)}
+                  </span>
+                )}
+              </button>
+              <button onClick={handleUserProfile} className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center" aria-label="الملف الشخصي">
+                <Image src="/images/figma/male.png" alt="User" width={36} height={36} className="rounded-full" />
+              </button>
+            </div>
+          }
+        />
+      }
+    >
+      <ContentSection>
 
       {/* Action Bar - Compact for Web */}
       <div className="px-6 py-4 flex items-center justify-between bg-white mx-4 rounded-lg shadow-sm border border-gray-100 mb-12">
@@ -717,6 +664,7 @@ const BranchProjectsPage = () => {
             </button>
           </PermissionBasedVisibility>
         </EmployeeOnly>
+
 
         <div className="flex items-center gap-3">
           {isSearching && searchTitle && (
@@ -799,9 +747,17 @@ const BranchProjectsPage = () => {
             )}
 
             <div className="px-6 pb-24 pt-8">
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {projects.map((project) => (
-                  <div key={project.id}>
+              <div
+                className="projects-grid"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: screenWidth < 640 ? '1fr' : screenWidth < 1024 ? 'repeat(2, 1fr)' : 'repeat(3, 1fr)',
+                  gap: screenWidth < 640 ? '0.75rem' : '1rem',
+                  width: '100%'
+                }}
+              >
+                {projects.map((project, index) => (
+                  <div key={`${project.id}-${index}`}>
                     <ProjectCardMobile
                       project={project}
                       notificationCount={notificationCounts[project.id] || 0}
@@ -841,6 +797,8 @@ const BranchProjectsPage = () => {
           </>
         )}
       </div>
+
+      </ContentSection>
 
       {/* Modals */}
       {showDeleteModal && selectedProject && (
@@ -962,7 +920,7 @@ const BranchProjectsPage = () => {
         onSave={handleSaveBranch}
         loading={false}
       />
-    </div>
+    </ResponsiveLayout>
   );
 };
 
