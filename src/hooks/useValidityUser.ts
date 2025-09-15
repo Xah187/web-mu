@@ -102,7 +102,21 @@ export default function useValidityUser() {
       if (boss === 'مدير الفرع' && kind !== 'Admin') {
         return true;
       }
-      
+
+      // Special logic for requests permissions - matching mobile app
+      if (kind === 'تشييك الطلبات' || kind === 'إنشاء طلبات') {
+        const jobDescription = user?.data?.jobdiscrption || '';
+        const job = user?.data?.job || '';
+
+        // Check if user is requests manager (like mobile app logic)
+        if (jobDescription === 'مسئول طلبيات' ||
+            jobDescription.includes('طلبيات') ||
+            job === 'مسئول طلبيات' ||
+            job.includes('طلبيات')) {
+          return true;
+        }
+      }
+
       // Check if permission exists in Validity array
       return Array.isArray(Validity) && Validity.includes(kind);
     } catch (error) {
@@ -179,6 +193,23 @@ export default function useValidityUser() {
     return Validity;
   };
 
+  /**
+   * Check if user can access requests (either create or check)
+   * Matches mobile app logic where both permissions allow access to requests
+   */
+  const canAccessRequests = async (projectId: number = 0): Promise<boolean> => {
+    const canCreate = await Uservalidation('إنشاء طلبات', projectId);
+    const canCheck = await Uservalidation('تشييك الطلبات', projectId);
+    return canCreate || canCheck;
+  };
+
+  /**
+   * Check if user has requests permission (sync version)
+   */
+  const hasRequestsPermission = (): boolean => {
+    return hasPermission('إنشاء طلبات') || hasPermission('تشييك الطلبات');
+  };
+
   return {
     // Main validation function (async)
     Uservalidation,
@@ -193,6 +224,8 @@ export default function useValidityUser() {
     // User info
     getUserRole,
     getUserPermissions,
+    canAccessRequests,
+    hasRequestsPermission,
     
     // Raw state
     user,

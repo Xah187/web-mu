@@ -8,7 +8,7 @@ import { Tostget } from '@/components/ui/Toast';
 import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
 import Image from 'next/image';
-import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import { EmployeeOnly, PermissionBasedVisibility, RequestsPermissionGuard } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
 // Types
@@ -893,7 +893,7 @@ export default function RequestsPage() {
         {/* Create Request Button - Only for 'part' type and employees like mobile app */}
         {typepage === 'part' && (
           <EmployeeOnly>
-            <PermissionBasedVisibility permission="إنشاء طلبات">
+            <RequestsPermissionGuard>
               <div className="mb-6 flex justify-center">
                 <button
                   onClick={() => setShowCreateModal(true)}
@@ -902,7 +902,7 @@ export default function RequestsPage() {
                   اضافة طلب
                 </button>
               </div>
-            </PermissionBasedVisibility>
+            </RequestsPermissionGuard>
           </EmployeeOnly>
         )}
 

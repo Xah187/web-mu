@@ -362,3 +362,36 @@ export function NonOwnerGuard({ children, fallback = null, showError = false }: 
 
   return <>{children}</>;
 }
+
+/**
+ * Requests Permission Guard - for users who can either create or check requests
+ * Matches mobile app logic where both permissions allow access to requests
+ */
+interface RequestsPermissionGuardProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode;
+  showError?: boolean;
+}
+
+export function RequestsPermissionGuard({
+  children,
+  fallback = null,
+  showError = false
+}: RequestsPermissionGuardProps) {
+  const { hasRequestsPermission } = useValidityUser();
+
+  if (!hasRequestsPermission()) {
+    if (showError) {
+      return (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+          <p className="text-yellow-600 font-cairo">
+            تحتاج صلاحية إنشاء أو تشييك الطلبات
+          </p>
+        </div>
+      );
+    }
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
+}

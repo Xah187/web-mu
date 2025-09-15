@@ -12,6 +12,7 @@ import { usePermissionCheck } from '@/hooks/useUserPermissions';
 import axiosInstance from '@/lib/api/axios';
 import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
+import { EmployeeOnly } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
@@ -37,7 +38,7 @@ interface CovenantData {
   arrayReject: CovenantRequest[];
 }
 
-export default function CovenantPage() {
+function CovenantPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, size } = useAppSelector((state: any) => state.user);
@@ -731,3 +732,27 @@ export default function CovenantPage() {
     </ResponsiveLayout>
   );
 }
+
+// Wrap the component with EmployeeOnly to match mobile app behavior
+function CovenantPageWrapper() {
+  return (
+    <EmployeeOnly
+      fallback={
+        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+          <div className="text-center">
+            <h2 className="text-xl font-ibm-arabic-bold text-gray-900 mb-2">
+              غير مصرح لك بالوصول
+            </h2>
+            <p className="text-gray-600 font-ibm-arabic-regular">
+              هذه الصفحة مخصصة للموظفين فقط
+            </p>
+          </div>
+        </div>
+      }
+    >
+      <CovenantPage />
+    </EmployeeOnly>
+  );
+}
+
+export default CovenantPageWrapper;

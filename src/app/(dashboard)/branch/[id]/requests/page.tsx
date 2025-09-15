@@ -7,6 +7,7 @@ import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
+import { EmployeeOnly } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
 
 // Types
@@ -180,15 +181,17 @@ export default function BranchRequestsPage() {
 
       {/* Content */}
       <div className="px-6 py-4">
-        {/* Create Request Button */}
-        <div className="mb-6">
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="bg-blue-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
-          >
-            اضافة طلب
-          </button>
-        </div>
+        {/* Create Request Button - Show for employees only like mobile app */}
+        <EmployeeOnly>
+          <div className="mb-6">
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+            >
+              اضافة طلب
+            </button>
+          </div>
+        </EmployeeOnly>
 
         {/* Request Type Tabs */}
         <div className="mb-6">

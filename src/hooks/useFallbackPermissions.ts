@@ -67,6 +67,13 @@ export const useFallbackPermissions = () => {
           'covenant'
         ];
         bossType = '';
+      } else if (jobDescription === 'مسئول طلبيات' || jobDescription.includes('طلبيات')) {
+        // مسئول الطلبيات - يمكنه تشييك الطلبيات
+        permissions = [
+          'تشييك الطلبات',
+          'إنشاء طلبات'
+        ];
+        bossType = '';
       } else {
         // افتراضي
         permissions = [];

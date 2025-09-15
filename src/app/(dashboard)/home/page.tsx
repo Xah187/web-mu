@@ -358,17 +358,14 @@ export default function HomePage() {
           </AdminGuard>
 
           {/* Covenant - only show if user is Admin or has financial permissions */}
-          <PermissionGuard
-            permissions={['Admin', 'انشاء عمليات مالية']}
-            requireAll={false}
-          >
+          <AdminGuard>
             <ButtonCreat
               text="العهد"
               number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
               onpress={handleCovenant}
               className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
             />
-          </PermissionGuard>
+          </AdminGuard>
         </div>
       </Card>
 
