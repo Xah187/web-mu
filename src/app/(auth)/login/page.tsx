@@ -344,7 +344,7 @@ export default function LoginPage() {
               priority
             />
             <span
-              className="font-ibm-arabic-bold text-blue text-3xl sm:text-4xl"
+              className="font-ibm-arabic-bold text-blue text-2xl sm:text-3xl"
               style={{
                 color: colors.BLUE,
                 fontFamily: fonts.IBMPlexSansArabicBold

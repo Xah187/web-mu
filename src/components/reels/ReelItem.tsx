@@ -185,7 +185,7 @@ export default function ReelItem({
         top: 0,
         left: 0,
         right: 0,
-        bottom: `var(--reels-bottom-offset, 80px)`, // توقف فوق البار السفلي مباشرة
+        bottom: 0, // يملأ كامل حاوية الريلز حتى حافة الشريط الأبيض
         touchAction: 'none', // منع أي حركة
         userSelect: 'none', // منع تحديد النص
         WebkitUserSelect: 'none', // منع تحديد النص على Safari
@@ -242,7 +242,7 @@ export default function ReelItem({
       )}
 
       {/* أزرار التفاعل - يمين الشاشة مع مساحة آمنة من البار السفلي */}
-      <div className="absolute right-4 bottom-4 z-30 flex flex-col space-y-3">
+      <div className="absolute right-4 bottom-[calc(var(--reels-bottom-offset)+1rem)] z-30 flex flex-col space-y-3">
         {/* لايك - مُفعل ومحسن */}
         <button
           onClick={(e) => {
@@ -289,7 +289,7 @@ export default function ReelItem({
       </div>
 
       {/* معلومات المستخدم والوصف - أسفل يسار مع مساحة آمنة من البار السفلي */}
-      <div className="absolute left-4 bottom-4 z-30 max-w-[60%]">
+      <div className="absolute left-4 bottom-[calc(var(--reels-bottom-offset)+1rem)] z-30 max-w-[60%]">
         {/* معلومات المستخدم */}
         <div className="flex items-center space-x-3 rtl:space-x-reverse mb-3">
           {/* أفاتار المستخدم */}

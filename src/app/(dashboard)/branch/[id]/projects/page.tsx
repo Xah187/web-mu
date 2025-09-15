@@ -49,12 +49,52 @@ const ProjectCardMobile = ({
     <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
       {/* Header - Clickable area to enter project */}
       <div
-        className="flex items-center justify-between mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-2 -m-2 transition-colors"
+        className="relative mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-3 transition-colors"
         onClick={onPress}
       >
-        <div className="flex-1 min-w-0 mr-4">
+        {/* زر الإشعارات ثابت ولا يؤثر على التوسيط */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onNotifications();
+          }}
+          className="absolute left-2 top-2 p-2 hover:bg-gray-50 rounded-lg transition-colors"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          {notificationCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+              {notificationCount}
+            </span>
+          )}
+        </button>
+
+        {/* زر الحذف في نفس مستوى زر الإشعارات */}
+        {hasPermission('حذف المشروع') && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete();
+            }}
+            className="absolute right-2 top-2 p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+            ) : (
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+            )}
+          </button>
+        )}
+
+        {/* العنوان والملاحظة في المنتصف */}
+        <div className="flex-1 min-w-0 mx-auto text-center px-10 min-h-[60px] flex flex-col justify-center">
           <h3
-            className="font-ibm-arabic-semibold text-gray-900 mb-1"
+            className="font-ibm-arabic-semibold text-gray-900 mb-1 text-center"
             style={{
               fontSize: scale(13),
               display: '-webkit-box',
@@ -69,45 +109,43 @@ const ProjectCardMobile = ({
           >
             {project.Nameproject}
           </h3>
-          <p
-            className="font-ibm-arabic-regular text-gray-600 text-sm"
-            style={{
-              fontSize: scale(10),
-              display: '-webkit-box',
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: 'vertical',
-              overflow: 'hidden',
-              lineHeight: '1rem',
-              wordBreak: 'break-word',
-              overflowWrap: 'anywhere',
-            }}
-            title={project.Note || ''}
-          >
-            {project.Note}
-          </p>
-        </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onNotifications();
-          }}
-          className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {notificationCount}
-            </span>
+          {project.Note ? (
+            <p
+              className="font-ibm-arabic-regular text-gray-600 text-sm text-center"
+              style={{
+                fontSize: scale(10),
+                display: '-webkit-box',
+                WebkitLineClamp: 2,
+                WebkitBoxOrient: 'vertical',
+                overflow: 'hidden',
+                lineHeight: '1rem',
+                wordBreak: 'break-word',
+                overflowWrap: 'anywhere',
+              }}
+              title={project.Note || ''}
+            >
+              {project.Note}
+            </p>
+          ) : (
+            <p
+              className="font-ibm-arabic-regular text-gray-600 text-sm text-center opacity-0 select-none"
+              style={{
+                fontSize: scale(10),
+                lineHeight: '1rem',
+              }}
+            >
+              -
+            </p>
           )}
-        </button>
+        </div>
       </div>
+
+      {/* Content bounded by notification/delete rails */}
+      <div style={{ paddingLeft: '8px', paddingRight: '8px' }}>
 
       {/* Progress Bar - Enhanced with animation */}
       <div className="mb-4 relative">
-        <div className="bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
+        <div className="w-full bg-gray-200 rounded-full h-4 overflow-hidden shadow-inner">
           <div
             className="bg-gradient-to-r from-blue-500 to-blue-600 h-full transition-all duration-1000 ease-out relative"
             style={{ width: `${project.rate || 0}%` }}
@@ -218,8 +256,8 @@ const ProjectCardMobile = ({
         )}
       </div>
 
-      {/* Bottom Section */}
-      <div className="flex items-center justify-between">
+      {/* Bottom Section - Team Members only */}
+      <div className="flex items-center justify-center">
         {/* Team Members Icons */}
         <div className="flex items-center">
           <div className="flex -space-x-2 space-x-reverse">
@@ -244,22 +282,10 @@ const ProjectCardMobile = ({
           </div>
         </div>
 
-        {/* Delete Button - show only if permission like mobile */}
-        {hasPermission('حذف المشروع') && (
-          <button
-            onClick={onDelete}
-            className="p-2 bg-red-50 rounded-lg hover:bg-red-100 transition-colors"
-            disabled={loading}
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
-            ) : (
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#DC2626">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
-              </svg>
-            )}
-          </button>
-        )}
+
+      </div>
+
+      {/* Close bounded content wrapper */}
       </div>
     </div>
   );

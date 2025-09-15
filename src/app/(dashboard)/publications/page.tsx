@@ -276,6 +276,31 @@ export default function PublicationsPage() {
     }
   }, [viewMode, videoReels.length, currentReelIndex]);
 
+  // تشغيل الصوت تلقائياً عند الانتقال بين الفيديوهات في وضع Reels
+  useEffect(() => {
+    if (viewMode !== 'reels') return;
+    const id = setTimeout(() => {
+      const video = containerRef.current?.querySelector('video') as HTMLVideoElement | null;
+      if (!video) return;
+      // حاول التشغيل مع الصوت أولاً
+      video.muted = false;
+      video.play().catch(async () => {
+        try {
+          // إن فشل، شغّل بدون صوت ثم أعد المحاولة بإلغاء الكتم بعد لحظة قصيرة
+          video.muted = true;
+          await video.play();
+          setTimeout(() => {
+            try {
+              video.muted = false;
+              void video.play();
+            } catch {}
+          }, 150);
+        } catch {}
+      });
+    }, 80);
+    return () => clearTimeout(id);
+  }, [currentReelIndex, viewMode]);
+
   // التعامل مع مفاتيح لوحة المفاتيح في Reels mode (مطابق للتيك توك)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

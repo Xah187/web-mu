@@ -44,21 +44,21 @@ const BellIcon = ({ number = 0 }: { number?: number }) => (
 // User List Icons matching original exactly
 const UserListIcon = ({ countuser = 0 }: { countuser?: number }) => {
   const { isEmployee } = useValidityUser();
-  
+
   return (
     <div className="flex items-center -space-x-1">
       {/* User 1 */}
       <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-purple-400 to-pink-400 z-40" />
-      
+
       {/* User 2 */}
       <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-blue-400 to-indigo-500 z-30" />
-      
+
       {/* User 3 */}
       <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-green-400 to-emerald-500 z-20" />
-      
+
       {/* User 4 */}
       <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-yellow-400 to-orange-500 z-10" />
-      
+
       {/* User 5 - Show for all users like mobile app */}
       <div className="w-8 h-8 rounded-full border-2 border-white bg-gradient-to-br from-red-400 to-pink-500 z-0" />
 
@@ -152,7 +152,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div 
+    <div
       className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-all duration-200 mb-2.5 mx-0"
       onClick={onPress}
       style={{
@@ -160,39 +160,63 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       }}
     >
       {/* Header Section - Project name and Bell */}
-      <div className="flex justify-between items-start px-5 pt-2.5 pb-1">
+      <div className="flex justify-between items-start px-7 pt-3 pb-2 relative">
         {/* Bell icon */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onPressNotification?.();
           }}
-          className="p-2 mt-1"
+          className="p-2 mt-1 ml-2"
         >
           <BellIcon number={notificationCount} />
         </button>
 
-        {/* Project Title and Note */}
-        <div className="flex-1 text-right px-5 flex-shrink min-w-0" style={{ width: '70%' }}>
-          <h3 className="font-semibold text-gray-900 mb-1 text-sm leading-tight truncate">
+        {/* Delete button - positioned at same level as bell */}
+        {onPressDelete && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onPressDelete();
+            }}
+            className="p-2 mt-1 mr-2 hover:bg-red-50 rounded-lg transition-colors"
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500" />
+            ) : (
+              <DeleteIcon />
+            )}
+          </button>
+        )}
+
+        {/* Project Title and Note - centered between bell and delete */}
+        <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center min-h-[44px] flex flex-col justify-center" style={{ width: '60%' }}>
+          <h3 className="font-semibold text-gray-900 mb-1 text-sm leading-tight text-center truncate">
             {project.Nameproject}
           </h3>
-          {project.Note && (
-            <p className="text-gray-600 text-xs truncate">
+          {project.Note ? (
+            <p className="text-gray-600 text-xs text-center truncate">
               {project.Note}
             </p>
+          ) : (
+            <p className="text-gray-600 text-xs text-center opacity-0 select-none">-</p>
           )}
         </div>
       </div>
 
+      {/* Content bounded by notification/delete rails */}
+      <div className="w-full" style={{ paddingLeft: '44px', paddingRight: '44px' }}>
+
+
       {/* Progress Section */}
-      <div className="px-3 py-3 relative">
+      <div className="py-3 relative">
         {/* Progress Bar Container - RTL */}
         <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden" dir="rtl">
           {/* Progress Bar - grows from right to left */}
           <div
             className="bg-blue-600 h-6 rounded-full transition-all duration-700 ease-out relative flex items-center justify-center"
-            style={{ 
+            style={{
               width: `${Math.max(Math.min(project.rate || 0, 100), 0)}%`,
               marginRight: '0',
               minWidth: (project.rate || 0) > 0 ? '50px' : '0px'
@@ -200,7 +224,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           >
             {/* Progress percentage - positioned at the beginning of the progress bar (right side) */}
             {(project.rate || 0) > 0 && (
-              <div 
+              <div
                 className="absolute inset-0 flex items-center justify-end pr-2 text-white text-xs font-bold transition-all duration-700 ease-out"
                 style={{
                   minWidth: '40px'
@@ -210,14 +234,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               </div>
             )}
           </div>
-          
+
           {/* Fallback percentage for very small progress or zero */}
           {(project.rate || 0) === 0 && (
             <div className="absolute inset-0 flex items-center justify-end pr-3 text-gray-500 text-xs font-bold">
               <span>0%</span>
             </div>
           )}
-          
+
           {/* Small progress fallback - show percentage outside if progress is too small */}
           {(project.rate || 0) > 0 && (project.rate || 0) < 15 && (
             <div className="absolute inset-0 flex items-center justify-end pr-3 text-gray-600 text-xs font-bold">
@@ -228,9 +252,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       {/* Details Section - Balance and Start Date */}
-      <div className="flex justify-between items-center px-7 py-2">
+      <div className="relative flex justify-between items-center py-3">
         {/* Balance Section */}
-        <div className="text-center">
+        <div className="text-right">
           {showCost && (
             <button
               onClick={(e) => {
@@ -247,12 +271,12 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               e.stopPropagation();
               setShowCost(!showCost);
             }}
-            className="text-center"
+            className="text-right pr-1"
           >
-            <p className="text-gray-900 font-semibold text-sm mb-0.5">
+            <p className="text-gray-900 font-semibold text-sm mb-0.5 pr-1">
               الرصيد:
             </p>
-            <p className="text-gray-900 font-semibold text-sm">
+            <p className="text-gray-900 font-semibold text-sm pr-1">
               {formatCurrency(project.cost || 0)} ر.س
             </p>
           </button>
@@ -270,14 +294,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
 
       {/* Action Buttons Section */}
-      <div className="flex justify-between items-center px-2.5 py-2 space-x-2">
+      <div className="flex justify-between items-center py-2 space-x-2">
         {/* Location Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onPressLocation?.();
           }}
-          className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-200 py-1 px-1 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-200 py-1 px-1 mx-1 rounded-lg hover:bg-gray-50 transition-colors"
           style={{ minHeight: 50, width: '30%' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="mb-1">
@@ -303,7 +327,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             e.stopPropagation();
             onPressGuard?.();
           }}
-          className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-200 py-1 px-1 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-200 py-1 px-1 mx-1 rounded-lg hover:bg-gray-50 transition-colors"
           style={{ minHeight: 50, width: '30%' }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="mb-1">
@@ -326,7 +350,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
               e.stopPropagation();
               onPressClose();
             }}
-            className="flex-1 flex items-center justify-center bg-gray-100 py-1 px-1 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex-1 flex items-center justify-center bg-gray-100 py-1 px-1 mx-1 rounded-lg hover:bg-gray-200 transition-colors"
             style={{ minHeight: 50, width: '30%' }}
             disabled={loading}
           >
@@ -341,31 +365,19 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         )}
       </div>
 
-      {/* Bottom Section - Team Members and Delete Button */}
-      <div className="flex items-center justify-between px-5 pb-4 pt-0">
+      {/* Bottom Section - Team Members only */}
+      <div className="flex items-center justify-center pb-4 pt-1">
         {/* Team Members Avatars */}
         <div className="flex items-center">
           <UserListIcon countuser={project.countuser} />
         </div>
 
-        {/* Delete button - Show for all users like mobile app, permission check happens in handler */}
-        {onPressDelete && (
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onPressDelete();
-            }}
-            className="p-2 hover:bg-red-50 rounded-lg transition-colors mt-8"
-            disabled={loading}
-          >
-            {loading ? (
-              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500" />
-            ) : (
-              <DeleteIcon />
-            )}
-          </button>
-        )}
+
       </div>
+
+      {/* Close bounded content wrapper */}
+      </div>
+
     </div>
   );
 };

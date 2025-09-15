@@ -33,7 +33,7 @@
     var(--reels-available-height, 100dvh)
     - var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom)))
   ) !important;
-  padding-bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
+  padding-bottom: 0 !important;
   background: linear-gradient(135deg, #000 0%, #1a1a1a 100%) !important;
   z-index: 50 !important;
   touch-action: none !important;
@@ -218,7 +218,7 @@
       var(--reels-available-height, 100dvh)
       - var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom)))
     ) !important;
-    padding-bottom: var(--reels-bottom-offset, calc(var(--bottom-nav-height) + var(--safe-area-bottom))) !important;
+    padding-bottom: 0 !important;
     top: 0 !important;
   }
 
