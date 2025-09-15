@@ -16,6 +16,7 @@ import StageInfoModal from '@/components/stages/StageInfoModal';
 import SubStageOptionsModal from '@/components/stages/SubStageOptionsModal';
 import SubStageEditModal from '@/components/stages/SubStageEditModal';
 import StageEditModal from '@/components/stages/StageEditModal';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -322,8 +323,13 @@ const StageDetailsPage = () => {
   const [stageDetails, setStageDetails] = useState<any>(null);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [selectedItems, setSelectedItems] = useState<number[]>([]);
+  const [selectedForCompletion, setSelectedForCompletion] = useState<number[]>([]);
+  const [selectedForCancellation, setSelectedForCancellation] = useState<number[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedSubStage, setSelectedSubStage] = useState<SubStage | null>(null);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSubStageId, setPendingSubStageId] = useState<number | null>(null);
+  const [isToggleLoading, setIsToggleLoading] = useState(false);
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showOptionsModal, setShowOptionsModal] = useState(false);
@@ -399,27 +405,55 @@ const StageDetailsPage = () => {
 
   const handleToggleComplete = async (subStageId: number) => {
     if (!isSelectMode) {
-      if (await Uservalidation('تشييك الانجازات الفرعية', projectId)) {
-        try {
-          await axiosInstance.post(
-            '/brinshCompany/AddORCanselAchievment',
-            { StageSubID: subStageId },
-            {
-              headers: { Authorization: `Bearer ${user.accessToken}` },
-            }
-          );
-          // Refresh data - use stage details StageID
-          if (stageDetails?.StageID) {
-            fetchInitial(projectId, stageDetails.StageID);
+      // Show confirmation modal instead of direct execution
+      setPendingSubStageId(subStageId);
+      setShowConfirmModal(true);
+    }
+  };
+
+  const confirmToggleComplete = async () => {
+    if (pendingSubStageId && await Uservalidation('تشييك الانجازات الفرعية', projectId)) {
+      try {
+        setIsToggleLoading(true);
+        await axiosInstance.post(
+          '/brinshCompany/AddORCanselAchievment',
+          { StageSubID: pendingSubStageId },
+          {
+            headers: { Authorization: `Bearer ${user.accessToken}` },
           }
-        } catch (error) {
-          console.error('Error toggling completion:', error);
+        );
+        // Refresh data - use stage details StageID
+        if (stageDetails?.StageID) {
+          fetchInitial(projectId, stageDetails.StageID);
         }
+        setShowConfirmModal(false);
+        setPendingSubStageId(null);
+      } catch (error) {
+        console.error('Error toggling completion:', error);
+      } finally {
+        setIsToggleLoading(false);
       }
     }
   };
 
   const handleToggleSelect = (subStageId: number) => {
+    const subStage = subStages.find(stage => stage.StageSubID === subStageId);
+    const isCurrentlyCompleted = subStage?.Done === 'true';
+
+    if (!selectedForCompletion.includes(subStageId) && !selectedForCancellation.includes(subStageId)) {
+      // First selection - add to appropriate array based on current status
+      if (isCurrentlyCompleted) {
+        setSelectedForCancellation(prev => [...prev, subStageId]);
+      } else {
+        setSelectedForCompletion(prev => [...prev, subStageId]);
+      }
+    } else {
+      // Already selected - remove from both arrays
+      setSelectedForCompletion(prev => prev.filter(id => id !== subStageId));
+      setSelectedForCancellation(prev => prev.filter(id => id !== subStageId));
+    }
+
+    // Update selectedItems for UI display
     setSelectedItems(prev =>
       prev.includes(subStageId)
         ? prev.filter(id => id !== subStageId)
@@ -429,12 +463,15 @@ const StageDetailsPage = () => {
 
   const handleSelectAll = async () => {
     if (isSelectMode) {
-      // Save selected items
+      // Save selected items with proper completion/cancellation arrays
       if (await Uservalidation('تشييك الانجازات الفرعية', projectId)) {
         try {
           await axiosInstance.post(
             '/brinshCompany/AddORCanselAchievmentarrayall',
-            { arrayStageSubID: selectedItems },
+            {
+              selectAllarray: selectedForCompletion,
+              selectAllarraycansle: selectedForCancellation
+            },
             {
               headers: { Authorization: `Bearer ${user.accessToken}` },
             }
@@ -445,6 +482,8 @@ const StageDetailsPage = () => {
           }
           setIsSelectMode(false);
           setSelectedItems([]);
+          setSelectedForCompletion([]);
+          setSelectedForCancellation([]);
         } catch (error) {
           console.error('Error saving selections:', error);
         }
@@ -452,12 +491,16 @@ const StageDetailsPage = () => {
     } else {
       setIsSelectMode(true);
       setSelectedItems([]);
+      setSelectedForCompletion([]);
+      setSelectedForCancellation([]);
     }
   };
 
   const handleCancelSelect = () => {
     setIsSelectMode(false);
     setSelectedItems([]);
+    setSelectedForCompletion([]);
+    setSelectedForCancellation([]);
   };
 
   const handleAddSubStage = async (name: string, file?: File) => {
@@ -659,9 +702,9 @@ const StageDetailsPage = () => {
           {hasPermission('اضافة مرحلة فرعية') && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
             >
-              انشاء مهمة فرعية جديدة
+              إنشاء مهمة فرعية جديدة
             </button>
           )}
 
@@ -676,7 +719,7 @@ const StageDetailsPage = () => {
             )}
             <button
               onClick={handleSelectAll}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
             >
               {isSelectMode ? 'حفظ' : 'تحديد'}
             </button>
@@ -866,6 +909,23 @@ const StageDetailsPage = () => {
           loading={loadingSub}
         />
       )}
+
+      {/* Confirmation Modal for Individual Task Toggle */}
+      <ConfirmationModal
+        isOpen={showConfirmModal}
+        onClose={() => {
+          setShowConfirmModal(false);
+          setPendingSubStageId(null);
+        }}
+        onConfirm={confirmToggleComplete}
+        title="تأكيد العملية"
+        message={
+          pendingSubStageId && subStages.find(stage => stage.StageSubID === pendingSubStageId)?.Done === 'true'
+            ? 'هل ترغب بالفعل إلغاء الإنجاز؟'
+            : 'هل ترغب بالفعل تنفيذ المرحلة؟'
+        }
+        isLoading={isToggleLoading}
+      />
     </ResponsiveLayout>
   );
 };

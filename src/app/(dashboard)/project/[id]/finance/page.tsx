@@ -480,7 +480,7 @@ export default function FinancePage() {
       <div className="flex items-center justify-between px-4 py-3">
         <button
           onClick={handleAddFinance}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors flex items-center"
+          className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-2">
             <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

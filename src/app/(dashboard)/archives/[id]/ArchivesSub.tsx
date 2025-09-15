@@ -208,7 +208,7 @@ export default function ArchivesSub() {
           actions={
             <button
               onClick={handleCreateFile}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-medium bg-transparent p-0"
             >
               إنشاء
             </button>

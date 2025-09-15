@@ -562,7 +562,7 @@ export default function CreateBranchPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="انشاء فرع"
+          title="إنشاء فرع"
           backButton={
             <button
               onClick={() => router.back()}
@@ -685,7 +685,7 @@ export default function CreateBranchPage() {
                         color: colors.BLACK
                       }}
                     >
-                      {check > 0 ? 'تم اختيار مشرف' : 'اضافة مشرف فرع'}
+                      {check > 0 ? 'تم اختيار مشرف' : 'إضافة مشرف فرع'}
                     </span>
                   </div>
                 </div>
@@ -705,7 +705,7 @@ export default function CreateBranchPage() {
                       fontFamily: fonts.IBMPlexSansArabicMedium
                     }}
                   >
-                    إضافة اعضاء (اختياري)
+                    إضافة أعضاء (اختياري)
                   </p>
 
                   {/* Content */}
@@ -733,8 +733,8 @@ export default function CreateBranchPage() {
                       }}
                     >
                       {Object.keys(checkGloble).length > 0
-                        ? 'تم اختيار اعضاء'
-                        : 'اضافة اعضاء للفرع'}
+                        ? 'تم اختيار أعضاء'
+                        : 'إضافة أعضاء للفرع'}
                     </span>
                   </div>
                 </div>
@@ -745,7 +745,7 @@ export default function CreateBranchPage() {
           {/* Submit Button */}
           <div className="mt-8 w-full">
             <ButtonLong
-              text="انشاء"
+              text="إنشاء"
               onPress={handleSubmit}
               loading={loading}
               disabled={loading}

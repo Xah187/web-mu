@@ -207,7 +207,7 @@ export default function CreateRegistrationCompany() {
                 textAlign: 'center'
               }}
             >
-              انشاء حساب جديد
+              إنشاء حساب جديد
             </h2>
             <p 
               className="text-greay"
@@ -220,7 +220,7 @@ export default function CreateRegistrationCompany() {
                 textAlign: 'center'
               }}
             >
-              سجل بيانات شركتك من اجل انشاء حساب
+              سجل بيانات شركتك من أجل إنشاء حساب
             </p>
           </div>
 

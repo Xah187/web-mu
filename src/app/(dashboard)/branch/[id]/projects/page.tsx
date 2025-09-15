@@ -244,13 +244,20 @@ const ProjectCardMobile = ({
               e.stopPropagation();
               onClose();
             }}
-            className="flex-1 flex items-center justify-center p-2 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+            className="flex-1 flex flex-col items-center p-2 rounded-lg transition-colors bg-red-50 hover:bg-red-100 text-red-600"
             disabled={loading}
+            aria-label="إغلاق المشروع"
           >
             {loading ? (
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
             ) : (
-              <span className="font-ibm-arabic-semibold text-gray-900 text-xs">اغلاق المشروع</span>
+              <>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="shrink-0" aria-hidden="true">
+                  <rect x="3" y="11" width="18" height="10" rx="2" />
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <span className="font-ibm-arabic-semibold text-xs mt-1">إغلاق المشروع</span>
+              </>
             )}
           </button>
         )}
@@ -681,12 +688,12 @@ const BranchProjectsPage = () => {
           <PermissionBasedVisibility permission="إنشاء المشروع">
             <button
               onClick={handleCreateProject}
-              className="bg-blue-600 text-white px-6 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-all duration-200 shadow-md hover:shadow-lg flex items-center gap-2"
+              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 5v14m-7-7h14"/>
               </svg>
-              انشاء مشروع
+              إنشاء مشروع
             </button>
           </PermissionBasedVisibility>
         </EmployeeOnly>

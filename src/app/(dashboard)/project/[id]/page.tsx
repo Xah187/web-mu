@@ -590,16 +590,16 @@ const ProjectDetailsPage = () => {
           <div className="flex justify-between items-center p-4">
             <button
               onClick={handleAddStage}
-              className="bg-blue-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+              className="text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
               style={{ fontSize: scale(14) }}
             >
-              انشاء مهمة
+              إنشاء مهمة
             </button>
 
           <div className="flex items-center space-x-4 space-x-reverse">
             <button
               onClick={handleQualityEvaluation}
-              className="bg-blue-600 text-white px-4 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+              className="text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
               style={{ fontSize: scale(14) }}
             >
               تقييم الجودة
