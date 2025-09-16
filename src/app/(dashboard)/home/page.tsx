@@ -39,6 +39,9 @@ export default function HomePage() {
   // Permission system (existing)
   // Job-based permission system (consistent everywhere - recommended)
   const { isAdmin, isBranchManager } = useJobBasedPermissions();
+
+  // Validity-based permission system for specific operations
+  const { Uservalidation } = useValidityUser();
   
   // Branch operations hook
   const { updateBranchData, loading: branchOperationLoading } = useBranchOperations();
