@@ -1,8 +1,15 @@
 'use client';
 
 import { useAppSelector } from '@/store';
-import { PermissionType, PermissionCheckResult } from '@/types/permissions';
+import { PermissionType, PermissionCheckResult, SPECIALIZED_JOB_PERMISSIONS } from '@/types/permissions';
 import { Tostget } from '@/components/ui/Toast';
+
+/**
+ * Get specialized job permissions based on job description
+ */
+const getSpecializedJobPermissions = (jobDescription: string): PermissionType[] | null => {
+  return SPECIALIZED_JOB_PERMISSIONS[jobDescription] || null;
+};
 
 /**
  * Custom hook for user permission validation
@@ -115,6 +122,42 @@ export default function useValidityUser() {
             job.includes('طلبيات')) {
           return true;
         }
+      }
+
+      // Special logic for covenant permission - matching mobile app
+      if (kind === 'covenant') {
+        const jobDescription = user?.data?.jobdiscrption || '';
+        const job = user?.data?.job || '';
+
+        // Check if user has Acceptingcovenant in Validity (like mobile app)
+        if (Array.isArray(Validity)) {
+          const hasCovenantAccess = Validity.some((validityItem: any) =>
+            validityItem?.Acceptingcovenant === true
+          );
+          if (hasCovenantAccess) {
+            return true;
+          }
+        }
+
+        // Check if user is requests manager with covenant access (like mobile app logic)
+        if (jobDescription === 'مسئول طلبيات' ||
+            jobDescription.includes('طلبيات') ||
+            job === 'مسئول طلبيات' ||
+            job.includes('طلبيات')) {
+          return true;
+        }
+      }
+
+      // Special logic for specialized jobs - matching mobile app
+      const jobDescription = user?.data?.jobdiscrption || '';
+      const job = user?.data?.job || '';
+
+      // Check specialized job permissions
+      const specializedPermissions = getSpecializedJobPermissions(jobDescription) ||
+                                   getSpecializedJobPermissions(job);
+
+      if (specializedPermissions && specializedPermissions.includes(kind)) {
+        return true;
       }
 
       // Check if permission exists in Validity array

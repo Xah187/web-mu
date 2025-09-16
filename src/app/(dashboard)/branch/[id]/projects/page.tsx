@@ -12,7 +12,7 @@ import BranchSettingsModal from '@/components/branch/BranchSettingsModal';
 import BranchDataEditModal from '@/components/branches/BranchDataEditModal';
 import { Tostget } from '@/components/ui/Toast';
 import useValidityUser from '@/hooks/useValidityUser';
-import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import { EmployeeOnly, PermissionBasedVisibility, RequestsPermissionGuard } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -639,17 +639,17 @@ const BranchProjectsPage = () => {
                 </button>
               )}
 
-              {/* Branch Requests in Header - Show for employees only like mobile app */}
-              <EmployeeOnly>
+              {/* Branch Requests in Header */}
+              <RequestsPermissionGuard>
                 <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="طلبات الفرع">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                   </svg>
                 </button>
-              </EmployeeOnly>
+              </RequestsPermissionGuard>
 
-              {/* Branch Covenant (Finance) in Header - Show for employees only like mobile app */}
-              <EmployeeOnly>
+              {/* Branch Covenant (Finance) in Header */}
+              <PermissionBasedVisibility permission="covenant">
                 <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="عهد الفرع">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <rect x="2" y="6" width="20" height="12" rx="2" ry="2" strokeWidth="1.8"/>
@@ -658,7 +658,7 @@ const BranchProjectsPage = () => {
                     <path d="M6 14h3" strokeWidth="1.8" strokeLinecap="round"/>
                   </svg>
                 </button>
-              </EmployeeOnly>
+              </PermissionBasedVisibility>
 
               <button onClick={handleNotificationsBranch} className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإشعارات">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">

@@ -9,7 +9,7 @@ import ButtonCreat from '@/components/design/ButtonCreat';
 import { useCompanyData } from '@/hooks/useCompanyData';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import useValidityUser from '@/hooks/useValidityUser';
-import PermissionGuard, { AdminGuard } from '@/components/auth/PermissionGuard';
+import PermissionGuard, { AdminGuard, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 
 import BranchCard from '@/components/design/BranchCard';
 import { Tostget } from '@/components/ui/Toast';
@@ -161,14 +161,15 @@ export default function HomePage() {
   };
 
   // Handle covenant with permission check - matches mobile app exactly
-  const handleCovenant = () => {
-    if (isAdmin) {
+  const handleCovenant = async () => {
+    // Check covenant permission like mobile app
+    const hasPermission = await Uservalidation('covenant', 0);
+    if (hasPermission) {
       // Navigate to covenant page with company branch ID
       const branchId = user?.data?.IDCompany || '';
       router.push(`/covenant?branchId=${branchId}`);
-    } else {
-      Tostget('غير مصرح لك بهذا الإجراء');
     }
+    // Error message is handled by Uservalidation
   };
 
   // Handle branch navigation - go to branch projects
@@ -357,15 +358,15 @@ export default function HomePage() {
             />
           </AdminGuard>
 
-          {/* Covenant - only show if user is Admin or has financial permissions */}
-          <AdminGuard>
+          {/* Covenant - show if user has covenant permission */}
+          <PermissionBasedVisibility permission="covenant">
             <ButtonCreat
               text="العهد"
               number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
               onpress={handleCovenant}
               className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
             />
-          </AdminGuard>
+          </PermissionBasedVisibility>
         </div>
       </Card>
 

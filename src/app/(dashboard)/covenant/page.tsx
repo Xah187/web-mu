@@ -12,7 +12,7 @@ import { usePermissionCheck } from '@/hooks/useUserPermissions';
 import axiosInstance from '@/lib/api/axios';
 import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
-import { EmployeeOnly } from '@/components/auth/PermissionGuard';
+import { PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
@@ -733,10 +733,11 @@ function CovenantPage() {
   );
 }
 
-// Wrap the component with EmployeeOnly to match mobile app behavior
+// Wrap the component with permission check to match mobile app behavior
 function CovenantPageWrapper() {
   return (
-    <EmployeeOnly
+    <PermissionBasedVisibility
+      permission="covenant"
       fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
@@ -744,14 +745,14 @@ function CovenantPageWrapper() {
               غير مصرح لك بالوصول
             </h2>
             <p className="text-gray-600 font-ibm-arabic-regular">
-              هذه الصفحة مخصصة للموظفين فقط
+              تحتاج صلاحية العهد للوصول لهذه الصفحة
             </p>
           </div>
         </div>
       }
     >
       <CovenantPage />
-    </EmployeeOnly>
+    </PermissionBasedVisibility>
   );
 }
 

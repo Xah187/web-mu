@@ -86,16 +86,23 @@ interface AdminGuardProps {
   showError?: boolean;
 }
 
-export function AdminGuard({ children, fallback, showError }: AdminGuardProps) {
-  return (
-    <PermissionGuard
-      permission="Admin"
-      fallback={fallback}
-      showError={showError}
-    >
-      {children}
-    </PermissionGuard>
-  );
+export function AdminGuard({ children, fallback = null, showError = false }: AdminGuardProps) {
+  const { isAdmin } = useValidityUser();
+
+  if (!isAdmin()) {
+    if (showError) {
+      return (
+        <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+          <p className="text-yellow-600 font-cairo">
+            تحتاج صلاحية Admin للوصول لهذه الميزة
+          </p>
+        </div>
+      );
+    }
+    return <>{fallback}</>;
+  }
+
+  return <>{children}</>;
 }
 
 interface BranchManagerGuardProps {
