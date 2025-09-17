@@ -199,6 +199,9 @@ export default function SettingsPage() {
   const adminPhoneNumbers = ['502464530', '567256943'];
   const isSystemAdmin = adminPhoneNumbers.includes(user?.data?.PhoneNumber || '');
 
+  // Preparation button - Show for all users like mobile app (check permissions on click)
+  // In mobile app, the button is always visible and permission check happens on press
+
   const handleLogout = async () => {
     try {
       // Close modal first
@@ -270,31 +273,9 @@ export default function SettingsPage() {
   };
 
   const handleAttendance = async () => {
-    // Check if user has preparation permissions like mobile app
-    const hrJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
-    let hasPermission = hrJobs.includes(user?.data?.job || '');
-
-    // If not in HR jobs, check special access via API (like mobile app openViliteduser)
-    if (!hasPermission && user?.data?.PhoneNumber) {
-      try {
-        const response = await fetch(`/api/hr/check-preparation-access?phoneNumber=${user.data.PhoneNumber}`, {
-          credentials: 'include',
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          hasPermission = data.hasAccess;
-        }
-      } catch (error) {
-        console.error('Error checking preparation access:', error);
-      }
-    }
-
-    if (hasPermission) {
-      router.push('/preparation');
-    } else {
-      Tostget('ليس لديك صلاحية للوصول لنظام التحضير', 'error');
-    }
+    // In mobile app, ALL employees can access basic preparation (check in/out)
+    // Permission check only happens for advanced HR features inside the preparation page
+    router.push('/preparation');
   };
 
   const handleFinanceToggle = () => {
@@ -496,19 +477,20 @@ export default function SettingsPage() {
                   </svg>
                 }
               />
-
-              <SettingItem
-                title="تحضير"
-                onPress={handleAttendance}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke={colors.BLUE} strokeWidth="2" />
-                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke={colors.BLUE} strokeWidth="2" />
-                    <path d="M9 12l2 2 4-4" stroke={colors.BLUE} strokeWidth="2" />
-                  </svg>
-                }
-              />
             </EmployeeOnly>
+
+            {/* Preparation button - Show for all users like mobile app */}
+            <SettingItem
+              title="تحضير"
+              onPress={handleAttendance}
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" stroke={colors.BLUE} strokeWidth="2" />
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1" stroke={colors.BLUE} strokeWidth="2" />
+                  <path d="M9 12l2 2 4-4" stroke={colors.BLUE} strokeWidth="2" />
+                </svg>
+              }
+            />
 
             {/* Font Size - Always show */}
             <SettingItem

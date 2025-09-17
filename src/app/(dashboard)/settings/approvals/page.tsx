@@ -1,17 +1,22 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store';
 
-import { fonts } from '@/constants/fonts';
-import { scale, verticalScale } from '@/utils/responsiveSize';
+import { scale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
 import socketService from '@/lib/socket/socketService';
 
+// Import updated components
+import MessageBubble from '@/components/chat/MessageBubble';
+import MessageInput from '@/components/chat/MessageInput';
+import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+
 // This page represents the "اعتمادات" section from mobile app
-// It's designed as a chat interface like in the mobile app
+// In mobile app: navigation.navigate('Chate', { ProjectID: CommercialRegistrationNumber, typess: 'اعتمادات', nameRoom: 'اعتمادات' })
+// This web implementation replicates the exact same functionality
 
 interface ChatMessage {
   id: number;
@@ -32,9 +37,11 @@ interface ChatMessage {
   chatId?: number;
   File?: any;
   Reply?: any;
+  timeminet?: string;
+  Sender?: string;
+  StageID?: string;
+  ProjectID?: number;
 }
-
-import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
 export default function ApprovalsPage() {
   const router = useRouter();
@@ -47,66 +54,60 @@ export default function ApprovalsPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<{[key: number]: boolean}>({});
   const [newMessage, setNewMessage] = useState('');
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
-  const [uploading, setUploading] = useState<{ idSendr: string; progress: number; kind: 'image' | 'video' | 'file' | 'text'; } | null>(null);
-  const [preview, setPreview] = useState<{ type: 'image' | 'video'; url: string } | null>(null);
 
-  const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-  const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchMessages();
-    initializeSocket();
-
-    // Cleanup عند إلغاء تحميل المكون
-    return () => {
-      socketService.removeListener('received_message');
-    };
+  // Normalize messages from API/socket and deduplicate (like main chat)
+  const normalizeMessage = useCallback((raw: any): ChatMessage => {
+    if (!raw || typeof raw !== 'object') return raw;
+    let File = raw.File;
+    let Reply = raw.Reply;
+    try { if (typeof File === 'string') File = JSON.parse(File); } catch {}
+    try { if (typeof Reply === 'string') Reply = JSON.parse(Reply); } catch {}
+    const timeminet = raw.timeminet || raw.Date || new Date().toISOString();
+    return { ...raw, File, Reply, timeminet };
   }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+  const dedupMessages = useCallback((list: ChatMessage[]) => {
+    const seen = new Set<string>();
+    const result: ChatMessage[] = [];
+    for (const m of list) {
+      const key = `${m?.chatId ?? ''}|${(m as any)?.idSendr ?? ''}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      result.push(m);
+    }
+    return result;
+  }, []);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
-
-  const initializeSocket = async () => {
+  const initializeSocket = useCallback(async () => {
     try {
       // تهيئة Socket مثل التطبيق المحمول
       await socketService.initializeSocket();
 
       // الانضمام لغرفة الاعتمادات مثل التطبيق المحمول
-      // استخدام نفس تنسيق الغرف المستخدم في التطبيق
-      const room = `${approvalsProjectId}:اعتمادات`; // مطابق للتطبيق: الانضمام لغرفة السجل التجاري:اعتمادات
+      const room = `${approvalsProjectId}:اعتمادات`;
       socketService.emit('newRome', room);
 
-      // استقبال الرسائل الجديدة مثل التطبيق المحمول
+      // استقبال الرسائل الجديدة مثل التطبيق المحمول (مع التطبيع)
       socketService.on('received_message', (msg: any) => {
         try {
           // التحقق من أن الرسالة خاصة بالاعتمادات
           if (msg.StageID === 'اعتمادات' || msg.message?.includes('طلب') || msg.message?.includes('اعتماد')) {
-            // تحويل الرسالة المستقبلة إلى تنسيق ChatMessage
-            const newMessage: ChatMessage = {
-              id: Date.now(), // استخدام timestamp كـ ID مؤقت
-              type: msg.message?.includes('طلب') || msg.message?.includes('اعتماد') ? 'request' : 'response',
-              content: msg.message || 'رسالة فارغة',
-              sender: msg.Sender || 'مستخدم',
-              timestamp: msg.timeminet || new Date().toISOString(),
-              status: 'pending',
-              isFromUser: msg.Sender === user?.data?.userName,
-              chatId: msg.chatID,
-              projectId: msg.ProjectID,
-              stageId: msg.StageID
-            };
+            const normalizedMessage = normalizeMessage(msg);
 
             // إضافة الرسالة للقائمة إذا لم تكن من المستخدم الحالي
-            if (!newMessage.isFromUser) {
-              setMessages(prev => [...prev, newMessage]);
+            const currentUserName = user?.data?.userName || '';
+            const senderName = normalizedMessage.Sender || normalizedMessage.sender || '';
+            const isFromCurrentUser = senderName.toLowerCase() === currentUserName.toLowerCase();
+
+            if (!isFromCurrentUser) {
+              setMessages(prev => {
+                const updated = [...prev, normalizedMessage];
+                return dedupMessages(updated);
+              });
             }
           }
         } catch (error) {
@@ -117,9 +118,9 @@ export default function ApprovalsPage() {
     } catch (error) {
       console.error('Error initializing socket:', error);
     }
-  };
+  }, [approvalsProjectId, user?.data?.userName, normalizeMessage, dedupMessages]);
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -138,97 +139,45 @@ export default function ApprovalsPage() {
         const data = res.data?.data || res.data || [];
         console.log('Approval messages data:', data); // للتحقق من البيانات
 
-        // تحويل البيانات إلى تنسيق ChatMessage
-        const normalizedMessages: ChatMessage[] = Array.isArray(data) ? data.map((msg: any) => {
-          // تطبيع البيانات مثل صفحة الشات
-          let File = msg.File;
-          let Reply = msg.Reply;
-          try { if (typeof File === 'string') File = JSON.parse(File); } catch {}
-          try { if (typeof Reply === 'string') Reply = JSON.parse(Reply); } catch {}
+        // تحويل البيانات إلى تنسيق ChatMessage مع التطبيع الجديد
+        const normalizedMessages: ChatMessage[] = Array.isArray(data) ?
+          data.map((msg: any) => normalizeMessage(msg)) : [];
 
-          return {
-            id: msg.chatID || Date.now() + Math.random(),
-            type: (msg.message?.includes('طلب') || msg.message?.includes('اعتماد') ? 'request' : 'response') as 'request' | 'response' | 'system',
-            content: msg.message || 'رسالة فارغة',
-            requestType: 'project_change' as 'expense' | 'leave' | 'overtime' | 'purchase' | 'project_change',
-            sender: msg.Sender || 'مستخدم',
-            timestamp: msg.timeminet || new Date().toISOString(),
-            status: 'pending' as 'pending' | 'approved' | 'rejected',
-            priority: 'medium' as 'low' | 'medium' | 'high',
-            isFromUser: msg.Sender === user?.data?.userName,
-            projectId: msg.ProjectID,
-            stageId: msg.StageID,
-            chatId: msg.chatID
-          };
-        }) : [];
+        // إزالة الرسائل المكررة
+        const uniqueMessages = dedupMessages(normalizedMessages);
 
         // إضافة رسالة ترحيب إذا لم توجد رسائل
-        if (normalizedMessages.length === 0) {
-          normalizedMessages.unshift({
+        if (uniqueMessages.length === 0) {
+          uniqueMessages.unshift({
             id: 1,
             type: 'system',
             content: 'مرحباً بك في قسم الاعتمادات. لا توجد طلبات معلقة حالياً.',
             sender: 'النظام',
             timestamp: new Date().toISOString(),
-            isFromUser: false
+            isFromUser: false,
+            message: 'مرحباً بك في قسم الاعتمادات. لا توجد طلبات معلقة حالياً.',
+            timeminet: new Date().toISOString(),
+            Sender: 'النظام'
           });
         } else {
           // إضافة رسالة ترحيب في البداية
-          normalizedMessages.unshift({
+          uniqueMessages.unshift({
             id: 0,
             type: 'system',
             content: 'مرحباً بك في قسم الاعتمادات. يمكنك هنا مراجعة الطلبات والموافقة عليها أو رفضها.',
             sender: 'النظام',
             timestamp: new Date().toISOString(),
-            isFromUser: false
+            isFromUser: false,
+            message: 'مرحباً بك في قسم الاعتمادات. يمكنك هنا مراجعة الطلبات والموافقة عليها أو رفضها.',
+            timeminet: new Date().toISOString(),
+            Sender: 'النظام'
           });
         }
 
-        setMessages(normalizedMessages);
+        setMessages(uniqueMessages);
 
       } catch (error) {
         console.error('Error fetching approval messages:', error);
-
-        // محاولة جلب البيانات من مصادر أخرى
-        try {
-          console.log('Trying alternative methods...');
-
-          // محاولة 1: استخدام filterTableChat
-          const filterRes = await axiosInstance.get('/chate/filterTableChat', {
-            params: {
-              userName: '',
-              count: 0,
-              ProjectID: 0,
-              Type: 'اعتمادات'
-            }
-          });
-
-          const filterData = filterRes.data?.data || [];
-          console.log('Filter data:', filterData);
-
-          if (filterData.length > 0) {
-            const filterMessages: ChatMessage[] = filterData.map((msg: any) => ({
-              id: msg.chatID || Date.now() + Math.random(),
-              type: (msg.message?.includes('طلب') || msg.message?.includes('اعتماد') ? 'request' : 'response') as 'request' | 'response' | 'system',
-              content: msg.message || 'رسالة فارغة',
-              requestType: 'project_change' as 'expense' | 'leave' | 'overtime' | 'purchase' | 'project_change',
-              sender: msg.Sender || 'مستخدم',
-              timestamp: msg.timeminet || new Date().toISOString(),
-              status: 'pending' as 'pending' | 'approved' | 'rejected',
-              priority: 'medium' as 'low' | 'medium' | 'high',
-              isFromUser: msg.Sender === user?.data?.userName,
-              projectId: msg.ProjectID,
-              stageId: msg.StageID,
-              chatId: msg.chatID
-            }));
-
-            setMessages(filterMessages);
-            return;
-          }
-
-        } catch (filterError) {
-          console.error('Filter method also failed:', filterError);
-        }
 
         // في حالة فشل جميع الطرق، استخدام بيانات افتراضية
         const fallbackMessages: ChatMessage[] = [
@@ -238,7 +187,10 @@ export default function ApprovalsPage() {
             content: 'مرحباً بك في قسم الاعتمادات. لا توجد طلبات معلقة حالياً.',
             sender: 'النظام',
             timestamp: new Date().toISOString(),
-            isFromUser: false
+            isFromUser: false,
+            message: 'مرحباً بك في قسم الاعتمادات. لا توجد طلبات معلقة حالياً.',
+            timeminet: new Date().toISOString(),
+            Sender: 'النظام'
           }
         ];
 
@@ -249,68 +201,72 @@ export default function ApprovalsPage() {
     } finally {
       setLoading(false);
     }
+  }, [approvalsProjectId, normalizeMessage, dedupMessages]);
+
+  useEffect(() => {
+    fetchMessages();
+    initializeSocket();
+
+    // Cleanup عند إلغاء تحميل المكون
+    return () => {
+      socketService.removeListener('received_message');
+    };
+  }, [fetchMessages, initializeSocket]);
+
+  // التمرير التلقائي لآخر رسالة (مثل الدردشة الرئيسية)
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        });
+      }, 100);
+    }
+  }, [messages]);
+
+  // Build unique sender ID like main chat
+  const buildIdSendr = () => {
+    const phoneNumber = user?.data?.PhoneNumber || 'web';
+    const randomId = Math.random().toString(36).substring(2, 10);
+    return `${phoneNumber}${randomId}`;
   };
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
 
-    // إنشاء ID فريد للرسالة مثل التطبيق المحمول
-    const generateID = () => Math.random().toString(36).substring(2, 10);
-    const idSender = `${user?.data?.PhoneNumber || 'web'}${generateID()}`;
+    const senderName = user?.data?.userName || 'مستخدم';
 
-    // إعداد Reply object إذا كان هناك رد على رسالة
+    // إعداد Reply object إذا كان هناك رد على رسالة (مثل الدردشة الرئيسية)
     const replyObject = replyToMessage ? {
-      Data: replyToMessage.content || replyToMessage.message || '',
-      Date: replyToMessage.timestamp || '',
+      Data: replyToMessage.message || replyToMessage.content || '',
+      Date: replyToMessage.timeminet || replyToMessage.timestamp || '',
       type: 'اعتمادات',
-      Sender: replyToMessage.sender || '',
+      Sender: replyToMessage.Sender || replyToMessage.sender || '',
     } : {};
 
-    const messageToSend: ChatMessage = {
-      id: messages.length + 1,
-      type: 'response',
-      content: newMessage,
-      sender: user?.data?.userName || 'أنت',
-      timestamp: new Date().toISOString(),
-      isFromUser: true,
-      Reply: Object.keys(replyObject).length > 0 ? replyObject : undefined
+    const messagePayload: any = {
+      idSendr: buildIdSendr(),
+      ProjectID: approvalsProjectId,
+      StageID: 'اعتمادات',
+      Sender: senderName,
+      userName: senderName,
+      message: newMessage.trim(),
+      timeminet: new Date().toISOString(),
+      File: {},
+      Reply: replyObject,
+      arrived: false,
+      kind: 'new',
     };
 
-    // إضافة الرسالة للواجهة فوراً (Optimistic UI)
-    setMessages(prev => [...prev, messageToSend]);
+    // Optimistic UI - إضافة الرسالة فوراً
+    setMessages((prev) => [...prev, messagePayload]);
     setNewMessage('');
     setReplyToMessage(null);
 
-    // إرسال الرسالة عبر Socket.IO مثل التطبيق المحمول
-    try {
-      // تهيئة Socket إذا لم يكن مهيأ
-      await socketService.initializeSocket();
-
-      // الانضمام لغرفة الاعتمادات مثل التطبيق المحمول
-      const room = `${approvalsProjectId}:اعتمادات`;
-      socketService.emit('newRome', room);
-
-      // إنشاء كائن الرسالة مثل التطبيق المحمول
-      const socketMessage = {
-        idSendr: idSender,
-        ProjectID: approvalsProjectId,
-        StageID: 'اعتمادات',
-        Sender: user?.data?.userName || 'مستخدم',
-        message: newMessage,
-        timeminet: new Date().toISOString(),
-        File: {},
-        Reply: {},
-        arrived: false,
-        kind: 'new'
-      };
-
-      // إرسال الرسالة عبر Socket
-      socketService.emit('send_message', socketMessage);
-
-    } catch (error) {
-      console.error('Error sending message:', error);
-      Tostget('فشل في إرسال الرسالة');
-    }
+    // إرسال عبر Socket
+    socketService.emit('send_message', messagePayload);
   };
 
   const handleApproval = async (messageId: number, action: 'approve' | 'reject') => {
@@ -330,23 +286,22 @@ export default function ApprovalsPage() {
           : message
       ));
 
-      // إرسال رد الاعتماد عبر Socket مثل التطبيق المحمول
-      const generateID = () => Math.random().toString(36).substring(2, 10);
-      const idSender = `${user?.data?.PhoneNumber || 'web'}${generateID()}`;
-
-      const approvalMessage = {
-        idSendr: idSender,
-        ProjectID: targetMessage.projectId || 0,
-        StageID: targetMessage.stageId || 'اعتمادات',
-        Sender: user?.data?.userName || 'مستخدم',
+      // إرسال رد الاعتماد عبر Socket مثل الدردشة الرئيسية
+      const senderName = user?.data?.userName || 'مستخدم';
+      const approvalMessage: any = {
+        idSendr: buildIdSendr(),
+        ProjectID: approvalsProjectId,
+        StageID: 'اعتمادات',
+        Sender: senderName,
+        userName: senderName,
         message: action === 'approve' ? 'تم الموافقة على الطلب ✅' : 'تم رفض الطلب ❌',
         timeminet: new Date().toISOString(),
         File: {},
         Reply: {
-          Data: targetMessage.content,
-          Date: targetMessage.timestamp,
+          Data: targetMessage.message || targetMessage.content || '',
+          Date: targetMessage.timeminet || targetMessage.timestamp || '',
           type: 'approval',
-          Sender: targetMessage.sender
+          Sender: targetMessage.Sender || targetMessage.sender || ''
         },
         arrived: false,
         kind: 'new'
@@ -355,17 +310,8 @@ export default function ApprovalsPage() {
       // إرسال عبر Socket
       socketService.emit('send_message', approvalMessage);
 
-      // إضافة رسالة رد للواجهة
-      const responseMessage: ChatMessage = {
-        id: messages.length + 1,
-        type: 'response',
-        content: action === 'approve' ? 'تم الموافقة على الطلب ✅' : 'تم رفض الطلب ❌',
-        sender: user?.data?.userName || 'أنت',
-        timestamp: new Date().toISOString(),
-        isFromUser: true
-      };
-
-      setMessages(prev => [...prev, responseMessage]);
+      // إضافة رسالة رد للواجهة (Optimistic UI)
+      setMessages(prev => [...prev, approvalMessage]);
 
       Tostget(action === 'approve' ? 'تم الموافقة بنجاح' : 'تم الرفض بنجاح');
     } catch (error) {
@@ -376,8 +322,7 @@ export default function ApprovalsPage() {
     }
   };
 
-
-
+  // Format date functions (like main chat)
   const formatDate = (d?: string) => {
     if (!d) return '';
     try {
@@ -398,60 +343,36 @@ export default function ApprovalsPage() {
     }
   };
 
-  // Handle reply to message
-  const handleQuickReply = (message: ChatMessage) => {
+  // Reply handling functions (like main chat)
+  const handleReply = (message: ChatMessage) => {
     setReplyToMessage(message);
-    textareaRef.current?.focus();
   };
 
-  // Handle long press for reply
-  const handleMouseDown = (message: ChatMessage) => {
+  const handleLongPress = (message: ChatMessage) => {
     const timer = setTimeout(() => {
       setReplyToMessage(message);
-      textareaRef.current?.focus();
-    }, 500); // 500ms for long press
+      // إضافة اهتزاز خفيف إذا كان متاحاً
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
+      }
+    }, 500); // 500ms للضغط الطويل
     setLongPressTimer(timer);
   };
 
-  const handleMouseUp = () => {
+  const handleLongPressEnd = () => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       setLongPressTimer(null);
     }
   };
 
-  // Handle file upload
+  // File upload handler
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     // For now, just show a message that file upload is not implemented
     Tostget('إرسال الملفات سيتم تطويره قريباً');
-
-    // Reset file input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Handle location sharing
-  const handleShareLocation = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          const locationMessage = `📍 الموقع: https://maps.google.com/?q=${latitude},${longitude}`;
-          setNewMessage(prev => prev + locationMessage);
-          Tostget('تم إضافة الموقع');
-        },
-        (error) => {
-          console.error('Error getting location:', error);
-          Tostget('تعذر الحصول على الموقع');
-        }
-      );
-    } else {
-      Tostget('المتصفح لا يدعم خدمة الموقع');
-    }
   };
 
   return (
@@ -472,7 +393,13 @@ export default function ApprovalsPage() {
       <ContentSection>
 
       {/* Chat Messages */}
-      <div className="p-4 space-y-4" style={{ paddingBottom: '180px' }}>
+      <div
+        className="space-y-4"
+        style={{
+          padding: `${scale(16)}px`,
+          paddingBottom: `${scale(180)}px`
+        }}
+      >
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -489,185 +416,45 @@ export default function ApprovalsPage() {
             <p className="text-gray-600">ابدأ محادثة جديدة</p>
           </div>
         ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`max-w-[80%] rounded-2xl p-3 shadow-sm border ${
-                message.isFromUser
-                  ? 'ml-auto bg-blue-50 border-blue-100'
-                  : 'mr-auto bg-white border-gray-100'
-              } group relative cursor-pointer select-none`}
-              onDoubleClick={() => handleQuickReply(message)}
-              onMouseDown={() => handleMouseDown(message)}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={() => handleMouseDown(message)}
-              onTouchEnd={handleMouseUp}
-            >
-              {/* Reply Button - يظهر عند hover */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleQuickReply(message);
-                }}
-                className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-100 hover:bg-gray-200 rounded-full p-1 z-10"
-                title="رد على هذه الرسالة"
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/>
-                </svg>
-              </button>
-
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-sm text-gray-700 font-ibm-arabic-semibold">{message.sender || 'غير معروف'}</span>
-                <span className="text-xs text-gray-400">{formatDate(message.timestamp)}</span>
-              </div>
-
-              {/* عرض الرسالة المرد عليها إن وجدت */}
-              {message.Reply && Object.keys(message.Reply).length > 0 && (
-                <div className="mb-2 p-2 bg-gray-100 rounded-lg border-l-4 border-blue-500">
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="text-xs text-gray-600">رد على: {message.Reply.Sender}</div>
-                    <div className="text-xs text-gray-500">
-                      {formatShortTime(message.Reply.Date)}
-                    </div>
-                  </div>
-                  <div className="text-sm text-gray-800 truncate">{message.Reply.Data}</div>
-                </div>
-              )}
-
-              {/* Message Content */}
-              <p className="mb-2">{message.content || message.message}</p>
-
-              {/* Action Buttons for Requests */}
-              {message.type === 'request' && message.status === 'pending' && !message.isFromUser && (
-                <div className="flex gap-2 mt-3">
-                  <button
-                    onClick={() => handleApproval(message.id, 'reject')}
-                    disabled={actionLoading[message.id]}
-                    className="flex-1 py-1 px-3 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
-                  >
-                    {actionLoading[message.id] ? 'جاري...' : 'رفض'}
-                  </button>
-                  <button
-                    onClick={() => handleApproval(message.id, 'approve')}
-                    disabled={actionLoading[message.id]}
-                    className="flex-1 py-1 px-3 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
-                  >
-                    {actionLoading[message.id] ? 'جاري...' : 'موافقة'}
-                  </button>
-                </div>
-              )}
-
-              {/* Status Badge */}
-              {message.status && message.status !== 'pending' && (
-                <div className="mt-2">
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full ${
-                      message.status === 'approved'
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}
-                  >
-                    {message.status === 'approved' ? 'تم الموافقة' : 'تم الرفض'}
-                  </span>
-                </div>
-              )}
-            </div>
+          messages.map((message, index) => (
+            <MessageBubble
+              key={`${message.id || index}-${message.timeminet || message.timestamp || Date.now()}`}
+              message={message}
+              currentUserName={user?.data?.userName || ''}
+              size={size || 0}
+              onReply={handleReply}
+              onLongPress={handleLongPress}
+              onLongPressEnd={handleLongPressEnd}
+              formatDate={formatDate}
+              formatShortTime={formatShortTime}
+              showActionButtons={message.type === 'request' && message.status === 'pending' && !message.isFromUser}
+              onApprove={(messageId) => handleApproval(messageId, 'approve')}
+              onReject={(messageId) => handleApproval(messageId, 'reject')}
+              actionLoading={actionLoading}
+            />
           ))
         )}
-        <div ref={messagesEndRef} className="h-4" />
+        {/* مرجع للتمرير لآخر رسالة */}
+        <div ref={messagesEndRef} style={{ height: `${scale(16)}px` }} />
       </div>
 
       </ContentSection>
 
-      {/* Chat Input Bar - Fixed at Bottom */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-300 shadow-lg z-50">
-        {/* Reply Preview - داخل البار الثابت */}
-        {replyToMessage && (
-          <div className="bg-blue-50 border-b border-blue-200 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-blue-600 font-medium">رد على: {replyToMessage.sender}</span>
-              <button
-                onClick={() => setReplyToMessage(null)}
-                className="text-blue-400 hover:text-blue-600"
-              >
-                ✕
-              </button>
-            </div>
-            <div className="text-sm text-gray-600 truncate">{replyToMessage.content || replyToMessage.message}</div>
-          </div>
-        )}
-
-        <div className="p-4">
-        <div className="flex items-end gap-2">
-          {/* File Upload Button - مطابق للمحادثة العادية */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="إرفاق ملف"
-            className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15V8a5 5 0 0 0-10 0v9a3 3 0 0 0 6 0V9"/>
-            </svg>
-          </button>
-
-          {/* Location Button - مطابق للمحادثة العادية */}
-          <button
-            onClick={handleShareLocation}
-            title="مشاركة الموقع"
-            className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </button>
-
-          <textarea
-            ref={textareaRef}
-            value={newMessage}
-            onChange={(e) => setNewMessage(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-              }
-            }}
-            rows={1}
-            placeholder="اكتب رسالة..."
-            className="flex-1 resize-none leading-6 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            style={{
-              fontFamily: fonts.IBMPlexSansArabicRegular,
-              maxHeight: 160,
-              fontSize: scale(14 + size)
-            }}
-          />
-
-          <button
-            onClick={sendMessage}
-            disabled={!newMessage.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="إرسال"
-            title="إرسال"
-            style={{
-              fontFamily: fonts.IBMPlexSansArabicMedium,
-              fontSize: scale(14 + size)
-            }}
-          >
-            إرسال
-          </button>
-        </div>
-
-        {/* Hidden File Input */}
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*,video/*,.pdf,.doc,.docx"
-          onChange={handleFileUpload}
-          className="hidden"
+      {/* Chat Input using MessageInput component - Fixed at bottom */}
+      <div className="fixed bottom-16 left-0 right-0 z-50">
+        <MessageInput
+          message={newMessage}
+          setMessage={setNewMessage}
+          onSend={sendMessage}
+          replyToMessage={replyToMessage}
+          setReplyToMessage={setReplyToMessage}
+          size={size || 0}
+          placeholder="اكتب رسالة..."
+          showFileUpload={true}
+          showEmoji={false}
+          onFileUpload={handleFileUpload}
+          disabled={loading}
         />
-        </div>
       </div>
 
     </ResponsiveLayout>

@@ -44,7 +44,7 @@ export default function Combobox({
 }: ComboboxProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dropdownPosition, setDropdownPosition] = useState('right-0');
+  const [dropdownPosition, setDropdownPosition] = useState('right');
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { size } = useAppSelector(state => state.user);
@@ -85,9 +85,9 @@ export default function Combobox({
       // إذا كان العنصر في النصف الأيسر من الشاشة، افتح القائمة لليمين
       // إذا كان في النصف الأيمن، افتح القائمة لليسار
       if (rect.left < screenWidth / 2) {
-        setDropdownPosition('left-0');
+        setDropdownPosition('left');
       } else {
-        setDropdownPosition('right-0');
+        setDropdownPosition('right');
       }
     }
   }, [isOpen]);
@@ -162,15 +162,14 @@ export default function Combobox({
 
       {isOpen && (
         <div
-          className={`absolute top-full bg-white border overflow-hidden z-50`}
+          className={`absolute top-full bg-white border overflow-hidden z-50 ${dropdownPosition}-0`}
           style={{
             marginTop: `${scale(4)}px`,
             borderColor: colors.BORDERCOLOR,
             borderRadius: `${scale(12)}px`,
             width: `${scale(200)}px`,
             maxHeight: `${verticalScale(280)}px`,
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-            [dropdownPosition]: 0
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
           }}
         >
           <div
