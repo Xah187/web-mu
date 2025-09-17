@@ -26,7 +26,31 @@ export default function ButtonCreat({
   className = '',
 }: ButtonCreatProps) {
   const { size } = useAppSelector(state => state.user);
-  const showPlusIcon = text !== '$' && text !== 'إلغــاء';
+  // إخفاء علامة + من أزرار العودة وأزرار الخيارات الإضافية
+  const showPlusIcon = text !== '$' &&
+                      text !== 'إلغــاء' &&
+                      text !== 'إلغاء' &&
+                      text !== 'العودة' &&
+                      text !== 'رجوع' &&
+                      text !== 'عودة' &&
+                      text !== 'الرجوع' &&
+                      text !== 'العودة للخلف' &&
+                      text !== 'back' &&
+                      text !== 'return' &&
+                      text !== 'HR' &&
+                      text !== 'إسناد دوام إضافي' &&
+                      text !== 'إضافة صلاحيات HR' &&
+                      text !== 'إنشاء فرع' &&
+                      text !== 'الأعضاء' &&
+                      text !== 'العهد' &&
+                      text !== 'إنشاء أول فرع' &&
+                      text !== 'اضافة طلب' &&
+                      text !== 'إضافة عضو' &&
+                      text !== 'إضافة أول عضو' &&
+                      !text.includes('التقاط') &&
+                      !text.includes('إعادة') &&
+                      !text.includes('تأكيد') &&
+                      !text.includes('تشغيل');
 
   return (
     <button

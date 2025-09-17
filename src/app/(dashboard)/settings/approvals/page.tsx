@@ -619,8 +619,8 @@ export default function ApprovalsPage() {
             className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50"
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.36 6.36-1.41-1.41M6.05 6.05 4.64 4.64M17.36 6.64l-1.41 1.41M6.64 17.36l-1.41-1.41"/>
-              <circle cx="12" cy="12" r="3"/>
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
             </svg>
           </button>
 

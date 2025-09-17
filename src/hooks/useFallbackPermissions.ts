@@ -64,7 +64,14 @@ export const useFallbackPermissions = () => {
           'تشييك الطلبات',
           'إشعارات المالية',
           'تعديل صلاحيات',
-          'covenant'
+          'covenant',
+          'التحضير'
+        ];
+        bossType = '';
+      } else if (jobDescription === 'موارد بشرية') {
+        // موارد بشرية - صلاحيات التحضير والموارد البشرية
+        permissions = [
+          'التحضير'
         ];
         bossType = '';
       } else if (jobDescription === 'مسئول طلبيات' || jobDescription.includes('طلبيات')) {

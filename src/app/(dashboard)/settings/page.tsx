@@ -269,8 +269,32 @@ export default function SettingsPage() {
     router.push('/settings/approvals');
   };
 
-  const handleAttendance = () => {
-    Tostget('صفحة التحضير قريباً');
+  const handleAttendance = async () => {
+    // Check if user has preparation permissions like mobile app
+    const hrJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
+    let hasPermission = hrJobs.includes(user?.data?.job || '');
+
+    // If not in HR jobs, check special access via API (like mobile app openViliteduser)
+    if (!hasPermission && user?.data?.PhoneNumber) {
+      try {
+        const response = await fetch(`/api/hr/check-preparation-access?phoneNumber=${user.data.PhoneNumber}`, {
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          hasPermission = data.hasAccess;
+        }
+      } catch (error) {
+        console.error('Error checking preparation access:', error);
+      }
+    }
+
+    if (hasPermission) {
+      router.push('/preparation');
+    } else {
+      Tostget('ليس لديك صلاحية للوصول لنظام التحضير', 'error');
+    }
   };
 
   const handleFinanceToggle = () => {

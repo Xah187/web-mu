@@ -6,7 +6,8 @@ import { BranchData } from '@/hooks/useCompanyData';
 import { Tostget } from '@/components/ui/Toast';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { verticalScale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
+import Input from '@/components/design/Input';
 
 interface BranchDataEditModalProps {
   isOpen: boolean;
@@ -21,7 +22,7 @@ interface InputFieldProps {
   value: string;
   onChange: (value: string) => void;
   placeholder: string;
-  type?: string;
+  type?: "number" | "password" | "text" | "email" | "tel";
   required?: boolean;
 }
 
@@ -29,70 +30,20 @@ function InputField({ label, value, onChange, placeholder, type = 'text', requir
   const { size } = useAppSelector((state: any) => state.user);
   
   return (
-    <div 
-      style={{ 
-        width: '100%', 
-        display: 'flex', 
-        justifyContent: 'center', 
-        marginBottom: verticalScale(20) 
+    <div
+      style={{
+        width: '100%',
+        marginBottom: `${scale(20)}px`
       }}
     >
-      <div 
-        style={{ 
-          position: 'relative', 
-          width: '85%',
-          maxWidth: '400px'
-        }}
-      >
-        <input
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          required={required}
-          style={{
-            width: '100%',
-            height: 50,
-            borderRadius: 12,
-            backgroundColor: colors.HOME,
-            border: '1px solid #e0e0e0',
-            padding: '10px 15px',
-            fontSize: verticalScale(14 + size),
-            fontFamily: fonts.IBMPlexSansArabicMedium,
-            textAlign: 'center',
-            direction: 'rtl',
-            outline: 'none',
-            transition: 'all 0.2s ease',
-            borderColor: '#e0e0e0'
-          }}
-          onFocus={(e) => {
-            e.target.style.borderColor = '#2117fb';
-            e.target.style.boxShadow = '0 0 0 2px rgba(33, 23, 251, 0.1)';
-          }}
-          onBlur={(e) => {
-            e.target.style.borderColor = '#e0e0e0';
-            e.target.style.boxShadow = 'none';
-          }}
-        />
-        {label && (
-          <span
-            style={{
-              position: 'absolute',
-              top: -9,
-              right: 14,
-              fontSize: 12,
-              fontWeight: '500',
-              fontFamily: fonts.IBMPlexSansArabicMedium,
-              color: '#2117fb',
-              backgroundColor: colors.WHITE,
-              borderRadius: 5,
-              padding: '2px 8px'
-            }}
-          >
-            {label}
-          </span>
-        )}
-      </div>
+      <Input
+        name={label}
+        value={value}
+        onChange={onChange}
+        placeholder={placeholder}
+        type={type}
+        marginBottom={0}
+      />
     </div>
   );
 }

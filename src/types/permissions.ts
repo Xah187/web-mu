@@ -54,6 +54,7 @@ export type PermissionType =
   | 'المشاريع المغلقة'
   | 'رفع ملف'
   | 'covenant'
+  | 'التحضير'
   | 'Admin'; // Special permission type
 
 // Boss Types

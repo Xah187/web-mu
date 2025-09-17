@@ -1,6 +1,6 @@
 import { differenceInDays } from 'date-fns';
 import { store } from '@/store';
-import { setUser, setValidity, setBoss, clearUser } from '@/store/slices/userSlice';
+import { setUser, setValidity, setBoss, clearUser, setFontSize } from '@/store/slices/userSlice';
 import { fetchUserPermissions } from '@/functions/permissions/fetchPermissions';
 // import { getFCMToken } from '@/utils/fcm';
 
@@ -17,7 +17,13 @@ export const verifyFromToken = async (): Promise<boolean> => {
     }
 
     const userData = JSON.parse(storedUser);
-    
+
+    // Ensure userData has size property (for backward compatibility)
+    if (typeof userData.size === 'undefined') {
+      userData.size = 0; // Default value like mobile app
+      localStorage.setItem('user', JSON.stringify(userData)); // Update stored data
+    }
+
     // Check if login is older than 4 days (like mobile app)
     if (userData.data?.DateOFlogin) {
       const daysDifference = differenceInDays(new Date(), new Date(userData.data.DateOFlogin));
@@ -40,6 +46,14 @@ export const verifyFromToken = async (): Promise<boolean> => {
 
     // Restore user data to Redux (like mobile app)
     store.dispatch(setUser(userData));
+
+    // Load font size preference (like mobile app getSettinguser function)
+    const savedFontSize = localStorage.getItem('fontSizePreference');
+    if (savedFontSize && !isNaN(parseInt(savedFontSize))) {
+      store.dispatch(setFontSize(parseInt(savedFontSize)));
+    } else {
+      store.dispatch(setFontSize(0)); // Default like mobile app
+    }
 
     // Load stored permissions (like mobile app)
     try {

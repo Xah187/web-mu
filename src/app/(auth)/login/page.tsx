@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Input from '@/components/design/Input';
 import ButtonLong from '@/components/design/ButtonLong';
@@ -10,7 +10,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import Image from 'next/image';
 import axiosInstance from '@/lib/api/axios';
-import { useAppDispatch } from '@/store';
+import { useAppSelector } from '@/store';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import Link from 'next/link';
 import ArrowIcon from '@/components/icons/ArrowIcon';
@@ -185,8 +185,8 @@ const countryCodes = [
 
 export default function LoginPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  
+  const { size } = useAppSelector(state => state.user);
+
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+966');
   const [loading, setLoading] = useState(false);
@@ -372,27 +372,37 @@ export default function LoginPage() {
           }}
         >
           {/* Input container - مع مسافة موحدة */}
-          <div className="flex items-stretch gap-3" style={{ height: '55px', marginBottom: '20px' }}>
+          <div
+            className="flex items-stretch"
+            style={{
+              height: `${scale(55)}px`,
+              marginBottom: `${scale(20)}px`,
+              gap: `${scale(12)}px`
+            }}
+          >
             {/* Phone Number Input - في اليمين */}
-            <div className="flex-1 min-w-0" style={{ height: '55px' }}>
+            <div className="flex-1 min-w-0" style={{ height: `${scale(55)}px` }}>
               <Input
-                name="رقم الهاتف"
+                name=""
                 value={phoneNumber}
                 onChange={handlePhoneNumberChange}
                 type="tel"
                 onPressEnter={handleLogin}
-                height="55px"
+                height={`${scale(55)}px`}
                 marginBottom={0}
               />
             </div>
 
             {/* Country Code Selector - في اليسار */}
-            <div className="w-1/4 min-w-[80px] max-w-[120px]" style={{ height: '55px' }}>
+            <div
+              className="w-1/4 min-w-[80px] max-w-[120px]"
+              style={{ height: `${scale(55)}px` }}
+            >
               <Combobox
                 value={countryCode}
                 onChange={handleCountryCodeChange}
                 items={countryCodes}
-                height="55px"
+                height={`${scale(55)}px`}
                 backgroundColor={colors.WHITE}
               />
             </div>
@@ -401,10 +411,14 @@ export default function LoginPage() {
           {/* Error message - positioned right after inputs */}
           {error && (
             <div
-              className="p-3 bg-mistyrose rounded-lg text-red text-sm font-cairo text-center"
+              className="bg-mistyrose rounded-lg text-red text-sm font-cairo text-center"
               style={{
-                marginTop: `${verticalScale(8)}px`,
-                marginBottom: `${verticalScale(16)}px`
+                padding: `${scale(12)}px`,
+                marginTop: `${scale(8)}px`,
+                marginBottom: `${scale(16)}px`,
+                borderRadius: `${scale(8)}px`,
+                fontSize: `${scale(13 + size)}px`,
+                fontFamily: fonts.IBMPlexSansArabicMedium
               }}
             >
               {error}

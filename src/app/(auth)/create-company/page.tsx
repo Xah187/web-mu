@@ -226,7 +226,13 @@ export default function CreateRegistrationCompany() {
 
           {/* Form Fields - responsive grid layout */}
           <div className="w-full max-w-md md:max-w-4xl mx-auto">
-            <div className="space-y-4 md:space-y-6">
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: `${scale(20)}px`
+              }}
+            >
               {/* Row 1: رقم السجل التجاري + اسم الشركة */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
@@ -234,16 +240,16 @@ export default function CreateRegistrationCompany() {
                   value={title.CommercialRegistrationNumber}
                   onChange={(value) => insertInput('CommercialRegistrationNumber', value)}
                   type="tel"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
                 <Input
                   name="اسم الشركة"
                   value={title.NameCompany}
                   onChange={(value) => insertInput('NameCompany', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
               </div>
 
@@ -254,16 +260,16 @@ export default function CreateRegistrationCompany() {
                   value={title.BuildingNumber}
                   onChange={(value) => insertInput('BuildingNumber', value)}
                   type="tel"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
                 <Input
                   name="اسم الشارع"
                   value={title.StreetName}
                   onChange={(value) => insertInput('StreetName', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
               </div>
 
@@ -274,16 +280,16 @@ export default function CreateRegistrationCompany() {
                   value={title.NeighborhoodName}
                   onChange={(value) => insertInput('NeighborhoodName', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
                 <Input
                   name="الرمز البريدي"
                   value={title.PostalCode}
                   onChange={(value) => insertInput('PostalCode', value)}
                   type="tel"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
               </div>
 
@@ -294,16 +300,16 @@ export default function CreateRegistrationCompany() {
                   value={title.City}
                   onChange={(value) => insertInput('City', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
                 <Input
                   name="الدولة"
                   value={title.Country}
                   onChange={(value) => insertInput('Country', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
               </div>
 
@@ -314,16 +320,16 @@ export default function CreateRegistrationCompany() {
                   value={title.TaxNumber}
                   onChange={(value) => insertInput('TaxNumber', value)}
                   type="tel"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
                 <Input
                   name="اسم المستخدم"
                   value={title.userName}
                   onChange={(value) => insertInput('userName', value)}
                   type="text"
-                  height="50px"
-                  marginBottom={17}
+                  height={`${scale(55)}px`}
+                  marginBottom={0}
                 />
               </div>
 
@@ -335,8 +341,8 @@ export default function CreateRegistrationCompany() {
                     value={title.PhoneNumber}
                     onChange={(value) => insertInput('PhoneNumber', value)}
                     type="tel"
-                    height="50px"
-                    marginBottom={17}
+                    height={`${scale(55)}px`}
+                    marginBottom={0}
                   />
                 </div>
               </div>

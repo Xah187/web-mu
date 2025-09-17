@@ -55,11 +55,30 @@ const StageHeader = ({
   };
 
   return (
-    <div className="bg-white rounded-b-3xl px-4 pb-6">
+    <div
+      className="bg-white rounded-b-3xl"
+      style={{
+        padding: `${scale(16)}px ${scale(20)}px ${scale(24)}px`,
+      }}
+    >
       {/* Top Navigation */}
-      <div className="flex items-center justify-between pt-4 pb-4">
-        <button onClick={onBack} className="p-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+      <div
+        className="flex items-center justify-between"
+        style={{
+          paddingTop: `${scale(16)}px`,
+          paddingBottom: `${scale(16)}px`
+        }}
+      >
+        <button
+          onClick={onBack}
+          style={{
+            padding: `${scale(8)}px`,
+            borderRadius: `${scale(8)}px`,
+            transition: 'all 0.2s ease'
+          }}
+          className="hover:bg-gray-100"
+        >
+          <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
@@ -68,26 +87,40 @@ const StageHeader = ({
         {hasPermission('اقفال المرحلة') && (
           <button
             onClick={onClose}
-            className={`px-3 py-2 rounded-lg border flex items-center space-x-2 space-x-reverse ${
+            className={`border flex items-center transition-all duration-200 ${
               isCompleted
-                ? 'bg-green-50 border-green-200'
+                ? 'bg-green-50 border-green-200 hover:bg-green-100'
                 : progress === 100
-                  ? 'bg-red-50 border-red-200'
+                  ? 'bg-red-50 border-red-200 hover:bg-red-100'
                   : 'bg-gray-50 border-gray-200 opacity-50 cursor-not-allowed'
             }`}
+            style={{
+              padding: `${scale(8)}px ${scale(12)}px`,
+              borderRadius: `${scale(8)}px`,
+              gap: `${scale(8)}px`
+            }}
             disabled={progress < 100 && !isCompleted}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={isCompleted ? "#10B981" : progress === 100 ? "#FF0F0F" : "#9CA3AF"}>
+            <svg
+              width={scale(20)}
+              height={scale(20)}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke={isCompleted ? "#10B981" : progress === 100 ? "#FF0F0F" : "#9CA3AF"}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7.02331 5.5C4.59826 7.11238 3 9.86954 3 13C3 17.9706 7.02944 22 12 22C16.9706 22 21 17.9706 21 13C21 9.86954 19.4017 7.11238 16.9767 5.5" />
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 2V10" />
             </svg>
-            <span className={`text-sm font-ibm-arabic-semibold ${
-              isCompleted
-                ? 'text-green-600'
-                : progress === 100
-                  ? 'text-red-600'
-                  : 'text-gray-400'
-            }`}>
+            <span
+              className={`font-ibm-arabic-semibold ${
+                isCompleted
+                  ? 'text-green-600'
+                  : progress === 100
+                    ? 'text-red-600'
+                    : 'text-gray-400'
+              }`}
+              style={{ fontSize: `${scale(13)}px` }}
+            >
               {isCompleted
                 ? (canClose ? 'عمليات الفتح' : 'فتح المرحلة')
                 : (canClose ? 'عمليات الاقفال' : 'اقفال المرحلة')
@@ -96,21 +129,45 @@ const StageHeader = ({
           </button>
         )}
 
-        <button className="p-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <button
+          style={{
+            padding: `${scale(8)}px`,
+            borderRadius: `${scale(8)}px`,
+            transition: 'all 0.2s ease'
+          }}
+          className="hover:bg-gray-100"
+        >
+          <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-5 5-5-5h5v-5a7 7 0 00-14 0v2" />
           </svg>
         </button>
       </div>
 
       {/* Stage Title and Edit */}
-      <div className="flex items-center justify-center space-x-3 space-x-reverse mb-4">
-        <h1 className="font-ibm-arabic-bold text-gray-900 text-center" style={{ fontSize: scale(16) }}>
+      <div
+        className="flex items-center justify-center"
+        style={{
+          gap: `${scale(12)}px`,
+          marginBottom: `${scale(20)}px`
+        }}
+      >
+        <h1
+          className="font-ibm-arabic-bold text-gray-900 text-center"
+          style={{ fontSize: `${scale(18)}px` }}
+        >
           {stageName}
         </h1>
         {hasPermission('تعديل مرحلة رئيسية') && (
-          <button onClick={onEdit} className="p-1">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+          <button
+            onClick={onEdit}
+            style={{
+              padding: `${scale(4)}px`,
+              borderRadius: `${scale(6)}px`,
+              transition: 'all 0.2s ease'
+            }}
+            className="hover:bg-blue-50"
+          >
+            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
             </svg>
           </button>
@@ -118,55 +175,134 @@ const StageHeader = ({
       </div>
 
       {/* Progress Bar */}
-      <div className="relative mb-6">
-        <div className="w-full bg-gray-200 rounded-full h-3">
+      <div
+        className="relative"
+        style={{ marginBottom: `${scale(24)}px` }}
+      >
+        <div
+          className="w-full bg-gray-200 rounded-full transition-all duration-300"
+          style={{ height: `${scale(12)}px` }}
+        >
           <div
-            className="bg-blue-600 h-3 rounded-full transition-all duration-500"
-            style={{ width: `${typeof progress === 'number' && !isNaN(progress) ? progress : 0}%` }}
+            className="bg-blue-600 rounded-full transition-all duration-500 shadow-sm"
+            style={{
+              width: `${typeof progress === 'number' && !isNaN(progress) ? progress : 0}%`,
+              height: `${scale(12)}px`
+            }}
           />
         </div>
         {/* Progress Badge */}
         <div
-          className="absolute -top-6 bg-gray-100 px-2 py-1 rounded-lg text-xs font-ibm-arabic-bold text-blue-600"
-          style={{ left: `${Math.max(0, Math.min((typeof progress === 'number' && !isNaN(progress) ? progress : 0) - 5, 90))}%` }}
+          className="absolute bg-white border border-gray-200 shadow-md font-ibm-arabic-bold text-blue-600"
+          style={{
+            top: `${scale(-32)}px`,
+            left: `${Math.max(0, Math.min((typeof progress === 'number' && !isNaN(progress) ? progress : 0) - 5, 90))}%`,
+            padding: `${scale(6)}px ${scale(10)}px`,
+            borderRadius: `${scale(8)}px`,
+            fontSize: `${scale(12)}px`
+          }}
         >
           {(typeof progress === 'number' && !isNaN(progress) ? progress : 0).toFixed(1)}%
         </div>
       </div>
 
       {/* Dates */}
-      <div className="flex justify-between text-center mb-4">
-        <div>
-          <p className="text-xs text-blue-600 font-ibm-arabic-bold">تاريخ البداية</p>
-          <p className="text-xs text-blue-600 font-ibm-arabic-bold">{formatDate(startDate)}</p>
+      <div
+        className="flex justify-between text-center"
+        style={{ marginBottom: `${scale(20)}px` }}
+      >
+        <div
+          className="bg-blue-50 rounded-lg"
+          style={{
+            padding: `${scale(12)}px ${scale(16)}px`,
+            borderRadius: `${scale(12)}px`
+          }}
+        >
+          <p
+            className="text-blue-600 font-ibm-arabic-bold"
+            style={{
+              fontSize: `${scale(11)}px`,
+              marginBottom: `${scale(4)}px`
+            }}
+          >
+            تاريخ البداية
+          </p>
+          <p
+            className="text-blue-700 font-ibm-arabic-bold"
+            style={{ fontSize: `${scale(12)}px` }}
+          >
+            {formatDate(startDate)}
+          </p>
         </div>
-        <div>
-          <p className="text-xs text-blue-600 font-ibm-arabic-bold">تاريخ النهاية</p>
-          <p className="text-xs text-blue-600 font-ibm-arabic-bold">{formatDate(endDate)}</p>
+        <div
+          className="bg-blue-50 rounded-lg"
+          style={{
+            padding: `${scale(12)}px ${scale(16)}px`,
+            borderRadius: `${scale(12)}px`
+          }}
+        >
+          <p
+            className="text-blue-600 font-ibm-arabic-bold"
+            style={{
+              fontSize: `${scale(11)}px`,
+              marginBottom: `${scale(4)}px`
+            }}
+          >
+            تاريخ النهاية
+          </p>
+          <p
+            className="text-blue-700 font-ibm-arabic-bold"
+            style={{ fontSize: `${scale(12)}px` }}
+          >
+            {formatDate(endDate)}
+          </p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex justify-center space-x-6 space-x-reverse">
+      <div
+        className="flex justify-center"
+        style={{ gap: `${scale(16)}px` }}
+      >
         <button
           onClick={onChat}
-          className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
+          className="flex items-center bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+          style={{
+            padding: `${scale(12)}px ${scale(16)}px`,
+            borderRadius: `${scale(12)}px`,
+            gap: `${scale(8)}px`
+          }}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span className="text-sm font-ibm-arabic-semibold">تواصل</span>
+          <span
+            className="font-ibm-arabic-semibold text-gray-700"
+            style={{ fontSize: `${scale(13)}px` }}
+          >
+            تواصل
+          </span>
         </button>
 
         {hasPermission('إضافة تأخيرات') && (
           <button
             onClick={onDelays}
-            className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
+            className="flex items-center bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+            style={{
+              padding: `${scale(12)}px ${scale(16)}px`,
+              borderRadius: `${scale(12)}px`,
+              gap: `${scale(8)}px`
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <span className="text-sm font-ibm-arabic-semibold">التأخيرات</span>
+            <span
+              className="font-ibm-arabic-semibold text-gray-700"
+              style={{ fontSize: `${scale(13)}px` }}
+            >
+              التأخيرات
+            </span>
           </button>
         )}
       </div>
@@ -183,7 +319,7 @@ const SubStageCard = ({
   onToggleSelect,
   onSettings,
   onOpenAttachment,
-  user
+  user: _user
 }: {
   subStage: SubStage;
   isSelected: boolean;
@@ -210,22 +346,39 @@ const SubStageCard = ({
   const hasNotes = notes.length > 0;
 
   return (
-    <div className="group relative bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden mb-3">
-      <div className="p-4">
+    <div
+      className="group relative bg-white border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden"
+      style={{
+        borderRadius: `${scale(16)}px`,
+        marginBottom: `${scale(16)}px`
+      }}
+    >
+      <div style={{ padding: `${scale(20)}px` }}>
         {/* Top Row */}
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center space-x-3 space-x-reverse flex-1">
+        <div
+          className="flex items-center justify-between"
+          style={{ marginBottom: `${scale(16)}px` }}
+        >
+          <div
+            className="flex items-center flex-1"
+            style={{ gap: `${scale(12)}px` }}
+          >
             {/* Checkbox */}
             <button
               onClick={isSelectMode ? onToggleSelect : onToggleComplete}
-              className={`w-6 h-6 rounded border-2 flex items-center justify-center ${
+              className={`rounded border-2 flex items-center justify-center transition-all duration-200 ${
                 isSelectMode
-                  ? (isSelected ? 'bg-blue-500 border-blue-500' : 'border-gray-300')
-                  : (isCompleted ? 'bg-green-500 border-green-500' : 'border-gray-300')
+                  ? (isSelected ? 'bg-blue-500 border-blue-500 hover:bg-blue-600' : 'border-gray-300 hover:border-blue-300')
+                  : (isCompleted ? 'bg-green-500 border-green-500 hover:bg-green-600' : 'border-gray-300 hover:border-green-300')
               }`}
+              style={{
+                width: `${scale(24)}px`,
+                height: `${scale(24)}px`,
+                borderRadius: `${scale(6)}px`
+              }}
             >
               {((isSelectMode && isSelected) || (!isSelectMode && isCompleted)) && (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                <svg width={scale(14)} height={scale(14)} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -241,7 +394,8 @@ const SubStageCard = ({
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: 'vertical',
                 overflow: 'hidden',
-                lineHeight: '1.25rem',
+                lineHeight: `${scale(20)}px`,
+                fontSize: `${scale(14)}px`,
                 wordBreak: 'break-word',
                 overflowWrap: 'anywhere'
               }}
@@ -252,17 +406,34 @@ const SubStageCard = ({
           </div>
 
           {/* Action Icons */}
-          <div className="flex items-center space-x-2 space-x-reverse">
+          <div
+            className="flex items-center"
+            style={{ gap: `${scale(8)}px` }}
+          >
             {subStage.attached && (
-              <button onClick={onOpenAttachment} className="p-1">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
+              <button
+                onClick={onOpenAttachment}
+                className="hover:bg-gray-100 transition-colors duration-200"
+                style={{
+                  padding: `${scale(6)}px`,
+                  borderRadius: `${scale(6)}px`
+                }}
+              >
+                <svg width={scale(18)} height={scale(18)} viewBox="0 0 24 24" fill="none" stroke="#6B7280">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </button>
             )}
 
-            <button onClick={onSettings} className="p-1">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
+            <button
+              onClick={onSettings}
+              className="hover:bg-gray-100 transition-colors duration-200"
+              style={{
+                padding: `${scale(6)}px`,
+                borderRadius: `${scale(6)}px`
+              }}
+            >
+              <svg width={scale(18)} height={scale(18)} viewBox="0 0 24 24" fill="none" stroke="#6B7280">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
               </svg>
             </button>
@@ -271,21 +442,56 @@ const SubStageCard = ({
 
         {/* Completion Info */}
         {isCompleted && completedBy && (
-          <div className="bg-gray-50 rounded-lg p-3 mb-3">
-            <div className="flex items-center space-x-3 space-x-reverse">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+          <div
+            className="bg-gray-50 border border-gray-100"
+            style={{
+              borderRadius: `${scale(12)}px`,
+              padding: `${scale(16)}px`,
+              marginBottom: `${scale(16)}px`
+            }}
+          >
+            <div
+              className="flex items-center"
+              style={{ gap: `${scale(12)}px` }}
+            >
+              <div
+                className="bg-blue-100 rounded-full flex items-center justify-center"
+                style={{
+                  width: `${scale(32)}px`,
+                  height: `${scale(32)}px`
+                }}
+              >
+                <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
               <div className="flex-1">
-                <p className="font-ibm-arabic-semibold text-gray-900 text-sm">{completedBy.userName}</p>
-                <p className="text-xs text-gray-500">
+                <p
+                  className="font-ibm-arabic-semibold text-gray-900"
+                  style={{ fontSize: `${scale(13)}px` }}
+                >
+                  {completedBy.userName}
+                </p>
+                <p
+                  className="text-gray-500"
+                  style={{ fontSize: `${scale(11)}px` }}
+                >
                   {completedBy.Date ? formatDateEnglish(completedBy.Date) : ''}
                 </p>
               </div>
-              <div className="bg-green-100 px-2 py-1 rounded-full">
-                <span className="text-xs font-ibm-arabic-medium text-green-700">{completedBy.type}</span>
+              <div
+                className="bg-green-100"
+                style={{
+                  padding: `${scale(6)}px ${scale(12)}px`,
+                  borderRadius: `${scale(20)}px`
+                }}
+              >
+                <span
+                  className="font-ibm-arabic-medium text-green-700"
+                  style={{ fontSize: `${scale(11)}px` }}
+                >
+                  {completedBy.type}
+                </span>
               </div>
             </div>
           </div>
@@ -295,8 +501,11 @@ const SubStageCard = ({
       {/* Expandable Notes Section */}
       {hasNotes && (
         <div className="border-t border-gray-100">
-          <button className="w-full p-2 flex items-center justify-center">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
+          <button
+            className="w-full flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
+            style={{ padding: `${scale(12)}px` }}
+          >
+            <svg width={scale(18)} height={scale(18)} viewBox="0 0 24 24" fill="none" stroke="#6B7280">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
@@ -698,28 +907,49 @@ const StageDetailsPage = () => {
         )}
 
         {/* Action Buttons */}
-        <div className="flex justify-between items-center mb-4">
+        <div
+          className="flex justify-between items-center"
+          style={{ marginBottom: `${scale(20)}px` }}
+        >
           {hasPermission('اضافة مرحلة فرعية') && (
             <button
               onClick={() => setShowAddModal(true)}
-              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-ibm-arabic-semibold bg-transparent hover:bg-blue-50 transition-all duration-200"
+              style={{
+                padding: `${scale(8)}px ${scale(12)}px`,
+                borderRadius: `${scale(8)}px`,
+                fontSize: `${scale(14)}px`
+              }}
             >
               إنشاء مهمة فرعية جديدة
             </button>
           )}
 
-          <div className="flex items-center gap-3">
+          <div
+            className="flex items-center"
+            style={{ gap: `${scale(12)}px` }}
+          >
             {isSelectMode && (
               <button
                 onClick={handleCancelSelect}
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="bg-gray-200 text-gray-800 font-ibm-arabic-semibold hover:bg-gray-300 transition-colors duration-200"
+                style={{
+                  padding: `${scale(10)}px ${scale(16)}px`,
+                  borderRadius: `${scale(8)}px`,
+                  fontSize: `${scale(13)}px`
+                }}
               >
                 إلغاء
               </button>
             )}
             <button
               onClick={handleSelectAll}
-              className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
+              className="inline-flex items-center text-blue-600 hover:text-blue-700 font-ibm-arabic-semibold bg-transparent hover:bg-blue-50 transition-all duration-200"
+              style={{
+                padding: `${scale(8)}px ${scale(12)}px`,
+                borderRadius: `${scale(8)}px`,
+                fontSize: `${scale(14)}px`
+              }}
             >
               {isSelectMode ? 'حفظ' : 'تحديد'}
             </button>
@@ -743,7 +973,10 @@ const StageDetailsPage = () => {
             <p className="text-gray-500 font-ibm-arabic-medium">لا توجد مراحل فرعية</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
+            style={{ gap: `${scale(20)}px` }}
+          >
             {subStages.map((subStage) => (
               <SubStageCard
                 key={subStage.StageSubID}
@@ -763,14 +996,32 @@ const StageDetailsPage = () => {
             ))}
 
             {hasMore && (
-              <div className="px-4 pt-6 text-center">
+              <div
+                className="text-center"
+                style={{
+                  padding: `${scale(24)}px ${scale(16)}px 0`,
+                  gridColumn: '1 / -1'
+                }}
+              >
                 <button
                   onClick={() => loadMore(projectId, stageId)}
                   disabled={loadingSub}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center mx-auto"
+                  className="bg-blue-600 text-white font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center mx-auto shadow-md hover:shadow-lg"
+                  style={{
+                    padding: `${scale(12)}px ${scale(24)}px`,
+                    borderRadius: `${scale(12)}px`,
+                    fontSize: `${scale(14)}px`,
+                    gap: `${scale(8)}px`
+                  }}
                 >
                   {loadingSub && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2" />
+                    <div
+                      className="animate-spin rounded-full border-b-2 border-white"
+                      style={{
+                        width: `${scale(16)}px`,
+                        height: `${scale(16)}px`
+                      }}
+                    />
                   )}
                   {loadingSub ? 'جاري التحميل...' : 'تحميل المزيد'}
                 </button>
@@ -779,9 +1030,27 @@ const StageDetailsPage = () => {
 
             {/* Loading indicator for load more */}
             {loadingSub && subStages.length > 0 && (
-              <div className="flex items-center justify-center py-4">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600" />
-                <span className="mr-3 text-gray-600 font-ibm-arabic-medium text-sm">جاري تحميل المزيد...</span>
+              <div
+                className="flex items-center justify-center"
+                style={{
+                  padding: `${scale(16)}px`,
+                  gridColumn: '1 / -1',
+                  gap: `${scale(12)}px`
+                }}
+              >
+                <div
+                  className="animate-spin rounded-full border-b-2 border-blue-600"
+                  style={{
+                    width: `${scale(24)}px`,
+                    height: `${scale(24)}px`
+                  }}
+                />
+                <span
+                  className="text-gray-600 font-ibm-arabic-medium"
+                  style={{ fontSize: `${scale(13)}px` }}
+                >
+                  جاري تحميل المزيد...
+                </span>
               </div>
             )}
           </div>

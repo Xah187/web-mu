@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { colors } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
+import { scale } from '@/utils/responsiveSize';
+import { useAppSelector } from '@/store';
 
 interface ToastProps {
   message: string;
@@ -9,13 +13,14 @@ interface ToastProps {
   onClose?: () => void;
 }
 
-const Toast: React.FC<ToastProps> = ({ 
-  message, 
-  type = 'info', 
-  duration = 3000, 
-  onClose 
+const Toast: React.FC<ToastProps> = ({
+  message,
+  type = 'info',
+  duration = 3000,
+  onClose
 }) => {
   const [isVisible, setIsVisible] = useState(true);
+  const { size } = useAppSelector(state => state.user);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -31,58 +36,137 @@ const Toast: React.FC<ToastProps> = ({
   const getTypeStyles = () => {
     switch (type) {
       case 'success':
-        return 'bg-green-500 text-white';
+        return {
+          backgroundColor: '#10b981',
+          color: 'white',
+          borderColor: '#059669'
+        };
       case 'error':
-        return 'bg-red-500 text-white';
+        return {
+          backgroundColor: '#ef4444',
+          color: 'white',
+          borderColor: '#dc2626'
+        };
       case 'warning':
-        return 'bg-yellow-500 text-white';
+        return {
+          backgroundColor: '#f59e0b',
+          color: 'white',
+          borderColor: '#d97706'
+        };
       default:
-        return 'bg-blue-500 text-white';
+        return {
+          backgroundColor: colors.BLUE,
+          color: 'white',
+          borderColor: '#1d4ed8'
+        };
     }
   };
 
   const getIcon = () => {
+    const iconSize = scale(18);
+
     switch (type) {
       case 'success':
         return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
           </svg>
         );
       case 'error':
         return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         );
       case 'warning':
         return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
         );
       default:
         return (
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{ width: `${iconSize}px`, height: `${iconSize}px` }}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
         );
     }
   };
 
+  const typeStyles = getTypeStyles();
+
   return (
-    <div className="fixed top-4 right-4 z-50 animate-slide-in-right">
-      <div className={`flex items-center space-x-2 rtl:space-x-reverse px-4 py-3 rounded-lg shadow-lg max-w-sm ${getTypeStyles()}`}>
+    <div
+      className="fixed z-50"
+      style={{
+        top: `${scale(16)}px`,
+        right: `${scale(16)}px`,
+        zIndex: 1080
+      }}
+    >
+      <div
+        className="flex items-center shadow-lg"
+        style={{
+          ...typeStyles,
+          padding: `${scale(12)}px ${scale(16)}px`,
+          borderRadius: `${scale(12)}px`,
+          maxWidth: `${scale(320)}px`,
+          gap: `${scale(12)}px`,
+          border: `1px solid ${typeStyles.borderColor}`,
+          boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+        }}
+      >
         {getIcon()}
-        <span className="text-sm font-medium">{message}</span>
+        <span
+          className="font-medium flex-1"
+          style={{
+            fontSize: `${scale(13 + size)}px`,
+            fontFamily: fonts.IBMPlexSansArabicMedium,
+            lineHeight: 1.4
+          }}
+        >
+          {message}
+        </span>
         <button
           onClick={() => {
             setIsVisible(false);
             onClose?.();
           }}
-          className="ml-2 rtl:mr-2 rtl:ml-0 hover:opacity-75"
+          className="hover:opacity-75 transition-opacity duration-200"
+          style={{
+            padding: `${scale(4)}px`,
+            borderRadius: `${scale(4)}px`
+          }}
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            style={{
+              width: `${scale(14)}px`,
+              height: `${scale(14)}px`
+            }}
+          >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
@@ -111,7 +195,17 @@ export const ToastContainer: React.FC = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div
+      className="fixed z-50"
+      style={{
+        top: `${scale(16)}px`,
+        right: `${scale(16)}px`,
+        zIndex: 1080,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: `${scale(8)}px`
+      }}
+    >
       {toasts.map(toast => (
         <Toast
           key={toast.id}
@@ -153,7 +247,17 @@ export const useToast = () => {
   };
 
   const LocalToastContainer = () => (
-    <div className="fixed top-4 right-4 z-50 space-y-2">
+    <div
+      className="fixed z-50"
+      style={{
+        top: `${scale(16)}px`,
+        right: `${scale(16)}px`,
+        zIndex: 1080,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: `${scale(8)}px`
+      }}
+    >
       {toasts.map(toast => (
         <Toast
           key={toast.id}

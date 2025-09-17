@@ -8,7 +8,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import axiosInstance from '@/lib/api/axios';
 import { useAppDispatch } from '@/store';
-import { setUser } from '@/store/slices/userSlice';
+import { setUser, setFontSize } from '@/store/slices/userSlice';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fetchUserPermissions } from '@/functions/permissions/fetchPermissions';
 import ArrowIcon from '@/components/icons/ArrowIcon';
@@ -114,12 +114,30 @@ function VerificationContent() {
       });
 
       if (response.data.success) {
-        // Save user data and token (including Validity like mobile app)
-        localStorage.setItem('token', response.data.accessToken);
-        localStorage.setItem('user', JSON.stringify(response.data));
+        // Save user data and token (same structure as mobile app)
+        // Mobile app stores: { accessToken, data, Validity, DisabledFinance }
+        // Note: size is handled separately like mobile app (stored in 'settinguser')
+        const userData = {
+          accessToken: response.data.accessToken,
+          data: response.data.data,
+          Validity: response.data.Validity,
+          DisabledFinance: response.data.DisabledFinance,
+          size: 0 // Default value like mobile app
+        };
+
+        localStorage.setItem('token', response.data.accessToken); // Keep for backward compatibility
+        localStorage.setItem('user', JSON.stringify(userData)); // Same structure as mobile app
 
         // Update Redux state
-        dispatch(setUser(response.data));
+        dispatch(setUser(userData));
+
+        // Load font size preference (like mobile app getSettinguser function)
+        const savedFontSize = localStorage.getItem('fontSizePreference');
+        if (savedFontSize && !isNaN(parseInt(savedFontSize))) {
+          dispatch(setFontSize(parseInt(savedFontSize)));
+        } else {
+          dispatch(setFontSize(0)); // Default like mobile app
+        }
 
         // Load permissions from login response (like mobile app)
         try {

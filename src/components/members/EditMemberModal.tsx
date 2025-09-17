@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { verticalScale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import Input from '@/components/design/Input';
 import ButtonLong from '@/components/design/ButtonLong';
@@ -266,7 +266,14 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
         </div>
 
         {/* Form */}
-        <div className="p-6 space-y-4">
+        <div
+          style={{
+            padding: `${scale(24)}px`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: `${scale(20)}px`
+          }}
+        >
           {/* User Name */}
           <div>
             <Input
@@ -274,10 +281,9 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
               value={formData.userName}
               onChange={(value: string) => handleInputChange('userName', value)}
               type="text"
+              error={errors.userName}
+              marginBottom={0}
             />
-            {errors.userName && (
-              <p className="text-red-500 text-sm mt-1">{errors.userName}</p>
-            )}
           </div>
 
           {/* ID Number */}
@@ -287,10 +293,9 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
               value={formData.IDNumber}
               onChange={(value: string) => handleInputChange('IDNumber', convertArabicToEnglish(value))}
               type="tel"
+              error={errors.IDNumber}
+              marginBottom={0}
             />
-            {errors.IDNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.IDNumber}</p>
-            )}
           </div>
 
           {/* Phone Number */}

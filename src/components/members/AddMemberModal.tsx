@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { verticalScale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import Input from '@/components/design/Input';
 import ButtonLong from '@/components/design/ButtonLong';
@@ -213,7 +213,14 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
         </div>
 
         {/* Form */}
-        <div className="p-6 space-y-4">
+        <div
+          style={{
+            padding: `${scale(24)}px`,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: `${scale(20)}px`
+          }}
+        >
           {/* User Name */}
           <div>
             <Input
@@ -221,10 +228,9 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               value={formData.userName}
               onChange={(value: string) => handleInputChange('userName', value)}
               type="text"
+              error={errors.userName}
+              marginBottom={0}
             />
-            {errors.userName && (
-              <p className="text-red-500 text-sm mt-1">{errors.userName}</p>
-            )}
           </div>
 
           {/* ID Number */}
@@ -234,10 +240,9 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               value={formData.IDNumber}
               onChange={(value: string) => handleInputChange('IDNumber', convertArabicToEnglish(value))}
               type="tel"
+              error={errors.IDNumber}
+              marginBottom={0}
             />
-            {errors.IDNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.IDNumber}</p>
-            )}
           </div>
 
           {/* Phone Number */}
@@ -247,10 +252,9 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               value={formData.PhoneNumber}
               onChange={(value: string) => handleInputChange('PhoneNumber', convertArabicToEnglish(value))}
               type="tel"
+              error={errors.PhoneNumber}
+              marginBottom={0}
             />
-            {errors.PhoneNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.PhoneNumber}</p>
-            )}
           </div>
 
           {/* Job */}
@@ -263,7 +267,17 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               placeholder="اختر الوظيفة"
             />
             {errors.job && (
-              <p className="text-red-500 text-sm mt-1">{errors.job}</p>
+              <p
+                className="text-red-500 text-right"
+                style={{
+                  fontSize: `${scale(12 + size)}px`,
+                  fontFamily: fonts.IBMPlexSansArabicMedium,
+                  marginTop: `${scale(4)}px`,
+                  lineHeight: 1.4
+                }}
+              >
+                {errors.job}
+              </p>
             )}
           </div>
 

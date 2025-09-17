@@ -2,8 +2,9 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { colors } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { useAppSelector } from '@/store';
-import { verticalScale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
 import ArrowDownIcon from '@/components/icons/ArrowDownIcon';
 
 interface ComboboxItem {
@@ -94,11 +95,19 @@ export default function Combobox({
   return (
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700 mb-2 text-right">
+        <label
+          className="block text-gray-700 text-right"
+          style={{
+            fontSize: `${scale(14 + size)}px`,
+            fontFamily: fonts.IBMPlexSansArabicMedium,
+            marginBottom: `${scale(8)}px`,
+            fontWeight: 500
+          }}
+        >
           {label}
         </label>
       )}
-      <div 
+      <div
         ref={dropdownRef}
         className="relative"
         style={{ width, height }}
@@ -108,40 +117,89 @@ export default function Combobox({
         onClick={() => !disabled && setIsOpen(!isOpen)}
         disabled={disabled}
         className={`
-          w-full h-full px-3 py-2 text-center
-          border border-bordercolor rounded-xl
+          w-full h-full text-center
+          border rounded-xl
           flex items-center justify-center
-          hover:border-blue transition-colors duration-200
-          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+          hover:border-blue transition-all duration-200
+          ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}
           relative
         `}
-        style={{ 
+        style={{
           backgroundColor,
-          fontSize: fontSize || verticalScale(15 + size) 
+          fontSize: fontSize || scale(15 + size),
+          padding: `${scale(12)}px ${scale(16)}px`,
+          borderColor: colors.BORDERCOLOR,
+          borderRadius: `${scale(12)}px`,
+          fontFamily: fonts.IBMPlexSansArabicMedium
         }}
       >
-        <span className="font-cairo-medium text-black" style={{ direction: 'ltr', unicodeBidi: 'embed' }}>
+        <span
+          className="text-black flex-1"
+          style={{
+            direction: 'ltr',
+            unicodeBidi: 'embed',
+            textAlign: 'center'
+          }}
+        >
           {selectedItem ? (selectedItem.code || selectedItem.name) : (value || placeholder)}
         </span>
-        <span className={`absolute left-3 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}>
-          <ArrowDownIcon stroke="currentColor" />
+        <span
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          style={{
+            position: 'absolute',
+            left: `${scale(12)}px`,
+            top: '50%',
+            transform: 'translateY(-50%)'
+          }}
+        >
+          <ArrowDownIcon
+            stroke="currentColor"
+            width={scale(16)}
+            height={scale(16)}
+          />
         </span>
       </button>
 
       {isOpen && (
-        <div className={`absolute top-full mt-1 ${dropdownPosition} w-48 bg-white border border-bordercolor rounded-xl shadow-lg z-50 max-h-64 overflow-hidden`}>
-          <div className="p-2 border-b border-gray-100">
+        <div
+          className={`absolute top-full bg-white border overflow-hidden z-50`}
+          style={{
+            marginTop: `${scale(4)}px`,
+            borderColor: colors.BORDERCOLOR,
+            borderRadius: `${scale(12)}px`,
+            width: `${scale(200)}px`,
+            maxHeight: `${verticalScale(280)}px`,
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            [dropdownPosition]: 0
+          }}
+        >
+          <div
+            className="border-b"
+            style={{
+              padding: `${scale(12)}px`,
+              borderBottomColor: colors.BORDERCOLOR
+            }}
+          >
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث..."
-              className="w-full px-2 py-1 border border-bordercolor rounded-md text-right text-sm"
-              style={{ fontSize: verticalScale(12 + size) }}
+              className="w-full border rounded-md text-right transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              style={{
+                fontSize: scale(12 + size),
+                padding: `${scale(8)}px ${scale(12)}px`,
+                borderColor: colors.BORDERCOLOR,
+                borderRadius: `${scale(6)}px`,
+                fontFamily: fonts.IBMPlexSansArabicMedium
+              }}
             />
           </div>
 
-          <div className="max-h-52 overflow-y-auto">
+          <div
+            className="overflow-y-auto"
+            style={{ maxHeight: `${verticalScale(220)}px` }}
+          >
             {filteredItems.map((item, index) => (
               <button
                 key={index}
@@ -152,32 +210,44 @@ export default function Combobox({
                   setSearchTerm('');
                 }}
                 className={`
-                  w-full px-3 py-2 text-right hover:bg-gray-50
+                  w-full text-right hover:bg-gray-50
                   transition-colors duration-200
                   ${(item.name === value || item.code === value) ? 'bg-blue-50' : 'text-gray-700'}
                 `}
+                style={{
+                  padding: `${scale(12)}px ${scale(16)}px`
+                }}
               >
-                <div className="flex items-center justify-between w-full">
+                <div
+                  className="flex items-center justify-between w-full"
+                  style={{ gap: `${scale(8)}px` }}
+                >
                   <span
-                    className="font-cairo-medium"
+                    className="font-ibm-arabic-medium"
                     style={{
-                      fontSize: verticalScale(12 + size),
-                      color: (item.name === value || item.code === value) ? '#2117fb' : '#374151'
+                      fontSize: scale(13 + size),
+                      color: (item.name === value || item.code === value) ? colors.BLUE : '#374151',
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      lineHeight: 1.4
                     }}
                   >
                     {item.name}
                   </span>
-                  <span
-                    className="font-cairo-bold"
-                    style={{
-                      fontSize: verticalScale(12 + size),
-                      direction: 'ltr',
-                      unicodeBidi: 'embed',
-                      color: (item.name === value || item.code === value) ? '#2117fb' : '#2117fb'
-                    }}
-                  >
-                    {item.code}
-                  </span>
+                  {item.code && (
+                    <span
+                      className="font-ibm-arabic-bold"
+                      style={{
+                        fontSize: scale(12 + size),
+                        direction: 'ltr',
+                        unicodeBidi: 'embed',
+                        color: (item.name === value || item.code === value) ? colors.BLUE : colors.BLUE,
+                        fontFamily: fonts.IBMPlexSansArabicBold,
+                        lineHeight: 1.3
+                      }}
+                    >
+                      {item.code}
+                    </span>
+                  )}
                 </div>
               </button>
             ))}

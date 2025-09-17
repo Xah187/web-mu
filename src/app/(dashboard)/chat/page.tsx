@@ -473,7 +473,16 @@ export default function ChatPage() {
 
 
       {/* Messages */}
-      <div className="p-4 space-y-3" style={{ paddingBottom: '180px' }}>
+      <div
+        className="overflow-y-auto"
+        style={{
+          padding: `${scale(20)}px`,
+          paddingBottom: `${scale(200)}px`,
+          gap: `${scale(16)}px`,
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+      >
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -513,7 +522,14 @@ export default function ChatPage() {
             return (
               <div
                 key={idx}
-                className={`max-w-[80%] rounded-2xl p-3 shadow-sm border ${mine ? 'ml-auto bg-blue-50 border-blue-100' : 'mr-auto bg-white border-gray-100'} group relative cursor-pointer select-none`}
+                className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md ${mine ? 'ml-auto bg-blue-50 border-blue-100' : 'mr-auto bg-white border-gray-100'}`}
+                style={{
+                  padding: `${scale(16)}px`,
+                  borderRadius: `${scale(16)}px`,
+                  marginBottom: `${scale(16)}px`,
+                  border: `1px solid ${mine ? colors.BLUE + '20' : colors.BORDERCOLOR}`,
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                }}
                 onDoubleClick={() => setReplyToMessage(m)} // Double click للرد
                 onMouseDown={() => handleMouseDown(m)} // Mousedown للضغط الطويل
                 onMouseUp={handleMouseUp} // Mouseup لإلغاء الضغط الطويل
@@ -527,35 +543,92 @@ export default function ChatPage() {
                     e.stopPropagation(); // منع تفعيل الضغط الطويل
                     handleQuickReply(m);
                   }}
-                  className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-100 hover:bg-gray-200 rounded-full p-1 z-10"
+                  className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-full z-10 shadow-sm"
+                  style={{
+                    top: `${scale(8)}px`,
+                    left: `${scale(8)}px`,
+                    padding: `${scale(6)}px`,
+                    borderRadius: `${scale(20)}px`
+                  }}
                   title="رد على هذه الرسالة"
                 >
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/>
                   </svg>
                 </button>
 
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-sm text-gray-700 font-ibm-arabic-semibold">{senderName || 'غير معروف'}</span>
-                  <span className="text-xs text-gray-400">{formatDate(((m as any).timeminet || (m as any).Date) as string)}</span>
+                <div
+                  className="flex items-center justify-between"
+                  style={{ marginBottom: `${scale(12)}px` }}
+                >
+                  <span
+                    className="font-ibm-arabic-semibold text-gray-700"
+                    style={{ fontSize: `${scale(13 + (size || 0))}px` }}
+                  >
+                    {senderName || 'غير معروف'}
+                  </span>
+                  <span
+                    className="text-gray-400"
+                    style={{ fontSize: `${scale(11 + (size || 0))}px` }}
+                  >
+                    {formatDate(((m as any).timeminet || (m as any).Date) as string)}
+                  </span>
                 </div>
 
                 {/* عرض الرسالة المرد عليها إن وجدت */}
                 {(m as any).Reply && Object.keys((m as any).Reply).length > 0 && (
-                  <div className="mb-2 p-2 bg-gray-100 rounded-lg border-l-4 border-blue-500">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="text-xs text-gray-600">رد على: {(m as any).Reply.Sender}</div>
-                      <div className="text-xs text-gray-500">
+                  <div
+                    className="bg-gray-50 rounded-lg border-l-4 border-blue-500"
+                    style={{
+                      marginBottom: `${scale(16)}px`,
+                      padding: `${scale(12)}px`,
+                      borderRadius: `${scale(8)}px`
+                    }}
+                  >
+                    <div
+                      className="flex items-center justify-between"
+                      style={{ marginBottom: `${scale(6)}px` }}
+                    >
+                      <div
+                        className="text-gray-600"
+                        style={{ fontSize: `${scale(11 + (size || 0))}px` }}
+                      >
+                        رد على: {(m as any).Reply.Sender}
+                      </div>
+                      <div
+                        className="text-gray-500"
+                        style={{ fontSize: `${scale(10 + (size || 0))}px` }}
+                      >
                         {formatShortTime((m as any).Reply.Date)}
                       </div>
                     </div>
-                    <div className="text-sm text-gray-800 truncate">{(m as any).Reply.Data}</div>
+                    <div
+                      className="text-gray-800 truncate"
+                      style={{
+                        fontSize: `${scale(12 + (size || 0))}px`,
+                        fontFamily: fonts.IBMPlexSansArabicRegular
+                      }}
+                    >
+                      {(m as any).Reply.Data}
+                    </div>
                   </div>
                 )}
-                            {((m as any).message || m.text) && (
-                  <p className="text-gray-900" style={{ fontFamily: fonts.IBMPlexSansArabicRegular, fontSize: scale(14 + (size||0)) }}>
-                    {(m as any).message || m.text}
-                  </p>
+                {((m as any).message || m.text) && (
+                  <div style={{ marginBottom: `${scale(16)}px` }}>
+                    <p
+                      className="text-gray-900"
+                      style={{
+                        fontFamily: fonts.IBMPlexSansArabicRegular,
+                        fontSize: `${scale(14 + (size || 0))}px`,
+                        lineHeight: 1.6,
+                        color: colors.BLACK,
+                        margin: 0,
+                        wordWrap: 'break-word'
+                      }}
+                    >
+                      {(m as any).message || m.text}
+                    </p>
+                  </div>
                 )}
                 {fileName && (
                   <div className="mt-2">
@@ -589,19 +662,43 @@ export default function ChatPage() {
 
 
       {/* Chat Input Bar - Fixed at Bottom */}
-      <div className="fixed bottom-16 left-0 right-0 bg-white border-t border-gray-300 shadow-lg z-50">
+      <div
+        className="fixed bottom-16 left-0 right-0 bg-white border-t shadow-lg z-50"
+        style={{
+          borderColor: colors.BORDERCOLOR,
+          borderTopWidth: '1px'
+        }}
+      >
         {/* Reply Preview - داخل البار الثابت */}
         {replyToMessage && (
-          <div className="bg-blue-50 border-b border-blue-200 p-3">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-blue-600 font-medium">
+          <div
+            className="bg-blue-50 border-b border-blue-200"
+            style={{
+              padding: `${scale(16)}px`,
+              borderColor: colors.BLUE + '30'
+            }}
+          >
+            <div
+              className="flex items-center justify-between"
+              style={{ marginBottom: `${scale(8)}px` }}
+            >
+              <div
+                className="text-blue-600 font-medium"
+                style={{
+                  fontSize: `${scale(13 + (size || 0))}px`,
+                  fontFamily: fonts.IBMPlexSansArabicMedium
+                }}
+              >
                 رد على: {(replyToMessage as any).Sender || (replyToMessage as any).userName || 'غير معروف'}
               </div>
               <button
-
-
                 onClick={() => setReplyToMessage(null)}
-                className="text-blue-400 hover:text-blue-600"
+                className="text-blue-400 hover:text-blue-600 transition-colors"
+                style={{
+                  padding: `${scale(4)}px`,
+                  borderRadius: `${scale(4)}px`,
+                  fontSize: `${scale(16)}px`
+                }}
                 title="إلغاء الرد"
               >
 
@@ -609,16 +706,37 @@ export default function ChatPage() {
                 ✕
               </button>
             </div>
-            <div className="text-sm text-gray-600 truncate">
+            <div
+              className="text-gray-600 truncate"
+              style={{
+                fontSize: `${scale(12 + (size || 0))}px`,
+                fontFamily: fonts.IBMPlexSansArabicRegular
+              }}
+            >
               {(replyToMessage as any).message || (replyToMessage as any).text || 'رسالة'}
             </div>
           </div>
         )}
 
-        <div className="p-4">
-        <div className="flex items-end gap-2">
-          <button onClick={() => fileInputRef.current?.click()} title="Attach file" className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15V8a5 5 0 0 0-10 0v9a3 3 0 0 0 6 0V9"/></svg>
+        <div style={{ padding: `${scale(20)}px` }}>
+        <div
+          className="flex items-end"
+          style={{ gap: `${scale(12)}px` }}
+        >
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            title="إرفاق ملف"
+            className="flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            style={{
+              width: `${scale(40)}px`,
+              height: `${scale(40)}px`,
+              borderRadius: `${scale(8)}px`,
+              borderColor: colors.BORDERCOLOR
+            }}
+          >
+            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 15V8a5 5 0 0 0-10 0v9a3 3 0 0 0 6 0V9"/>
+            </svg>
           </button>
           {errorMsg && (
             <div className="absolute bottom-16 left-4 right-4 sm:static sm:bottom-auto sm:left-auto sm:right-auto sm:mt-2">
@@ -630,8 +748,21 @@ export default function ChatPage() {
 
           <input ref={fileInputRef} type="file" onChange={handleFileChange} className="hidden" />
 
-          <button onClick={handleShareMyLocation} title="مشاركة الموقع" className="h-10 w-10 flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.36 6.36-1.41-1.41M6.05 6.05 4.64 4.64M17.36 6.64l-1.41 1.41M6.64 17.36l-1.41-1.41"/><circle cx="12" cy="12" r="3"/></svg>
+          <button
+            onClick={handleShareMyLocation}
+            title="مشاركة الموقع"
+            className="flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+            style={{
+              width: `${scale(40)}px`,
+              height: `${scale(40)}px`,
+              borderRadius: `${scale(8)}px`,
+              borderColor: colors.BORDERCOLOR
+            }}
+          >
+            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
           </button>
 
           <textarea
@@ -641,17 +772,31 @@ export default function ChatPage() {
             onKeyDown={handleKeyDown}
             rows={1}
             placeholder="اكتب رسالة..."
-            className="flex-1 resize-none leading-6 px-3 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-            style={{ fontFamily: fonts.IBMPlexSansArabicRegular, maxHeight: 160 }}
+            className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            style={{
+              fontFamily: fonts.IBMPlexSansArabicRegular,
+              maxHeight: `${scale(160)}px`,
+              fontSize: `${scale(14 + (size || 0))}px`,
+              padding: `${scale(12)}px ${scale(16)}px`,
+              borderColor: colors.BORDERCOLOR,
+              borderRadius: `${scale(12)}px`,
+              lineHeight: 1.5
+            }}
           />
 
           <button
             onClick={handleSend}
             disabled={!text.trim()}
-            className="px-6 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+            style={{
+              padding: `${scale(12)}px ${scale(20)}px`,
+              backgroundColor: colors.BLUE,
+              borderRadius: `${scale(24)}px`,
+              fontSize: `${scale(14 + (size || 0))}px`,
+              fontFamily: fonts.IBMPlexSansArabicMedium
+            }}
             aria-label="إرسال"
             title="إرسال"
-            style={{ fontFamily: fonts.IBMPlexSansArabicMedium, fontSize: scale(14 + (size || 0)) }}
           >
             إرسال
           </button>
@@ -674,4 +819,3 @@ export default function ChatPage() {
     </ResponsiveLayout>
   );
 }
-
