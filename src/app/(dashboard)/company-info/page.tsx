@@ -126,7 +126,8 @@ export default function CompanyInfoPage() {
       });
 
       if (success) {
-        router.back();
+        // Navigate to home page with refresh parameter to update company info display
+        router.push('/home?refresh=company');
       }
     } catch (error) {
       console.error('Error updating company:', error);

@@ -11,6 +11,10 @@ import { fonts } from '@/constants/fonts';
 import { verticalScale } from '@/utils/responsiveSize';
 import BranchDataEditModal from './BranchDataEditModal';
 import EvaluationLinkModal from './EvaluationLinkModal';
+import BranchDeleteVerificationModal from './BranchDeleteVerificationModal';
+import BranchManagerModal from './BranchManagerModal';
+import BranchMembersModal from './BranchMembersModal';
+import BranchFinanceModal from './BranchFinanceModal';
 
 interface BranchEditModalProps {
   isOpen: boolean;
@@ -18,6 +22,7 @@ interface BranchEditModalProps {
   branch: BranchData | null;
   onSave: (updatedBranch: BranchData) => Promise<void>;
   loading?: boolean;
+  onRefresh?: () => void;
 }
 
 interface OperationButtonProps {
@@ -169,14 +174,16 @@ export default function BranchEditModal({
   onClose,
   branch,
   onSave,
-  loading = false
+  loading = false,
+  onRefresh
 }: BranchEditModalProps) {
   const { user, size } = useAppSelector((state: any) => state.user);
   const { isAdmin, hasJobPermission } = useJobBasedPermissions();
-  const { 
-    updateBranchData, 
-    addEvaluationLink, 
-    deleteBranch 
+  const {
+    updateBranchData,
+    addEvaluationLink,
+    requestBranchDeletion,
+    confirmBranchDeletion
   } = useBranchOperations();
 
   // Loading states for specific operations
@@ -185,6 +192,10 @@ export default function BranchEditModal({
   // Modal states
   const [showDataEditModal, setShowDataEditModal] = useState(false);
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [showDeleteVerificationModal, setShowDeleteVerificationModal] = useState(false);
+  const [showManagerModal, setShowManagerModal] = useState(false);
+  const [showMembersModal, setShowMembersModal] = useState(false);
+  const [showFinanceModal, setShowFinanceModal] = useState(false);
 
   // Operation handlers
   const handleEditBranch = () => {
@@ -192,30 +203,18 @@ export default function BranchEditModal({
   };
 
   const handleChangeManager = () => {
-    setLoadingOperation('تغيير مدير فرع');
-    // TODO: Open change manager modal
-    setTimeout(() => {
-      setLoadingOperation(null);
-      Tostget('ميزة تغيير مدير الفرع ستكون متاحة قريباً');
-    }, 1500);
+    // Open manager modal instead of navigation - مطابق للتطبيق المحمول
+    setShowManagerModal(true);
   };
 
   const handleMemberManagement = () => {
-    setLoadingOperation('اضافة او ازالة عضوء');
-    // TODO: Open member management modal
-    setTimeout(() => {
-      setLoadingOperation(null);
-      Tostget('ميزة إدارة الأعضاء ستكون متاحة قريباً');
-    }, 1500);
+    // Open members modal instead of navigation - مطابق للتطبيق المحمول
+    setShowMembersModal(true);
   };
 
   const handleFinancePermissions = () => {
-    setLoadingOperation('اضافة صلاحية مالية الفرع');
-    // TODO: Open finance permissions modal
-    setTimeout(() => {
-      setLoadingOperation(null);
-      Tostget('ميزة الصلاحيات المالية ستكون متاحة قريباً');
-    }, 1500);
+    // Open finance modal instead of navigation - مطابق للتطبيق المحمول
+    setShowFinanceModal(true);
   };
 
   const handleEvaluationLink = () => {
@@ -225,23 +224,38 @@ export default function BranchEditModal({
   const handleDeleteBranch = async () => {
     if (!branch) return;
 
+    // إضافة تحذير أولي
     const confirmMessage = `هل أنت متأكد من حذف فرع "${branch.NameSub}"؟\n\nسيتم حذف جميع المشاريع والبيانات المرتبطة به. هذا الإجراء لا يمكن التراجع عنه.`;
-    
-    if (window.confirm(confirmMessage)) {
-      try {
-        setLoadingOperation('حذف الفرع');
-        await deleteBranch(branch.id);
-        onClose();
-        // Trigger a refresh of the parent component
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
-      } catch (error: any) {
-        console.error('Error deleting branch:', error);
-        Tostget(error.message || 'فشل في حذف الفرع', 'error');
-      } finally {
-        setLoadingOperation(null);
-      }
+
+    if (!window.confirm(confirmMessage)) {
+      return;
+    }
+
+    try {
+      setLoadingOperation('إرسال رمز التحقق');
+      console.log('Requesting branch deletion for branch:', branch.id);
+      await requestBranchDeletion(branch.id);
+      console.log('Branch deletion request successful, showing verification modal');
+      setShowDeleteVerificationModal(true);
+    } catch (error: any) {
+      console.error('Error requesting branch deletion:', error);
+      Tostget(error.message || 'فشل في إرسال رمز التحقق', 'error');
+    } finally {
+      setLoadingOperation(null);
+    }
+  };
+
+  const handleConfirmDeletion = async (verificationCode: string) => {
+    try {
+      await confirmBranchDeletion(verificationCode);
+      onClose();
+      // Trigger a refresh of the parent component
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error: any) {
+      console.error('Error confirming branch deletion:', error);
+      throw error; // Re-throw to be handled by the modal
     }
   };
 
@@ -441,6 +455,50 @@ export default function BranchEditModal({
         onSave={handleSaveEvaluationLink}
         loading={loadingOperation === 'رابط التقييم'}
         initialLink={branch?.Linkevaluation || ''}
+      />
+
+      <BranchDeleteVerificationModal
+        isOpen={showDeleteVerificationModal}
+        onClose={() => setShowDeleteVerificationModal(false)}
+        onConfirm={handleConfirmDeletion}
+        loading={loadingOperation === 'حذف الفرع'}
+        branchName={branch?.NameSub || ''}
+      />
+
+      {/* Branch Manager Modal */}
+      <BranchManagerModal
+        isOpen={showManagerModal}
+        onClose={() => setShowManagerModal(false)}
+        branchId={branch?.id?.toString() || ''}
+        branchName={branch?.NameSub || ''}
+        onSuccess={() => {
+          setShowManagerModal(false);
+          onRefresh?.();
+        }}
+      />
+
+      {/* Branch Members Modal */}
+      <BranchMembersModal
+        isOpen={showMembersModal}
+        onClose={() => setShowMembersModal(false)}
+        branchId={branch?.id?.toString() || ''}
+        branchName={branch?.NameSub || ''}
+        onSuccess={() => {
+          setShowMembersModal(false);
+          onRefresh?.();
+        }}
+      />
+
+      {/* Branch Finance Modal */}
+      <BranchFinanceModal
+        isOpen={showFinanceModal}
+        onClose={() => setShowFinanceModal(false)}
+        branchId={branch?.id?.toString() || ''}
+        branchName={branch?.NameSub || ''}
+        onSuccess={() => {
+          setShowFinanceModal(false);
+          onRefresh?.();
+        }}
       />
     </>
   );

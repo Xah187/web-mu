@@ -51,6 +51,16 @@ const userSlice = createSlice({
       state.user = null;
       state.isAuthenticated = false;
     },
+    updateCompanyInfo: (state, action: PayloadAction<{ NameCompany?: string; CommercialRegistrationNumber?: string }>) => {
+      if (state.user?.data) {
+        if (action.payload.NameCompany) {
+          state.user.data.CompanyName = action.payload.NameCompany;
+        }
+        if (action.payload.CommercialRegistrationNumber) {
+          state.user.data.CommercialRegistrationNumber = action.payload.CommercialRegistrationNumber;
+        }
+      }
+    },
     setFontSize: (state, action: PayloadAction<number>) => {
       state.size = action.payload;
     },
@@ -66,5 +76,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, setFontSize, setLanguage, setValidity, setBoss } = userSlice.actions;
+export const { setUser, clearUser, updateCompanyInfo, setFontSize, setLanguage, setValidity, setBoss } = userSlice.actions;
 export default userSlice.reducer;

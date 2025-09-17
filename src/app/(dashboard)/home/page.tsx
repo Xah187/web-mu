@@ -75,13 +75,13 @@ export default function HomePage() {
     fetchNotifications();
   }, []);
 
-  // Listen for refresh parameter to update branches after creating new branch
+  // Listen for refresh parameter to update data after changes
   useEffect(() => {
     const refreshParam = searchParams?.get('refresh');
     if (refreshParam === 'branches') {
       // Show loading message
       Tostget('جاري تحديث قائمة الفروع...');
-      
+
       // Refresh data when returning from branch creation
       refreshData().then(() => {
         // Show success message after data is loaded
@@ -89,7 +89,23 @@ export default function HomePage() {
           Tostget('تم تحديث قائمة الفروع بنجاح');
         }, 500);
       });
-      
+
+      // Clear the URL parameter
+      const url = new URL(window.location.href);
+      url.searchParams.delete('refresh');
+      window.history.replaceState({}, '', url.toString());
+    } else if (refreshParam === 'company') {
+      // Show loading message
+      Tostget('جاري تحديث بيانات الشركة...');
+
+      // Refresh data when returning from company info edit
+      refreshData().then(() => {
+        // Show success message after data is loaded
+        setTimeout(() => {
+          Tostget('تم تحديث بيانات الشركة بنجاح');
+        }, 500);
+      });
+
       // Clear the URL parameter
       const url = new URL(window.location.href);
       url.searchParams.delete('refresh');

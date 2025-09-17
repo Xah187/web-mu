@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useAppSelector } from '@/store';
+import { useAppSelector, useAppDispatch } from '@/store';
+import { updateCompanyInfo } from '@/store/slices/userSlice';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 
@@ -39,6 +40,7 @@ export interface HomeData {
 
 export const useCompanyData = () => {
   const { user } = useAppSelector((state: any) => state.user);
+  const dispatch = useAppDispatch();
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [homeData, setHomeData] = useState<HomeData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -138,6 +140,13 @@ export const useCompanyData = () => {
 
       if (response.data && response.data.success) {
         Tostget('تم تحديث بيانات الشركة بنجاح');
+
+        // Update Redux store with new company info
+        dispatch(updateCompanyInfo({
+          NameCompany: data.NameCompany,
+          CommercialRegistrationNumber: data.CommercialRegistrationNumber
+        }));
+
         await fetchCompanyData(); // Refresh data
         await fetchHomeData(); // Refresh home data
         return true;

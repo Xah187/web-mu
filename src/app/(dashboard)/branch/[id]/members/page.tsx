@@ -44,6 +44,7 @@ export default function BranchMembersPage() {
 
   const branchId = parseInt(params.id as string);
   const branchName = searchParams.get('branchName') || 'الفرع';
+  const mode = searchParams.get('mode') || 'members'; // manager, members, finance
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
@@ -71,7 +72,7 @@ export default function BranchMembersPage() {
     try {
       setLoading(true);
       // مطابق للتطبيق المحمول - API صحيح مع type=justuser للفرع المحدد
-      console.log('🔍 Fetching branch members for branch:', branchId);
+      console.log('🔍 Fetching branch members for branch:', branchId, 'mode:', mode);
 
       const response = await axiosInstance.get(
         `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=justuser&number=${lastId}&kind_request=all`,
@@ -89,14 +90,32 @@ export default function BranchMembersPage() {
         const result: BranchMembersResponse = response.data;
         const allMembers = result.data;
 
-        // فلترة الأعضاء مطابق للتطبيق المحمول - عرض الأعضاء الذين لديهم صلاحية في هذا الفرع
-        const filteredMembers = allMembers.filter(member =>
-          result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
-        );
+        // فلترة الأعضاء حسب الوضع المطلوب - مطابق للتطبيق المحمول
+        let filteredMembers = allMembers;
+
+        if (mode === 'manager') {
+          // تغيير مدير فرع - عرض جميع الأعضاء للاختيار من بينهم
+          filteredMembers = allMembers.filter(member =>
+            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
+          );
+        } else if (mode === 'members') {
+          // إضافة أو إزالة أعضاء - عرض جميع أعضاء الشركة
+          filteredMembers = allMembers;
+        } else if (mode === 'finance') {
+          // صلاحية مالية الفرع - عرض الأعضاء الذين لديهم صلاحية مالية
+          filteredMembers = allMembers.filter(member =>
+            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
+          );
+        } else {
+          // الوضع العادي - عرض أعضاء الفرع فقط
+          filteredMembers = allMembers.filter(member =>
+            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
+          );
+        }
 
         console.log('👥 All members from API:', allMembers.length);
         console.log('🔍 CheckGloble keys:', result.checkGloble ? Object.keys(result.checkGloble) : 'undefined');
-        console.log('✅ Filtered branch members:', filteredMembers.length, 'for branch:', branchId);
+        console.log('✅ Filtered members for mode', mode, ':', filteredMembers.length, 'for branch:', branchId);
 
         if (lastId === 0) {
           setMembers(filteredMembers);
@@ -213,6 +232,20 @@ export default function BranchMembersPage() {
         return 'bg-gray-100 text-gray-800';
       default:
         return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // تحديد العنوان حسب الوضع - مطابق للتطبيق المحمول
+  const getPageTitle = () => {
+    switch (mode) {
+      case 'manager':
+        return 'تغيير مدير فرع';
+      case 'members':
+        return 'اضافة او ازالة عضوء';
+      case 'finance':
+        return 'اضافة صلاحية مالية الفرع';
+      default:
+        return 'أعضاء الفرع';
     }
   };
 

@@ -112,19 +112,73 @@ export default function useBranchOperations() {
   }, [user?.accessToken]);
 
   /**
-   * Delete branch
+   * Request branch deletion with verification code
    * Replicates mobile app's Branchdeletionprocedures API
    */
-  const deleteBranch = useCallback(async (branchId: string): Promise<boolean> => {
+  const requestBranchDeletion = useCallback(async (branchId: string): Promise<boolean> => {
+    console.log('requestBranchDeletion called with branchId:', branchId);
+
+    if (!user?.accessToken) {
+      console.error('No access token available');
+      throw new Error('لا يوجد رمز مصادقة');
+    }
+
+    setLoading(true);
+
+    try {
+      console.log('Making API request to /api/branches/delete-request');
+      const response = await axiosInstance.post(
+        '/api/branches/delete-request',
+        { branchId },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        }
+      );
+
+      console.log('API response:', response);
+
+      if (response.status === 200) {
+        console.log('Branch deletion request successful');
+        Tostget(response.data?.success || 'تم إرسال رمز التحقق إلى هاتفك', 'success');
+        return true;
+      }
+
+      throw new Error(response.data?.success || 'فشل في إرسال رمز التحقق');
+    } catch (error: any) {
+      console.error('Error requesting branch deletion:', error);
+
+      if (error.response?.status === 401) {
+        throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
+      } else if (error.response?.status === 403) {
+        throw new Error('ليس لديك صلاحية لحذف الفرع');
+      } else if (error.response?.status === 404) {
+        throw new Error('الفرع غير موجود');
+      } else {
+        throw new Error(error.response?.data?.success || 'فشل في إرسال رمز التحقق');
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.accessToken]);
+
+  /**
+   * Confirm branch deletion with verification code
+   * Replicates mobile app's Implementedbyopreation API
+   */
+  const confirmBranchDeletion = useCallback(async (verificationCode: string): Promise<boolean> => {
     if (!user?.accessToken) {
       throw new Error('لا يوجد رمز مصادقة');
     }
 
     setLoading(true);
-    
+
     try {
-      const response = await axiosInstance.get(
-        `company/brinsh/deleteBranch?IDBrach=${branchId}`,
+      const response = await axiosInstance.post(
+        '/api/branches/confirm-delete',
+        { verificationCode },
         {
           headers: {
             'Content-Type': 'application/json',
@@ -137,19 +191,19 @@ export default function useBranchOperations() {
         Tostget(response.data?.success || 'تم حذف الفرع بنجاح', 'success');
         return true;
       }
-      
-      throw new Error(response.data?.message || 'فشل في حذف الفرع');
+
+      throw new Error(response.data?.success || 'فشل في حذف الفرع');
     } catch (error: any) {
-      console.error('Error deleting branch:', error);
-      
+      console.error('Error confirming branch deletion:', error);
+
       if (error.response?.status === 401) {
         throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
+      } else if (error.response?.status === 400) {
+        throw new Error(error.response?.data?.success || 'رمز التحقق غير صحيح');
       } else if (error.response?.status === 403) {
         throw new Error('ليس لديك صلاحية لحذف الفرع');
-      } else if (error.response?.status === 404) {
-        throw new Error('الفرع غير موجود');
       } else {
-        throw new Error(error.response?.data?.message || 'فشل في حذف الفرع');
+        throw new Error(error.response?.data?.success || 'فشل في حذف الفرع');
       }
     } finally {
       setLoading(false);
@@ -256,7 +310,8 @@ export default function useBranchOperations() {
     loading,
     updateBranchData,
     addEvaluationLink,
-    deleteBranch,
+    requestBranchDeletion,
+    confirmBranchDeletion,
     getBranchUsers,
     updateBranchManager,
     updateFinancePermissions,

@@ -12,6 +12,8 @@ import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import useValidityUser from '@/hooks/useValidityUser';
 
 import { URLFIL } from '@/lib/api/axios';
+import HRUsersManagement from '@/components/hr/HRUsersManagement';
+import BackArrowIcon from '@/components/icons/BackArrowIcon';
 
 // Import responsive layout components
 import ResponsiveLayout, {
@@ -64,6 +66,7 @@ export default function PreparationPage() {
   const [preparationRecords, setPreparationRecords] = useState<PreparationRecord[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [showEmployeeSearch, setShowEmployeeSearch] = useState(false);
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const [loading, setLoading] = useState(false);
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedImage, setSelectedImage] = useState('');
@@ -87,6 +90,9 @@ export default function PreparationPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+
+  // Ref for search container to calculate dropdown position
+  const searchContainerRef = useRef<HTMLDivElement>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [isLoadingCamera, setIsLoadingCamera] = useState(false);
 
@@ -115,6 +121,44 @@ export default function PreparationPage() {
       loadDailyPreparations();
     }
   }, [selectedDate, currentView]);
+
+  // Calculate dropdown position when search is shown
+  useEffect(() => {
+    if (showEmployeeSearch && searchContainerRef.current) {
+      const containerRect = searchContainerRef.current.getBoundingClientRect();
+      const screenWidth = window.innerWidth;
+      const dropdownWidth = scale(320);
+
+      // حساب المساحة المتاحة
+      const spaceRight = screenWidth - containerRect.left;
+      const spaceLeft = containerRect.right;
+
+      let dynamicStyle: React.CSSProperties = {};
+
+      if (spaceRight >= dropdownWidth) {
+        // مساحة كافية لفتح القائمة لليسار (الاتجاه الطبيعي في RTL)
+        dynamicStyle = { left: 0 };
+      } else if (spaceLeft >= dropdownWidth) {
+        // فتح لليمين إذا لم تكن هناك مساحة لليسار
+        dynamicStyle = { right: 0 };
+      } else {
+        // استخدام كامل العرض المتاح
+        if (spaceRight > spaceLeft) {
+          dynamicStyle = {
+            left: 0,
+            width: `${Math.min(spaceRight - 20, scale(320))}px`
+          };
+        } else {
+          dynamicStyle = {
+            right: 0,
+            width: `${Math.min(spaceLeft - 20, scale(320))}px`
+          };
+        }
+      }
+
+      setDropdownStyle(dynamicStyle);
+    }
+  }, [showEmployeeSearch]);
 
   // Load data when employee is selected
   useEffect(() => {
@@ -1516,25 +1560,27 @@ export default function PreparationPage() {
                 >
                   سجلات التحضير
                 </h2>
-                <ButtonCreat
-                  text="العودة"
-                  onpress={() => setCurrentView('buttons')}
-                  styleButton={{
+                <button
+                  onClick={() => setCurrentView('buttons')}
+                  className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                  title="العودة"
+                  style={{
                     backgroundColor: colors.LIGHTMIST,
-                    color: colors.BLUE,
-                    padding: `${scale(10)}px ${scale(16)}px`,
-                    fontSize: scale(13 + size),
-                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    padding: `${scale(10)}px`,
                     borderRadius: `${scale(8)}px`,
                     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                     transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: `${scale(6)}px`,
-                    minWidth: `${scale(80)}px`
+                    minWidth: `${scale(44)}px`,
+                    minHeight: `${scale(44)}px`,
+                    border: 'none',
+                    cursor: 'pointer'
                   }}
-                />
+                >
+                  <BackArrowIcon
+                    size={scale(20)}
+                    color={colors.BLUE}
+                  />
+                </button>
               </div>
 
               {/* Date and Actions Row */}
@@ -1546,8 +1592,8 @@ export default function PreparationPage() {
                 }}
               >
                 <div
-                  className="flex items-center"
-                  style={{ gap: `${scale(16)}px` }}
+                  className="flex items-end"
+                  style={{ gap: `${scale(12)}px` }}
                 >
                   <div>
                     <label
@@ -1578,7 +1624,7 @@ export default function PreparationPage() {
                     </div>
                   </div>
 
-                  {/* Filter Button - Same as mobile app FilterSvg */}
+                  {/* Filter Button - Same as mobile app FilterSvg - Now aligned with date input */}
                   <button
                     onClick={() => {
                       // empty() function from mobile app
@@ -1591,7 +1637,11 @@ export default function PreparationPage() {
                     title="فلترة"
                     style={{
                       padding: `${scale(12)}px`,
-                      borderRadius: `${scale(8)}px`
+                      borderRadius: `${scale(8)}px`,
+                      height: `${scale(44)}px`, // نفس ارتفاع input التاريخ تقريباً
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
                     }}
                   >
                     <svg
@@ -1665,7 +1715,8 @@ export default function PreparationPage() {
                           padding: `${scale(6)}px ${scale(12)}px`,
                           borderRadius: `${scale(6)}px`,
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.2)'
+                          border: '1px solid rgba(239, 68, 68, 0.2)',
+                          marginBottom: `${scale(8)}px` // رفع الزر قليلاً عن القائمة التي تحته
                         }}
                       >
                         إلغاء التصفية
@@ -1676,7 +1727,8 @@ export default function PreparationPage() {
                   {/* Search Input and Button - Same as mobile app */}
                   {showEmployeeSearch && (
                     <div
-                      className="flex mb-3"
+                      ref={searchContainerRef}
+                      className="flex mb-3 relative"
                       style={{
                         gap: `${scale(12)}px`,
                         marginBottom: `${scale(16)}px`
@@ -1720,31 +1772,46 @@ export default function PreparationPage() {
                   {/* Employee Search Results */}
                   {showEmployeeSearch && employees.length > 0 && (
                     <div
-                      className="absolute z-10 w-full bg-white border border-gray-300 rounded-lg shadow-lg overflow-y-auto"
+                      className="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg overflow-y-auto"
                       style={{
                         marginTop: `${scale(4)}px`,
                         borderRadius: `${scale(12)}px`,
                         maxHeight: `${verticalScale(240)}px`,
                         borderColor: colors.BORDERCOLOR,
-                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+                        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        // تموضع ذكي للقائمة
+                        width: `${scale(320)}px`, // عرض افتراضي
+                        maxWidth: 'calc(100vw - 40px)', // لا يتجاوز عرض الشاشة
+                        minWidth: `${scale(280)}px`, // حد أدنى للعرض
+                        // تطبيق التموضع المحسوب ديناميكياً
+                        ...dropdownStyle,
                       }}
                     >
                       {employees.map((employee) => (
                         <button
                           key={employee.id}
                           onClick={() => handleEmployeeSelect(employee)}
-                          className="w-full text-right hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                          className="w-full text-right hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100 last:border-b-0 transition-colors duration-200"
                           style={{
                             padding: `${scale(16)}px ${scale(20)}px`,
-                            borderBottomColor: colors.BORDERCOLOR
+                            borderBottomColor: colors.BORDERCOLOR,
+                            minHeight: `${scale(60)}px`, // حد أدنى للارتفاع لسهولة النقر
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: 'flex-end', // محاذاة لليمين في RTL
+                            justifyContent: 'center',
+                            gap: `${scale(4)}px`
                           }}
                         >
                           <div
                             className="font-ibm-arabic-medium text-gray-900"
                             style={{
                               fontSize: `${scale(15 + size)}px`,
-                              marginBottom: `${scale(4)}px`,
-                              lineHeight: 1.4
+                              lineHeight: 1.4,
+                              fontFamily: fonts.IBMPlexSansArabicMedium,
+                              textAlign: 'right',
+                              width: '100%',
+                              wordBreak: 'break-word'
                             }}
                           >
                             {employee.userName}
@@ -1753,7 +1820,11 @@ export default function PreparationPage() {
                             className="text-gray-600"
                             style={{
                               fontSize: `${scale(12 + size)}px`,
-                              lineHeight: 1.3
+                              lineHeight: 1.3,
+                              fontFamily: fonts.IBMPlexSansArabicRegular,
+                              textAlign: 'right',
+                              width: '100%',
+                              wordBreak: 'break-word'
                             }}
                           >
                             {employee.job} - {employee.PhoneNumber}
@@ -2453,25 +2524,27 @@ export default function PreparationPage() {
               >
                 إسناد دوام إضافي
               </h2>
-              <ButtonCreat
-                text="العودة"
-                onpress={() => setCurrentView('buttons')}
-                styleButton={{
+              <button
+                onClick={() => setCurrentView('buttons')}
+                className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                title="العودة"
+                style={{
                   backgroundColor: colors.LIGHTMIST,
-                  color: colors.BLUE,
-                  padding: `${scale(10)}px ${scale(16)}px`,
-                  fontSize: scale(13 + size),
-                  fontFamily: fonts.IBMPlexSansArabicMedium,
+                  padding: `${scale(10)}px`,
                   borderRadius: `${scale(8)}px`,
                   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                   transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: `${scale(6)}px`,
-                  minWidth: `${scale(80)}px`
+                  minWidth: `${scale(44)}px`,
+                  minHeight: `${scale(44)}px`,
+                  border: 'none',
+                  cursor: 'pointer'
                 }}
-              />
+              >
+                <BackArrowIcon
+                  size={scale(20)}
+                  color={colors.BLUE}
+                />
+              </button>
             </div>
 
             <div className="text-center py-12">
@@ -2521,58 +2594,38 @@ export default function PreparationPage() {
               >
                 إضافة صلاحيات HR
               </h2>
-              <ButtonCreat
-                text="العودة"
-                onpress={() => setCurrentView('buttons')}
-                styleButton={{
+              <button
+                onClick={() => setCurrentView('buttons')}
+                className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                title="العودة"
+                style={{
                   backgroundColor: colors.LIGHTMIST,
-                  color: colors.BLUE,
-                  padding: `${scale(10)}px ${scale(16)}px`,
-                  fontSize: scale(13 + size),
-                  fontFamily: fonts.IBMPlexSansArabicMedium,
+                  padding: `${scale(10)}px`,
                   borderRadius: `${scale(8)}px`,
                   boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
                   transition: 'all 0.2s ease',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: `${scale(6)}px`,
-                  minWidth: `${scale(80)}px`
+                  minWidth: `${scale(44)}px`,
+                  minHeight: `${scale(44)}px`,
+                  border: 'none',
+                  cursor: 'pointer'
                 }}
-              />
+              >
+                <BackArrowIcon
+                  size={scale(20)}
+                  color={colors.BLUE}
+                />
+              </button>
             </div>
 
-            <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                style={{ color: colors.GREAY }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
-              </svg>
-              <h3
-                className="mt-2"
-                style={{
-                  fontSize: scale(14 + size),
-                  fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: colors.BLACK
-                }}
-              >
-                إضافة صلاحيات HR
-              </h3>
-              <p
-                className="mt-1"
-                style={{
-                  fontSize: scale(12 + size),
-                  fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: colors.GREAY
-                }}
-              >
-                هذه الميزة قيد التطوير
-              </p>
-            </div>
+            {/* HR Users Management */}
+            <HRUsersManagement
+              user={user}
+              size={size}
+              onUserUpdate={() => {
+                // Refresh any necessary data
+                console.log('HR users updated');
+              }}
+            />
           </Card>
         )}
       </ContentSection>

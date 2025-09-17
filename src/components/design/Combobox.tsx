@@ -45,6 +45,7 @@ export default function Combobox({
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [dropdownPosition, setDropdownPosition] = useState('right');
+  const [dropdownStyle, setDropdownStyle] = useState<React.CSSProperties>({});
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { size } = useAppSelector(state => state.user);
@@ -76,19 +77,48 @@ export default function Combobox({
     };
   }, [isOpen]);
 
-  // حساب موضع القائمة المنسدلة
+  // حساب موضع القائمة المنسدلة بشكل ذكي
   useEffect(() => {
     if (isOpen && containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
+      const containerRect = containerRef.current.getBoundingClientRect();
       const screenWidth = window.innerWidth;
+      const dropdownWidth = scale(280); // عرض أكبر للقائمة
 
-      // إذا كان العنصر في النصف الأيسر من الشاشة، افتح القائمة لليمين
-      // إذا كان في النصف الأيمن، افتح القائمة لليسار
-      if (rect.left < screenWidth / 2) {
-        setDropdownPosition('left');
+      // حساب المساحة المتاحة في كل اتجاه
+      const spaceRight = screenWidth - containerRect.left;
+      const spaceLeft = containerRect.right;
+
+      // تحديد الاتجاه الأفضل أفقياً
+      let horizontalPosition = 'left'; // افتراضي: فتح لليسار (في RTL)
+      let dynamicStyle: React.CSSProperties = {};
+
+      if (spaceRight >= dropdownWidth) {
+        // مساحة كافية لفتح القائمة لليسار (الاتجاه الطبيعي في RTL)
+        horizontalPosition = 'left';
+        dynamicStyle = { left: 0 };
+      } else if (spaceLeft >= dropdownWidth) {
+        // فتح لليمين إذا لم تكن هناك مساحة لليسار
+        horizontalPosition = 'right';
+        dynamicStyle = { right: 0 };
       } else {
-        setDropdownPosition('right');
+        // إذا لم تكن هناك مساحة كافية، استخدم كامل العرض المتاح
+        if (spaceRight > spaceLeft) {
+          horizontalPosition = 'left';
+          dynamicStyle = {
+            left: 0,
+            width: `${Math.min(spaceRight - 20, scale(280))}px` // 20px margin
+          };
+        } else {
+          horizontalPosition = 'right';
+          dynamicStyle = {
+            right: 0,
+            width: `${Math.min(spaceLeft - 20, scale(280))}px` // 20px margin
+          };
+        }
       }
+
+      setDropdownPosition(horizontalPosition);
+      setDropdownStyle(dynamicStyle);
     }
   }, [isOpen]);
 
@@ -162,14 +192,17 @@ export default function Combobox({
 
       {isOpen && (
         <div
-          className={`absolute top-full bg-white border overflow-hidden z-50 ${dropdownPosition}-0`}
+          className={`absolute top-full bg-white border overflow-hidden z-50 sm:max-w-none max-w-[calc(100vw-40px)]`}
           style={{
             marginTop: `${scale(4)}px`,
             borderColor: colors.BORDERCOLOR,
             borderRadius: `${scale(12)}px`,
-            width: `${scale(200)}px`,
+            width: `${scale(280)}px`, // عرض افتراضي
+            minWidth: `${scale(200)}px`, // حد أدنى للعرض
             maxHeight: `${verticalScale(280)}px`,
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            // تطبيق التموضع المحسوب ديناميكياً
+            ...dropdownStyle,
           }}
         >
           <div
@@ -209,39 +242,45 @@ export default function Combobox({
                   setSearchTerm('');
                 }}
                 className={`
-                  w-full text-right hover:bg-gray-50
-                  transition-colors duration-200
-                  ${(item.name === value || item.code === value) ? 'bg-blue-50' : 'text-gray-700'}
+                  w-full text-right hover:bg-gray-50 active:bg-gray-100
+                  transition-colors duration-200 border-b border-gray-100 last:border-b-0
+                  ${(item.name === value || item.code === value) ? 'bg-blue-50 hover:bg-blue-100' : 'text-gray-700'}
                 `}
                 style={{
-                  padding: `${scale(12)}px ${scale(16)}px`
+                  padding: `${scale(14)}px ${scale(16)}px`, // padding أكبر قليلاً
+                  minHeight: `${scale(48)}px`, // حد أدنى للارتفاع لسهولة النقر
                 }}
               >
                 <div
                   className="flex items-center justify-between w-full"
-                  style={{ gap: `${scale(8)}px` }}
+                  style={{ gap: `${scale(12)}px` }} // مسافة أكبر بين العناصر
                 >
                   <span
-                    className="font-ibm-arabic-medium"
+                    className="font-ibm-arabic-medium flex-1 text-right"
                     style={{
-                      fontSize: scale(13 + size),
+                      fontSize: scale(14 + size), // خط أكبر قليلاً
                       color: (item.name === value || item.code === value) ? colors.BLUE : '#374151',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      lineHeight: 1.4
+                      lineHeight: 1.5, // line height أفضل للقراءة
+                      wordBreak: 'break-word', // كسر الكلمات الطويلة
                     }}
                   >
                     {item.name}
                   </span>
                   {item.code && (
                     <span
-                      className="font-ibm-arabic-bold"
+                      className="font-ibm-arabic-bold flex-shrink-0"
                       style={{
-                        fontSize: scale(12 + size),
+                        fontSize: scale(13 + size), // خط أكبر قليلاً
                         direction: 'ltr',
                         unicodeBidi: 'embed',
                         color: (item.name === value || item.code === value) ? colors.BLUE : colors.BLUE,
                         fontFamily: fonts.IBMPlexSansArabicBold,
-                        lineHeight: 1.3
+                        lineHeight: 1.4,
+                        backgroundColor: (item.name === value || item.code === value) ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                        padding: `${scale(4)}px ${scale(8)}px`,
+                        borderRadius: `${scale(6)}px`,
+                        border: `1px solid ${(item.name === value || item.code === value) ? colors.BLUE : 'rgba(59, 130, 246, 0.2)'}`,
                       }}
                     >
                       {item.code}
