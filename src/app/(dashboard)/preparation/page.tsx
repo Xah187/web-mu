@@ -2155,7 +2155,7 @@ export default function PreparationPage() {
                                   {(() => {
                                     const checkIn = new Date(record.CheckIntime);
                                     const checkOut = new Date(record.CheckOUTtime);
-                                    const diffMs = checkOut - checkIn;
+                                    const diffMs = checkOut.getTime() - checkIn.getTime();
                                     const hours = Math.floor(diffMs / (1000 * 60 * 60));
                                     const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                                     const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
