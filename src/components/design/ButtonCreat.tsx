@@ -38,8 +38,9 @@ export default function ButtonCreat({
                       text !== 'back' &&
                       text !== 'return' &&
                       text !== 'HR' &&
+                      text !== 'سجلات التحضير' &&
                       text !== 'إسناد دوام إضافي' &&
-                      text !== 'إضافة صلاحيات HR' &&
+                      text !== 'إضافة صلاحيات الموارد البشرية' &&
                       text !== 'إنشاء فرع' &&
                       text !== 'الأعضاء' &&
                       text !== 'العهد' &&
@@ -47,10 +48,13 @@ export default function ButtonCreat({
                       text !== 'اضافة طلب' &&
                       text !== 'إضافة عضو' &&
                       text !== 'إضافة أول عضو' &&
+                      text !== 'حفظ التغييرات' &&
                       !text.includes('التقاط') &&
                       !text.includes('إعادة') &&
                       !text.includes('تأكيد') &&
-                      !text.includes('تشغيل');
+                      !text.includes('تشغيل') &&
+                      !text.includes('حفظ') &&
+                      !text.includes('جاري الحفظ');
 
   return (
     <button

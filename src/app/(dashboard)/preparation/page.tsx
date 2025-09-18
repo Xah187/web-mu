@@ -98,6 +98,12 @@ export default function PreparationPage() {
 
   const [hrLastID, setHrLastID] = useState<number>(0);
   const [hrHasMore, setHrHasMore] = useState<boolean>(true);
+
+  // Overtime assignment states
+  const [selectedOvertimeEmployee, setSelectedOvertimeEmployee] = useState<any>(null);
+  const [selectedOvertimeDates, setSelectedOvertimeDates] = useState<string[]>([]);
+  const [employeeSearchResults, setEmployeeSearchResults] = useState<any[]>([]);
+  const [isAssigningOvertime, setIsAssigningOvertime] = useState(false);
   const [hrLoadingMore, setHrLoadingMore] = useState<boolean>(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -595,6 +601,145 @@ export default function PreparationPage() {
     setShowEmployeeSearch(false);
     // Load preparation data for selected employee like mobile app SearchPreparation
     loadPreparationData();
+  };
+
+  // Search employees for overtime assignment (separate from HR search)
+  const searchEmployees = useCallback(async (query: string) => {
+    console.log('🔍 searchEmployees called with query:', query);
+    if (!query || query.length < 2) {
+      console.log('🧹 Query too short, clearing results');
+      setEmployeeSearchResults([]);
+      setShowEmployeeSearch(false);
+      return;
+    }
+
+    try {
+      // Get token like mobile app (same as handleSearchEmployees)
+      let token: string | null = null;
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('user');
+        try {
+          const parsed = storedUser ? JSON.parse(storedUser) : null;
+          token = parsed?.accessToken || null;
+        } catch {}
+        if (!token) token = localStorage.getItem('token');
+      }
+
+      const response = await fetch(`/api/hr/employees/search?query=${encodeURIComponent(query)}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('🔍 نتائج البحث في إسناد الدوام الإضافي:', data);
+        console.log('📊 عدد النتائج:', data.data?.length || 0);
+        setEmployeeSearchResults(data.data || []);
+        setShowEmployeeSearch(true);
+      } else {
+        console.error('❌ فشل البحث - Status:', response.status);
+        const errorText = await response.text();
+        console.error('❌ رسالة الخطأ:', errorText);
+        setEmployeeSearchResults([]);
+        setShowEmployeeSearch(false);
+      }
+    } catch (error) {
+      console.error('❌ خطأ في البحث عن الموظفين للدوام الإضافي:', error);
+      setEmployeeSearchResults([]);
+      setShowEmployeeSearch(false);
+    }
+  }, []);
+
+  // Handle overtime assignment - Same as mobile app opreationovertime
+  const handleOvertimeAssignment = async (isAssigning: boolean) => {
+    if (!selectedOvertimeEmployee || selectedOvertimeDates.length === 0) {
+      Tostget('يرجى اختيار موظف وتواريخ', 'error');
+      return;
+    }
+
+    console.log('🚀 بدء إسناد الدوام الإضافي');
+    console.log('👤 الموظف المختار:', selectedOvertimeEmployee);
+    console.log('📅 التواريخ المختارة:', selectedOvertimeDates);
+    console.log('✅ نوع العملية:', isAssigning ? 'إسناد' : 'إلغاء');
+
+    setIsAssigningOvertime(true);
+
+    try {
+      // Get token like mobile app
+      let token: string | null = null;
+      if (typeof window !== 'undefined') {
+        const storedUser = localStorage.getItem('user');
+        try {
+          const parsed = storedUser ? JSON.parse(storedUser) : null;
+          token = parsed?.accessToken || null;
+        } catch {}
+        if (!token) token = localStorage.getItem('token');
+      }
+
+      const response = await fetch('/api/hr/preparation', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          PhoneNumber: selectedOvertimeEmployee.id,
+          type: 'Overtimeassignment',
+          Overtimeassignment: isAssigning ? 'true' : 'false',
+          DateDay: selectedOvertimeDates,
+          DateDayfalse: isAssigning ? [] : selectedOvertimeDates
+        }),
+      });
+
+      const requestData = {
+        PhoneNumber: selectedOvertimeEmployee.id,
+        type: 'Overtimeassignment',
+        Overtimeassignment: isAssigning ? 'true' : 'false',
+        DateDay: selectedOvertimeDates,
+        DateDayfalse: isAssigning ? [] : selectedOvertimeDates
+      };
+      console.log('📤 البيانات المرسلة:', requestData);
+
+      console.log('📡 Response status:', response.status);
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('✅ Response data:', result);
+        if (result.success) {
+          Tostget(
+            isAssigning
+              ? `تم إسناد الدوام الإضافي للموظف ${selectedOvertimeEmployee.userName} بنجاح`
+              : `تم إلغاء الدوام الإضافي للموظف ${selectedOvertimeEmployee.userName} بنجاح`,
+            'success'
+          );
+
+          // Reset form
+          setSelectedOvertimeEmployee(null);
+          setSelectedOvertimeDates([]);
+          setSearchQuery('');
+          setEmployeeSearchResults([]);
+          setShowEmployeeSearch(false);
+        } else {
+          console.log('❌ فشل في العملية - النتيجة:', result);
+          Tostget(result.message || 'فشل في العملية', 'error');
+        }
+      } else {
+        const errorText = await response.text();
+        console.log('❌ خطأ HTTP - Status:', response.status);
+        console.log('❌ رسالة الخطأ:', errorText);
+        Tostget('فشل في العملية', 'error');
+      }
+    } catch (error) {
+      console.error('Error in overtime assignment:', error);
+      Tostget('حدث خطأ أثناء العملية', 'error');
+    } finally {
+      setIsAssigningOvertime(false);
+    }
   };
 
   // Download PDF function - Same as mobile app shareepdf
@@ -1484,7 +1629,7 @@ export default function PreparationPage() {
                   {hasHRPermissions() && (
                     <>
                       <ButtonCreat
-                        text="HR"
+                        text="سجلات التحضير"
                         onpress={() => setCurrentView('hr')}
                         styleButton={{
                           backgroundColor: colors.BLUE,
@@ -1515,7 +1660,7 @@ export default function PreparationPage() {
 
                   {hasManagerPermissions() && (
                     <ButtonCreat
-                      text="إضافة صلاحيات HR"
+                      text="إضافة صلاحيات الموارد البشرية"
                       onpress={() => setCurrentView('addHR')}
                       styleButton={{
                         backgroundColor: colors.PREMREY,
@@ -1609,6 +1754,8 @@ export default function PreparationPage() {
                     </label>
                     <div className="relative">
                       <input
+                        id="preparation-date-filter"
+                        name="preparation-date-filter"
                         type="month"
                         value={selectedDate.toISOString().slice(0, 7)}
                         onChange={handleDateChange}
@@ -1685,7 +1832,8 @@ export default function PreparationPage() {
                       fontSize: scale(18 + size),
                       fontFamily: fonts.IBMPlexSansArabicBold,
                       color: colors.BLACK,
-                      lineHeight: 1.2
+                      lineHeight: 1.2,
+                      textAlign: 'center'
                     }}
                   >
                     {preparationRecords.length}
@@ -1735,6 +1883,8 @@ export default function PreparationPage() {
                       }}
                     >
                       <input
+                        id="preparation-employee-search"
+                        name="preparation-employee-search"
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
@@ -1975,6 +2125,46 @@ export default function PreparationPage() {
                                 {record.job || 'موظف'}
                               </p>
                             </div>
+
+                            {/* Working Hours Display */}
+                            {record.CheckIntime && record.CheckOUTtime && (
+                              <div
+                                className="text-center bg-white rounded-lg shadow-sm border border-blue-100"
+                                style={{
+                                  padding: `${scale(12)}px ${scale(16)}px`,
+                                  marginLeft: `${scale(12)}px`,
+                                  marginRight: `${scale(12)}px`
+                                }}
+                              >
+                                <div
+                                  className="text-blue-600 font-medium"
+                                  style={{
+                                    fontSize: `${scale(10 + size)}px`,
+                                    marginBottom: `${scale(4)}px`
+                                  }}
+                                >
+                                  إجمالي ساعات العمل
+                                </div>
+                                <div
+                                  className="font-ibm-arabic-bold text-blue-800"
+                                  style={{
+                                    fontSize: `${scale(14 + size)}px`,
+                                    lineHeight: 1.3
+                                  }}
+                                >
+                                  {(() => {
+                                    const checkIn = new Date(record.CheckIntime);
+                                    const checkOut = new Date(record.CheckOUTtime);
+                                    const diffMs = checkOut - checkIn;
+                                    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+                                    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                                    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+                                    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                                  })()}
+                                </div>
+                              </div>
+                            )}
+
                             <div
                               className="text-right"
                               style={{ marginLeft: `${scale(16)}px` }}
@@ -2547,37 +2737,302 @@ export default function PreparationPage() {
               </button>
             </div>
 
-            <div className="text-center py-12">
-              <svg
-                className="mx-auto h-12 w-12"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                style={{ color: colors.GREAY }}
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+            {/* Employee Search Section */}
+            <div className="mb-6">
               <h3
-                className="mt-2"
+                className="mb-4"
                 style={{
-                  fontSize: scale(14 + size),
+                  fontSize: scale(16 + size),
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   color: colors.BLACK
                 }}
               >
-                إسناد دوام إضافي
+                البحث عن موظف
               </h3>
-              <p
-                className="mt-1"
-                style={{
-                  fontSize: scale(12 + size),
-                  fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: colors.GREAY
-                }}
-              >
-                هذه الميزة قيد التطوير
-              </p>
+
+              <div className="relative" ref={searchContainerRef}>
+                <input
+                  id="overtime-employee-search"
+                  name="overtime-employee-search"
+                  type="text"
+                  placeholder="ابحث عن موظف..."
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    console.log('🔍 تغيير في البحث:', value);
+                    setSearchQuery(value);
+                    if (value.length >= 2) {
+                      console.log('🚀 بدء البحث عن:', value);
+                      searchEmployees(value);
+                    } else {
+                      console.log('🧹 مسح النتائج - النص قصير جداً');
+                      setEmployeeSearchResults([]);
+                      setShowEmployeeSearch(false);
+                    }
+                  }}
+                  className="w-full"
+                  style={{
+                    fontSize: scale(14 + size),
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    padding: scale(12),
+                    borderRadius: scale(8),
+                    border: `1px solid ${colors.BORDERCOLOR}`,
+                    backgroundColor: colors.WHITE
+                  }}
+                />
+
+                {/* Search Results Dropdown */}
+                {showEmployeeSearch && employeeSearchResults.length > 0 && (
+                  <div
+                    className="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg overflow-y-auto"
+                    style={{
+                      ...dropdownStyle,
+                      marginTop: scale(4),
+                      borderRadius: scale(12),
+                      maxHeight: scale(240),
+                      borderColor: 'rgba(27, 78, 209, 0.1)',
+                      boxShadow: 'rgba(0, 0, 0, 0.1) 0px 10px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px',
+                      width: scale(320),
+                      maxWidth: 'calc(100vw - 40px)',
+                      minWidth: scale(280)
+                    }}
+                  >
+                    {employeeSearchResults.map((employee, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setSelectedOvertimeEmployee(employee);
+                          setSearchQuery(employee.userName);
+                          setShowEmployeeSearch(false);
+                          setEmployeeSearchResults([]);
+                        }}
+                        className="w-full text-right hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                        style={{
+                          padding: scale(12) + 'px ' + scale(16) + 'px',
+                          borderBottomColor: 'rgba(27, 78, 209, 0.1)',
+                          borderWidth: '0.2px',
+                          borderColor: colors.BORDERCOLOR,
+                          borderRadius: scale(5),
+                          marginBottom: scale(2),
+                          backgroundColor: colors.WHITE
+                        }}
+                      >
+                        <div
+                          style={{
+                            fontSize: scale(14 + size),
+                            fontFamily: fonts.IBMPlexSansArabicMedium,
+                            color: colors.BLACK,
+                            textAlign: 'right'
+                          }}
+                        >
+                          {employee.userName}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Selected Employee Display */}
+              {selectedOvertimeEmployee && (
+                <div
+                  className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                  style={{
+                    borderRadius: scale(8),
+                    padding: scale(16)
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: scale(14 + size),
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      color: colors.BLUE,
+                      marginBottom: scale(4)
+                    }}
+                  >
+                    الموظف المختار: {selectedOvertimeEmployee.userName}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setSelectedOvertimeEmployee(null);
+                      setSearchQuery('');
+                      setSelectedOvertimeDates([]);
+                    }}
+                    className="text-red-600 hover:text-red-800 transition-colors duration-200 mt-2"
+                    style={{
+                      fontSize: scale(12 + size),
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      padding: scale(6) + 'px ' + scale(12) + 'px',
+                      borderRadius: scale(6),
+                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                      border: '1px solid rgba(239, 68, 68, 0.2)'
+                    }}
+                  >
+                    إلغاء الاختيار
+                  </button>
+                </div>
+              )}
             </div>
+
+            {/* Date Selection Section */}
+            {selectedOvertimeEmployee && (
+              <div className="mb-6">
+                <h3
+                  className="mb-4"
+                  style={{
+                    fontSize: scale(16 + size),
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    color: colors.BLACK
+                  }}
+                >
+                  اختيار التواريخ للدوام الإضافي
+                </h3>
+
+                {/* Current Overtime Display */}
+                <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <h4
+                    className="mb-2"
+                    style={{
+                      fontSize: scale(14 + size),
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      color: colors.BLACK
+                    }}
+                  >
+                    الدوام الإضافي الحالي:
+                  </h4>
+                  <div
+                    style={{
+                      fontSize: scale(12 + size),
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      color: colors.GREAY
+                    }}
+                  >
+                    {selectedOvertimeEmployee?.Datedayovertime && selectedOvertimeEmployee.Datedayovertime.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {selectedOvertimeEmployee.Datedayovertime.map((date: string, index: number) => (
+                          <span
+                            key={index}
+                            className="bg-green-100 text-green-800 px-2 py-1 rounded"
+                            style={{
+                              fontSize: scale(11 + size),
+                              fontFamily: fonts.IBMPlexSansArabicMedium
+                            }}
+                          >
+                            {date}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      'لا يوجد دوام إضافي مسند حالياً'
+                    )}
+                  </div>
+                </div>
+
+                <h4
+                  className="mb-2"
+                  style={{
+                    fontSize: scale(14 + size),
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    color: colors.BLACK
+                  }}
+                >
+                  إضافة تواريخ جديدة:
+                </h4>
+
+                <div className="mb-4">
+                  <input
+                    id="overtime-date-picker"
+                    name="overtime-date-picker"
+                    type="date"
+                    className="w-full p-3 border border-gray-300 rounded-lg"
+                    style={{
+                      fontSize: scale(14 + size),
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      padding: scale(12),
+                      borderRadius: scale(8),
+                      border: `1px solid ${colors.BORDERCOLOR}`
+                    }}
+                    onChange={(e) => {
+                      const selectedDate = e.target.value;
+                      if (selectedDate && !selectedOvertimeDates.includes(selectedDate)) {
+                        setSelectedOvertimeDates([...selectedOvertimeDates, selectedDate]);
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* Selected Dates Display */}
+                {selectedOvertimeDates.length > 0 && (
+                  <div className="mb-4">
+                    <h4
+                      className="mb-2"
+                      style={{
+                        fontSize: scale(14 + size),
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        color: colors.BLACK
+                      }}
+                    >
+                      التواريخ المختارة:
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedOvertimeDates.map((date, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                          style={{
+                            fontSize: scale(12 + size),
+                            fontFamily: fonts.IBMPlexSansArabicMedium
+                          }}
+                        >
+                          {date}
+                          <button
+                            onClick={() => {
+                              setSelectedOvertimeDates(selectedOvertimeDates.filter((_, i) => i !== index));
+                            }}
+                            className="ml-2 text-red-600 hover:text-red-800"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Action Buttons */}
+                {selectedOvertimeDates.length > 0 && (
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => handleOvertimeAssignment(true)}
+                      disabled={isAssigningOvertime}
+                      className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors duration-200 disabled:opacity-50"
+                      style={{
+                        fontSize: scale(14 + size),
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        padding: scale(12),
+                        borderRadius: scale(8)
+                      }}
+                    >
+                      {isAssigningOvertime ? 'جاري الإسناد...' : 'إسناد دوام إضافي'}
+                    </button>
+
+                    <button
+                      onClick={() => handleOvertimeAssignment(false)}
+                      disabled={isAssigningOvertime}
+                      className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50"
+                      style={{
+                        fontSize: scale(14 + size),
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        padding: scale(12),
+                        borderRadius: scale(8)
+                      }}
+                    >
+                      {isAssigningOvertime ? 'جاري الإلغاء...' : 'إلغاء دوام إضافي'}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </Card>
         )}
 
@@ -2592,7 +3047,7 @@ export default function PreparationPage() {
                   color: colors.BLACK
                 }}
               >
-                إضافة صلاحيات HR
+                إضافة صلاحيات الموارد البشرية
               </h2>
               <button
                 onClick={() => setCurrentView('buttons')}

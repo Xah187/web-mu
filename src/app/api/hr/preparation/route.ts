@@ -124,13 +124,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log('Received preparation data:', body);
 
-    const { PhoneNumber, type, DateDay, Checktime, CheckFile } = body;
+    const { PhoneNumber, type, DateDay, Checktime, CheckFile, Overtimeassignment, DateDayfalse } = body;
 
-    if (!PhoneNumber || !type || !DateDay || !Checktime || !CheckFile) {
-      return NextResponse.json({
-        success: false,
-        message: 'بيانات ناقصة'
-      }, { status: 400 });
+    // Different validation for different types
+    if (type === 'Overtimeassignment') {
+      if (!PhoneNumber || !type || !DateDay || !Overtimeassignment) {
+        return NextResponse.json({
+          success: false,
+          message: 'بيانات ناقصة لإسناد الدوام الإضافي'
+        }, { status: 400 });
+      }
+    } else {
+      // CheckIn/CheckOut validation
+      if (!PhoneNumber || !type || !DateDay || !Checktime || !CheckFile) {
+        return NextResponse.json({
+          success: false,
+          message: 'بيانات ناقصة'
+        }, { status: 400 });
+      }
     }
 
     // Derive DateDay in UTC to match backend Userverification logic (uses UTC date)
@@ -165,13 +176,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Send to backend API (same endpoint as mobile app)
-    const preparationData = {
-      PhoneNumber,
-      type,
-      DateDay: convertedDateDay, // Use converted date
-      Checktime,
-      CheckFile
-    };
+    let preparationData;
+
+    if (type === 'Overtimeassignment') {
+      // For overtime assignment, send all required fields
+      preparationData = {
+        PhoneNumber,
+        type,
+        DateDay,
+        Overtimeassignment,
+        DateDayfalse: DateDayfalse || []
+      };
+    } else {
+      // For CheckIn/CheckOut
+      preparationData = {
+        PhoneNumber,
+        type,
+        DateDay: convertedDateDay, // Use converted date
+        Checktime,
+        CheckFile
+      };
+    }
 
     console.log('Sending to backend:', preparationData);
 
@@ -261,7 +286,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: type === 'CheckIn' ? 'تم تسجيل الدخول بنجاح' : 'تم تسجيل الخروج بنجاح',
+      message: type === 'Overtimeassignment' ? 'تم إسناد الدوام الإضافي بنجاح' :
+               type === 'CheckIn' ? 'تم تسجيل الدخول بنجاح' : 'تم تسجيل الخروج بنجاح',
       data: data
     });
 
