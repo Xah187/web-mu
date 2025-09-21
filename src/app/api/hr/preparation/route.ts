@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyJWT } from '@/middleware/jwt';
+// import { verifyJWT } from '@/middleware/jwt';
 import { Api } from '@/lib/api/axios';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify locally to build session header; always forward incoming Authorization
-    const authResult = await verifyJWT(request);
+    // Pass-through auth: extract incoming Authorization header; backend will verify
     const fwdAuthHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (!fwdAuthHeader || !fwdAuthHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
+    }
 
     const { searchParams } = new URL(request.url);
     const date = searchParams.get('date');
@@ -49,13 +51,7 @@ export async function GET(request: NextRequest) {
     if (fwdAuthHeader) {
       headers.Authorization = fwdAuthHeader;
     }
-    if ((authResult as any)?.success && (authResult as any)?.user?.accessToken) {
-      const sessionData = { user: (authResult as any).user.data };
-      const sessionDataHeader = JSON.stringify(sessionData).replace(/[\u007F-\uFFFF]/g, (c) =>
-        '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')
-      );
-      headers['X-Session-Data'] = sessionDataHeader;
-    }
+    // No X-Session-Data needed; backend will decode JWT from Authorization
 
     // If phoneNumber is provided, use SearchHR endpoint instead
     if (phoneNumber) {
@@ -112,13 +108,10 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify JWT token
-    const authResult = await verifyJWT(request);
-    if (!authResult.success || !authResult.user) {
-      return NextResponse.json({
-        success: false,
-        message: 'غير مصرح'
-      }, { status: 401 });
+    // Pass-through auth: extract Authorization header; backend will verify
+    const fwdAuthHeader = request.headers.get('authorization') || request.headers.get('Authorization');
+    if (!fwdAuthHeader || !fwdAuthHeader.startsWith('Bearer ')) {
+      return NextResponse.json({ success: false, message: 'غير مصرح' }, { status: 401 });
     }
 
     const body = await request.json();
@@ -202,16 +195,7 @@ export async function POST(request: NextRequest) {
 
     const backendBase = ((process.env.BACKEND_URL && process.env.BACKEND_URL.length > 0) ? process.env.BACKEND_URL : Api).replace(/\/+$/,'');
 
-    // Create session data for backend (same as backend req.session.user)
-    const sessionData = {
-      user: authResult.user.data // This contains the decoded JWT data
-    };
-
-    console.log('Sending session data to backend:', sessionData);
-    // Make header value ASCII-safe by escaping non-ASCII as \uXXXX (so it can be sent in HTTP headers)
-    const sessionDataHeader = JSON.stringify(sessionData).replace(/[\u007F-\uFFFF]/g, (c) =>
-      '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')
-    );
+    // No session header needed; backend will decode JWT from Authorization
 
 
     // Retry mechanism like mobile app (10 retries with exponential delay)
@@ -225,8 +209,7 @@ export async function POST(request: NextRequest) {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authResult.user.accessToken}`,
-            'X-Session-Data': sessionDataHeader, // ASCII-escaped JSON session data for header
+            'Authorization': fwdAuthHeader,
           },
           body: JSON.stringify(preparationData),
           // Add timeout like mobile app
