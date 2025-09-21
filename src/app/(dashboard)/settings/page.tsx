@@ -529,96 +529,62 @@ export default function SettingsPage() {
                 </svg>
               }
             />
+
+            {/* Finance Toggle - Admin Only */}
+            <AdminGuard>
+              <SettingItem
+                title={financeDisabled ? 'تفعيل العمليات اليدوية لقسم المالية' : 'توقيف العمليات اليدوية لقسم المالية'}
+                onPress={handleFinanceToggle}
+                color={financeDisabled ? colors.RED : colors.BLUE}
+                icon={
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={financeDisabled ? colors.RED : colors.BLUE} strokeWidth="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                  </svg>
+                }
+              />
+            </AdminGuard>
+
+            <SettingItem
+              title="حذف حسابي"
+              onPress={() => setShowDeleteConfirm(true)}
+              color={colors.RED}
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
+                  <polyline points="3,6 5,6 21,6" />
+                  <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                </svg>
+              }
+            />
+
+            <SettingItem
+              title="تسجيل خروج"
+              onPress={() => setShowLogoutConfirm(true)}
+              color={colors.RED}
+              icon={
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16,17 21,12 16,7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+              }
+            />
           </ResponsiveGrid>
         </div>
 
-         {/* Bottom Actions - Full Width */}
-         <div className="px-4 mt-8 mb-24 space-y-3">
-           {/* Admin Finance Toggle - Smaller */}
-           <AdminGuard>
-             <div className="flex justify-center">
-               <div className="bg-white rounded-2xl px-3 py-2 flex items-center justify-between max-w-sm gap-4">
-                 <span
-                   className="font-ibm-arabic-semibold text-right"
-                   style={{
-                     fontSize: verticalScale(14),
-                     color: colors.BLUE
-                   }}
-                 >
-                   توقيف العمليات اليدوية لقسم المالية
-                 </span>
-                 <button
-                   onClick={handleFinanceToggle}
-                   className="relative inline-flex items-center justify-center w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none border font-ibm-arabic-bold text-xs text-white"
-                   style={{
-                     backgroundColor: financeDisabled ? colors.RED : colors.BLUE,
-                     borderColor: financeDisabled ? colors.RED : colors.BLUE
-                   }}
-                 >
-                   {financeDisabled ? 'OFF' : 'ON'}
-                 </button>
-               </div>
-             </div>
-           </AdminGuard>
-
-           {/* Delete Account - Smaller */}
-           <div className="flex justify-center">
-             <button
-               onClick={() => setShowDeleteConfirm(true)}
-               className="bg-white rounded-2xl px-3 py-2 flex items-center justify-start gap-2 max-w-xs"
-             >
-             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
-               <polyline points="3,6 5,6 21,6" />
-               <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2v2" />
-               <line x1="10" y1="11" x2="10" y2="17" />
-               <line x1="14" y1="11" x2="14" y2="17" />
-             </svg>
-             <span
-               className="font-ibm-arabic-semibold text-right"
-               style={{
-                 fontSize: verticalScale(14),
-                 color: colors.RED
-               }}
-             >
-               حذف حسابي
-             </span>
-             </button>
-           </div>
-
-           {/* Logout - Smaller */}
-           <div className="flex justify-center">
-             <button
-               onClick={() => setShowLogoutConfirm(true)}
-               className="bg-white rounded-2xl px-3 py-2 flex items-center justify-start gap-2 max-w-xs"
-             >
-             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
-               <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-               <polyline points="16,17 21,12 16,7" />
-               <line x1="21" y1="12" x2="9" y2="12" />
-             </svg>
-             <span
-               className="font-ibm-arabic-semibold text-right"
-               style={{
-                 fontSize: verticalScale(14),
-                 color: colors.RED
-               }}
-             >
-               تسجيل خروج
-             </span>
-             </button>
-           </div>
-
-           {/* System Admin Features */}
-           {isSystemAdmin && (
-             <div className="w-full">
-               <SettingItem
-                 title="طلبات الاشتراك"
-                 onPress={() => Tostget('صفحة طلبات الاشتراك قريباً')}
-                 width="100%"
-               />
-             </div>
-           )}
-         </div>
+        {/* System Admin Features */}
+        {isSystemAdmin && (
+          <div className="px-4 mt-4">
+            <SettingItem
+              title="طلبات الاشتراك"
+              onPress={() => Tostget('صفحة طلبات الاشتراك قريباً')}
+              width="100%"
+            />
+          </div>
+        )}
         </ContentSection>
       </ResponsiveLayout>
     </>
