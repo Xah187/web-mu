@@ -1,16 +1,17 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { colors } from '@/constants/colors';
 import { verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector, useAppDispatch } from '@/store';
-import { clearUser } from '@/store/slices/userSlice';
+import { clearUser, setUser } from '@/store/slices/userSlice';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import { Tostget } from '@/components/ui/Toast';
 import Image from 'next/image';
 import { AdminGuard, EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid } from '@/components/layout/ResponsiveLayout';
+import { toggleFinanceOperations, refreshUserData } from '@/lib/api/company/ApiCompany';
 
 interface SettingItemProps {
   title: string;
@@ -192,6 +193,53 @@ export default function SettingsPage() {
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [financeDisabled, setFinanceDisabled] = useState(false);
 
+  // تهيئة حالة العمليات المالية من بيانات المستخدم
+  useEffect(() => {
+    if (user?.data?.DisabledFinance) {
+      setFinanceDisabled(user.data.DisabledFinance === 'true');
+    }
+  }, [user?.data?.DisabledFinance]);
+
+  // تحديث بيانات المستخدم تلقائياً للحصول على أحدث البيانات
+  useEffect(() => {
+    const refreshUserInfo = async () => {
+      if (user?.accessToken && user?.data?.IDCompany && isAdmin) {
+        try {
+          const refreshedData = await refreshUserData(user.data.IDCompany, user.accessToken);
+
+          if (refreshedData?.data?.DisabledFinance !== undefined) {
+            // تحديث بيانات المستخدم في Redux فقط إذا كانت القيمة مختلفة
+            if (user.data?.DisabledFinance !== refreshedData.data.DisabledFinance) {
+              const updatedUser = {
+                ...user,
+                data: {
+                  ...user.data,
+                  DisabledFinance: refreshedData.data.DisabledFinance
+                }
+              };
+              dispatch(setUser(updatedUser));
+
+              // تحديث الحالة المحلية
+              setFinanceDisabled(refreshedData.data.DisabledFinance === 'true');
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing user data:', error);
+          // لا نعرض رسالة خطأ للمستخدم لأن هذا تحديث خلفي
+        }
+      }
+    };
+
+    // تحديث فوري عند تحميل الصفحة
+    refreshUserInfo();
+
+    // تحديث دوري كل 30 ثانية للتأكد من مزامنة البيانات
+    const interval = setInterval(refreshUserInfo, 30000);
+
+    // تنظيف الـ interval عند إلغاء تحميل المكون
+    return () => clearInterval(interval);
+  }, [user?.accessToken, user?.data?.IDCompany, isAdmin, dispatch, user?.data?.DisabledFinance]);
+
   // إظهار/إخفاء قسم البروفايل داخل المحتوى (نُبقي الزر في الهيدر فعال)
   const showInlineProfile = false;
 
@@ -278,13 +326,42 @@ export default function SettingsPage() {
     router.push('/preparation');
   };
 
-  const handleFinanceToggle = () => {
-    if (isAdmin) {
-      setFinanceDisabled(!financeDisabled);
-      // TODO: Implement finance toggle API
-      Tostget(financeDisabled ? 'تم تفعيل العمليات المالية' : 'تم توقيف العمليات المالية');
-    } else {
+  const handleFinanceToggle = async () => {
+    if (!isAdmin) {
       Tostget('ليس في نطاق صلاحياتك');
+      return;
+    }
+
+    if (!user?.data?.IDCompany || !user?.accessToken) {
+      Tostget('بيانات المستخدم غير مكتملة');
+      return;
+    }
+
+    try {
+      const data = await toggleFinanceOperations(
+        user.data.IDCompany,
+        user.accessToken
+      );
+
+      // تحديث الحالة المحلية بناءً على الاستجابة من الخادم
+      const newFinanceDisabled = data.DisabledFinance === 'true';
+      setFinanceDisabled(newFinanceDisabled);
+
+      // تحديث بيانات المستخدم في Redux
+      const updatedUser = {
+        ...user,
+        data: {
+          ...user.data,
+          DisabledFinance: data.DisabledFinance
+        }
+      };
+      dispatch(setUser(updatedUser));
+
+      // عرض رسالة النجاح
+      Tostget(data.success || 'تمت العملية بنجاح');
+    } catch (error: any) {
+      console.error('Finance toggle error:', error);
+      Tostget(error.message || 'خطأ في الشبكة');
     }
   };
 

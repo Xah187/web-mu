@@ -17,6 +17,7 @@ interface User {
     token: string;
     CommercialRegistrationNumber?: string;
     Covenantnumber?: number;
+    DisabledFinance?: string; // Finance operations status
   };
   size: number; // Font size preference
 }
