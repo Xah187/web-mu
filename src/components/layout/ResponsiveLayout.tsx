@@ -208,43 +208,30 @@ interface ResponsiveGridProps {
   className?: string;
 }
 
-export function ResponsiveGrid({ 
-  children, 
+export function ResponsiveGrid({
+  children,
   cols = { mobile: 1, tablet: 2, desktop: 3 },
   gap = 'md',
-  className = '' 
+  className = ''
 }: ResponsiveGridProps) {
   const gapClass = {
     sm: 'gap-2',
-    md: 'gap-4', 
+    md: 'gap-4',
     lg: 'gap-6'
   }[gap];
 
-  const gridClass = `grid ${gapClass} ${className}`;
-  
-  const style = {
-    gridTemplateColumns: `repeat(${cols.mobile || 1}, minmax(0, 1fr))`,
-    '--tablet-cols': cols.tablet || 2,
-    '--desktop-cols': cols.desktop || 3
-  } as React.CSSProperties;
+  // Build responsive grid classes using Tailwind with correct breakpoints
+  // Mobile: default (no prefix)
+  // Tablet: md: (768px+)
+  // Desktop: lg: (1024px+)
+  const mobileClass = `grid-cols-${cols.mobile || 1}`;
+  const tabletClass = `md:grid-cols-${cols.tablet || 2}`;
+  const desktopClass = `lg:grid-cols-${cols.desktop || 3}`;
+
+  const gridClass = `grid ${gapClass} ${mobileClass} ${tabletClass} ${desktopClass} items-stretch ${className}`;
 
   return (
-    <div 
-      className={gridClass}
-      style={style}
-    >
-      <style jsx>{`
-        @media (min-width: 640px) {
-          .grid {
-            grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr));
-          }
-        }
-        @media (min-width: 1024px) {
-          .grid {
-            grid-template-columns: repeat(var(--desktop-cols), minmax(0, 1fr));
-          }
-        }
-      `}</style>
+    <div className={gridClass}>
       {children}
     </div>
   );

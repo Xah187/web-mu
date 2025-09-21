@@ -8,6 +8,7 @@ import { scale, verticalScale } from '@/utils/responsiveSize';
 import LikeIcon from '@/components/icons/LikeIcon';
 import CommentIcon from '@/components/icons/CommentIcon';
 import PlayIcon from '@/components/icons/PlayIcon';
+import { URLFIL } from '@/lib/api/axios';
 
 interface PostCardProps {
   post: {
@@ -89,14 +90,11 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
     if (!url) return '';
     // If it's a video, try to get thumbnail version
     if (isVideo) {
-      // This matches the mobile app's convertVideotoimag function
-      return url.replace(/\.[^/.]+$/, '.jpg'); // Replace extension with .jpg
+      // Mobile app uses PNG thumbnails
+      return url.replace(/\.[^/.]+$/, '.png');
     }
     return url;
   };
-
-  // URLs للملفات - مطابق لآلية التطبيق المحمول
-  const STORAGE_URL = 'https://storage.googleapis.com/demo_backendmoshrif_bucket-1';
 
   // Helper function to build image URL safely - مطابق لآلية التطبيق المحمول
   const buildImageUrl = (url: string) => {
@@ -107,65 +105,68 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
       return url;
     }
 
-    // استخدام Google Cloud Storage للملفات
-    return `${STORAGE_URL}/${url}`;
+    // استخدام Google Cloud Storage بنفس URLFIL
+    return `${URLFIL}/${url.replace(/^\/+/, '')}`;
   };
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 w-full"
+      className="bg-white rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 w-full h-full flex flex-col post-card-grid"
       style={{
         paddingTop: verticalScale(8),
-        paddingBottom: verticalScale(8)
+        paddingBottom: verticalScale(8),
+        minHeight: scale(320) // ضمان ارتفاع موحد للبطاقات
       }}
       onClick={() => onPress?.(post)}
     >
-      {/* Header - User Info (matching mobile app exactly) */}
-      <div 
-        className="flex items-center justify-between"
+      {/* Header - User Info (optimized for grid) */}
+      <div
+        className="flex items-center justify-between flex-shrink-0"
         style={{
-          marginTop: 13,
-          marginLeft: 10,
-          marginRight: 10,
-          padding: 10
+          marginTop: scale(8),
+          marginLeft: scale(12),
+          marginRight: scale(12),
+          padding: scale(8)
         }}
       >
         <div className="flex items-start flex-1">
-          {/* User Avatar - عرض أول حرف من اسم المستخدم */}
+          {/* User Avatar - محسن للشبكة */}
           <div
-            className="rounded-full flex items-center justify-center text-white font-ibm-arabic-bold"
+            className="rounded-full flex items-center justify-center text-white font-ibm-arabic-bold flex-shrink-0"
             style={{
-              width: scale(40),
-              height: scale(40),
+              width: scale(32),
+              height: scale(32),
               backgroundColor: getAvatarColor(post.postBy || ''),
-              borderRadius: scale(40),
-              fontSize: scale(16)
+              borderRadius: scale(32),
+              fontSize: scale(14)
             }}
           >
             {post.postBy?.charAt(0) || 'م'}
           </div>
           
-          {/* User Info */}
-          <div 
+          {/* User Info - محسن للشبكة */}
+          <div
+            className="flex-1 min-w-0"
             style={{
-              marginLeft: scale(10),
-              marginRight: scale(10)
+              marginLeft: scale(8),
+              marginRight: scale(8)
             }}
           >
             <div
               className="flex flex-wrap items-center gap-1"
               style={{
-                maxWidth: '95%',
+                maxWidth: '100%',
                 overflow: 'hidden',
-                paddingLeft: scale(5),
-                paddingRight: scale(5),
+                paddingLeft: scale(2),
+                paddingRight: scale(2),
                 flexWrap: 'wrap'
               }}
             >
               <span
+                className="truncate"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: verticalScale(11),
+                  fontSize: verticalScale(10),
                   color: '#212121'
                 }}
               >
@@ -174,10 +175,10 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               <span
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: verticalScale(11),
+                  fontSize: verticalScale(10),
                   color: '#212121',
-                  marginLeft: '4px',
-                  marginRight: '4px'
+                  marginLeft: '2px',
+                  marginRight: '2px'
                 }}
               >
                 في
@@ -185,10 +186,10 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               <span
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: verticalScale(11),
+                  fontSize: verticalScale(10),
                   color: '#212121'
                 }}
-                className="line-clamp-2"
+                className="line-clamp-1 truncate"
               >
                 {post.Nameproject && post.StageName
                   ? `${post.Nameproject} - ${post.StageName}`
@@ -199,8 +200,8 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
             <div
               style={{
                 fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                fontSize: verticalScale(10),
-                color: '#212121'
+                fontSize: verticalScale(9),
+                color: '#666666'
               }}
             >
               {formatDate(post.timeminet)}
@@ -209,28 +210,29 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
         </div>
       </div>
 
-      {/* Body - Content (matching mobile app structure) */}
-      <div 
-        className="flex flex-col justify-center items-center relative"
+      {/* Body - Content (optimized for grid layout) */}
+      <div
+        className="flex flex-col justify-center items-center relative flex-1 post-content"
         style={{
           justifyContent: 'center',
           alignItems: 'center',
-          marginTop: 1,
-          marginBottom: 1,
-          marginLeft: 10,
-          marginRight: 10,
-          paddingLeft: 10,
-          paddingRight: 10
+          marginTop: scale(4),
+          marginBottom: scale(4),
+          marginLeft: scale(12),
+          marginRight: scale(12),
+          paddingLeft: scale(8),
+          paddingRight: scale(8)
         }}
       >
-        {/* Text Content */}
-        <p 
-          className="text-right w-full"
+        {/* Text Content - محسن للشبكة */}
+        <p
+          className="text-right w-full line-clamp-3"
           style={{
             fontFamily: fonts.IBMPlexSansArabicRegular,
-            fontSize: verticalScale(12),
-            marginBottom: verticalScale(16),
-            color: '#212121'
+            fontSize: verticalScale(11),
+            marginBottom: verticalScale(12),
+            color: '#212121',
+            lineHeight: '1.4'
           }}
           dir="rtl"
         >
@@ -259,15 +261,14 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               </button>
             )}
             
-            {/* Media Display */}
-            <div 
-              className="relative rounded-2xl overflow-hidden"
+            {/* Media Display - محسن للشبكة */}
+            <div
+              className="relative rounded-2xl overflow-hidden post-media"
               style={{
                 backgroundColor: colors.BLACK,
-                height: scale(200),
+                aspectRatio: '4 / 3',
                 width: '100%',
-                borderRadius: 16,
-                top: scale(-10)
+                borderRadius: 12
               }}
             >
               {!imageError && post.url && buildImageUrl(getMediaUrl(post.url)) ? (
@@ -292,36 +293,39 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
         )}
       </div>
 
-      {/* Footer - Actions (matching mobile app exactly) */}
-      <div 
-        className="flex items-center justify-around"
+      {/* Footer - Actions (optimized for grid) */}
+      <div
+        className="flex items-center justify-around flex-shrink-0 mt-auto post-footer"
         style={{
-          top: '2%',
           justifyContent: 'space-around',
-          marginTop: 5,
-          marginBottom: 15,
-          marginLeft: 15,
-          marginRight: 15,
+          marginTop: scale(8),
+          marginBottom: scale(12),
+          marginLeft: scale(12),
+          marginRight: scale(12),
           alignItems: 'center',
-          paddingTop: 5,
-          paddingBottom: 5
+          paddingTop: scale(8),
+          paddingBottom: scale(4)
         }}
       >
-        {/* Like Button */}
+        {/* Like Button - محسن للشبكة */}
         <button
-          className="flex items-center hover:bg-gray-50 transition-colors"
-          style={{ marginLeft: 15, marginRight: 15 }}
+          className="flex items-center hover:bg-gray-50 transition-colors rounded-lg"
+          style={{
+            marginLeft: scale(8),
+            marginRight: scale(8),
+            padding: scale(4)
+          }}
           onClick={(e) => {
             e.stopPropagation();
             onLike(post.PostID);
           }}
         >
-          <span 
+          <span
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(12),
+              fontSize: scale(11),
               color: '#212121',
-              marginLeft: 8
+              marginLeft: scale(6)
             }}
           >
             {post.Likes}
@@ -341,10 +345,14 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
           />
         </svg>
 
-        {/* Comment Button - مطابق لآلية التطبيق المحمول */}
+        {/* Comment Button - محسن للشبكة */}
         <button
-          className="flex items-center hover:bg-gray-50 transition-colors"
-          style={{ marginLeft: 15, marginRight: 15 }}
+          className="flex items-center hover:bg-gray-50 transition-colors rounded-lg"
+          style={{
+            marginLeft: scale(8),
+            marginRight: scale(8),
+            padding: scale(4)
+          }}
           onClick={(e) => {
             e.stopPropagation();
             // استخدام onCommentPress لفتح مودال التعليقات
@@ -358,9 +366,9 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
           <span
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(12),
+              fontSize: scale(11),
               color: '#212121',
-              marginLeft: 8
+              marginLeft: scale(6)
             }}
           >
             {post.Comment}

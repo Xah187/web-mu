@@ -63,25 +63,15 @@
   }
 }
 
-/* Grid layout mobile-only */
-.publications-grid {
-  display: grid !important;
-  grid-template-columns: 1fr !important;
-  gap: 1rem !important;
-  padding: 0 1rem !important;
-}
+/* Grid layout - removed to allow ResponsiveGrid to work */
 
-/* Responsive breakpoints override */
+/* Responsive breakpoints override - updated for grid layout */
 @media (min-width: 768px) {
   .publications-mobile-container {
     width: 100% !important;
     max-width: 448px !important;
   }
-  
-  .publications-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
+
   .reels-mobile-container {
     max-width: 448px !important;
   }
@@ -92,11 +82,7 @@
     width: 100% !important;
     max-width: 448px !important;
   }
-  
-  .publications-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
+
   .reels-mobile-container {
     max-width: 448px !important;
   }
@@ -107,11 +93,7 @@
     width: 100% !important;
     max-width: 448px !important;
   }
-  
-  .publications-grid {
-    grid-template-columns: 1fr !important;
-  }
-  
+
   .reels-mobile-container {
     max-width: 448px !important;
   }
@@ -193,18 +175,7 @@
   scrollbar-width: none !important;
 }
 
-/* Responsive grid improvements */
-@media (min-width: 640px) {
-  .publications-grid {
-    gap: 1.5rem !important;
-  }
-}
-
-@media (min-width: 1024px) {
-  .publications-grid {
-    gap: 2rem !important;
-  }
-}
+/* Responsive grid improvements - removed conflicting rules */
 
 /* Better mobile experience */
 @media (max-width: 767px) {
@@ -225,4 +196,68 @@
   .reels-backdrop {
     display: none !important;
   }
+}
+
+/* Grid Layout Enhancements for Publications */
+.publications-grid-container {
+  width: 100% !important;
+  padding: 1rem !important;
+}
+
+/* Force responsive grid to work correctly - removed to rely on Tailwind classes from ResponsiveGrid */
+
+/* Post Card Grid Optimizations */
+.post-card-grid {
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.post-card-grid .post-content {
+  flex: 1 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+.post-card-grid .post-media {
+  flex-shrink: 0 !important;
+}
+
+.post-card-grid .post-footer {
+  margin-top: auto !important;
+  flex-shrink: 0 !important;
+}
+
+/* Responsive Grid Improvements */
+@media (max-width: 640px) {
+  .publications-grid-container {
+    padding: 0.75rem !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .publications-grid-container {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .publications-grid-container {
+    padding: 1.5rem !important;
+  }
+}
+
+/* Text Truncation for Grid Layout */
+.line-clamp-1 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 1 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.line-clamp-3 {
+  display: -webkit-box !important;
+  -webkit-line-clamp: 3 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
 }

@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import { URLFIL } from '@/lib/api/axios';
 
 interface VideoPostProps {
   videoUrl: string;
@@ -14,21 +15,19 @@ export default function VideoPost({ videoUrl, thumbnailUrl, onPlay, className = 
   const [thumbnailError, setThumbnailError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Get API URL
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
-  
+  // Build storage URL (matches mobile app: URLFIL bucket)
   const buildImageUrl = (url: string) => {
     if (!url) return null;
     if (url.startsWith('http://') || url.startsWith('https://')) return url;
-    return `${API_URL}/${url}`;
+    return `${URLFIL}/${url.replace(/^\/+/, '')}`;
   };
 
   // Convert video URL to thumbnail (like mobile app's convertVideotoimag)
   const getThumbnailUrl = () => {
     if (thumbnailUrl) return buildImageUrl(thumbnailUrl);
     if (videoUrl) {
-      // Replace video extension with .jpg
-      const thumbnail = videoUrl.replace(/\.[^/.]+$/, '.jpg');
+      // Replace video extension with .png (mobile uses PNG thumbnails)
+      const thumbnail = videoUrl.replace(/\.[^/.]+$/, '.png');
       return buildImageUrl(thumbnail);
     }
     return null;

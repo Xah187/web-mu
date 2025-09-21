@@ -7,6 +7,13 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  safelist: [
+    // Grid columns used dynamically in ResponsiveGrid
+    'grid','grid-cols-1','grid-cols-2','grid-cols-3',
+    'md:grid-cols-2','lg:grid-cols-3',
+    // Gaps
+    'gap-2','gap-4','gap-6'
+  ],
   theme: {
     extend: {
       colors: {

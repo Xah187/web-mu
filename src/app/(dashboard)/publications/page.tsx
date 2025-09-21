@@ -717,8 +717,9 @@ export default function PublicationsPage() {
             </div>
           ) : posts.length > 0 ? (
             <>
-              {/* Grid Layout للمنشورات - متجاوب وموحّد عبر ResponsiveGrid */}
-              <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 4 }} gap="md">
+              {/* Grid Layout للمنشورات - متجاوب: 3 أعمدة كمبيوتر، 2 تابلت، 1 جوال */}
+              <div className="publications-grid-container">
+                <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md" className="w-full">
                 {posts.map((post, index) => (
                   <PostCard
                     key={index.toString()}
@@ -737,7 +738,8 @@ export default function PublicationsPage() {
                     }}
                   />
                 ))}
-              </ResponsiveGrid>
+                </ResponsiveGrid>
+              </div>
 
               {/* Load More Indicator */}
               {hasMore && (
