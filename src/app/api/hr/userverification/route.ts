@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { verifyJWT } from '@/middleware/jwt';
+// Note: bypass local JWT verification; let backend verify the token
+// import { verifyJWT } from '@/middleware/jwt';
 import { Api } from '@/lib/api/axios';
 
 export async function GET(request: NextRequest) {
   try {
-    // Verify JWT token
-    const authResult = await verifyJWT(request);
-    if (!authResult.success || !authResult.user) {
+    // Extract Bearer token and pass-through to backend; backend will verify
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+    if (!token) {
       return NextResponse.json({ error: 'غير مصرح' }, { status: 401 });
     }
 
@@ -33,19 +35,9 @@ export async function GET(request: NextRequest) {
 
     console.log('Calling backend API:', apiUrl);
     console.log('Backend base URL:', backendBase);
-    console.log('With token:', authResult.user.accessToken ? 'Token exists' : 'No token');
+    console.log('With token:', token ? 'Token exists' : 'No token');
 
-    // Create session data for backend (same as backend req.session.user)
-    const sessionData = {
-      user: authResult.user.data // This contains the decoded JWT data
-    };
-
-    console.log('Sending session data to backend:', sessionData);
-    // Make header value ASCII-safe by escaping non-ASCII as \uXXXX (so it can be sent in HTTP headers)
-    const sessionDataHeader = JSON.stringify(sessionData).replace(/[\u007F-\uFFFF]/g, (c) =>
-      '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0')
-    );
-
+    // Pass-through mode: backend verifyJWT will populate req.session.user; no session header needed
 
     // Retry mechanism like mobile app (10 retries with exponential delay)
     let response;
@@ -58,8 +50,7 @@ export async function GET(request: NextRequest) {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${authResult.user.accessToken}`,
-            'X-Session-Data': sessionDataHeader, // ASCII-escaped JSON session data for header
+            'Authorization': `Bearer ${token}`,
           },
           // Add timeout like mobile app
           signal: AbortSignal.timeout(30000), // 30 seconds timeout
