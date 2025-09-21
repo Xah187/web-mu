@@ -19,14 +19,12 @@ const nextConfig: NextConfig = {
     // السماح بإكمال البناء حتى مع وجود أخطاء ESLint (الموجودة سابقاً)
     ignoreDuringBuilds: true,
   },
-  // Enable experimental features if needed
-  experimental: {
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  // Turbopack config (moved from experimental.turbo)
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },

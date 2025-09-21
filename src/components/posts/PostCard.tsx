@@ -115,7 +115,8 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
       style={{
         paddingTop: verticalScale(8),
         paddingBottom: verticalScale(8),
-        minHeight: scale(320) // ضمان ارتفاع موحد للبطاقات
+        minHeight: scale(280), // ارتفاع أصغر للشبكة
+        maxWidth: '100%' // منع التوسع الزائد
       }}
       onClick={() => onPress?.(post)}
     >
@@ -266,9 +267,10 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               className="relative rounded-2xl overflow-hidden post-media"
               style={{
                 backgroundColor: colors.BLACK,
-                aspectRatio: '4 / 3',
+                aspectRatio: '16 / 9', // نسبة أفضل للفيديوهات
                 width: '100%',
-                borderRadius: 12
+                borderRadius: 12,
+                maxHeight: scale(180) // حد أقصى للارتفاع
               }}
             >
               {!imageError && post.url && buildImageUrl(getMediaUrl(post.url)) ? (

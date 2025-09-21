@@ -231,13 +231,25 @@ export function ResponsiveGrid({
   return (
     <div className={gridClass} style={style}>
       <style jsx>{`
-        .grid { align-items: stretch; }
-        .grid > * { height: 100%; }
-        @media (min-width: 640px) {
-          .grid { grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr)); }
+        .grid {
+          align-items: stretch;
+          display: grid !important;
         }
+        .grid > * {
+          height: 100%;
+          width: 100%;
+        }
+        /* Tablet: 768px+ = 2 columns */
+        @media (min-width: 768px) {
+          .grid {
+            grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr)) !important;
+          }
+        }
+        /* Desktop: 1024px+ = 3 columns */
         @media (min-width: 1024px) {
-          .grid { grid-template-columns: repeat(var(--desktop-cols), minmax(0, 1fr)); }
+          .grid {
+            grid-template-columns: repeat(var(--desktop-cols), minmax(0, 1fr)) !important;
+          }
         }
       `}</style>
       {children}

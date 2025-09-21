@@ -202,6 +202,31 @@
 .publications-grid-container {
   width: 100% !important;
   padding: 1rem !important;
+  max-width: 100% !important;
+}
+
+/* Ensure grid works properly */
+.publications-grid-container .grid {
+  display: grid !important;
+  width: 100% !important;
+  grid-template-columns: 1fr !important;
+  gap: 1rem !important;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+  .publications-grid-container .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 1.25rem !important;
+  }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .publications-grid-container .grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 1.5rem !important;
+  }
 }
 
 /* Force responsive grid to work correctly - removed to rely on Tailwind classes from ResponsiveGrid */
@@ -211,6 +236,8 @@
   height: 100% !important;
   display: flex !important;
   flex-direction: column !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
 }
 
 .post-card-grid .post-content {
@@ -221,11 +248,21 @@
 
 .post-card-grid .post-media {
   flex-shrink: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
 }
 
 .post-card-grid .post-footer {
   margin-top: auto !important;
   flex-shrink: 0 !important;
+}
+
+/* Ensure images and videos fit properly */
+.post-card-grid .post-media img,
+.post-card-grid .post-media video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
 }
 
 /* Responsive Grid Improvements */
