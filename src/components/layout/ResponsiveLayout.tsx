@@ -220,18 +220,26 @@ export function ResponsiveGrid({
     lg: 'gap-6'
   }[gap];
 
-  // Build responsive grid classes using Tailwind with correct breakpoints
-  // Mobile: default (no prefix)
-  // Tablet: md: (768px+)
-  // Desktop: lg: (1024px+)
-  const mobileClass = `grid-cols-${cols.mobile || 1}`;
-  const tabletClass = `md:grid-cols-${cols.tablet || 2}`;
-  const desktopClass = `lg:grid-cols-${cols.desktop || 3}`;
+  const gridClass = `grid ${gapClass} ${className}`;
 
-  const gridClass = `grid ${gapClass} ${mobileClass} ${tabletClass} ${desktopClass} items-stretch ${className}`;
+  const style = {
+    gridTemplateColumns: `repeat(${cols.mobile || 1}, minmax(0, 1fr))`,
+    '--tablet-cols': cols.tablet || 2,
+    '--desktop-cols': cols.desktop || 3
+  } as React.CSSProperties;
 
   return (
-    <div className={gridClass}>
+    <div className={gridClass} style={style}>
+      <style jsx>{`
+        .grid { align-items: stretch; }
+        .grid > * { height: 100%; }
+        @media (min-width: 640px) {
+          .grid { grid-template-columns: repeat(var(--tablet-cols), minmax(0, 1fr)); }
+        }
+        @media (min-width: 1024px) {
+          .grid { grid-template-columns: repeat(var(--desktop-cols), minmax(0, 1fr)); }
+        }
+      `}</style>
       {children}
     </div>
   );
