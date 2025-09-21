@@ -343,14 +343,57 @@ export default function PreparationPage() {
       setCameraError(null);
       setIsCameraActive(false);
 
-      if (!navigator.mediaDevices?.getUserMedia) {
-        throw new Error('المتصفح لا يدعم الكاميرا');
+      // Ensure this runs on client and over secure context (required by most browsers)
+      if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+        setCameraError('هذه الوظيفة تعمل فقط داخل المتصفح');
+        setIsLoadingCamera(false);
+        return;
+      }
+      if (!(window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost')) {
+        setCameraError('يجب فتح الصفحة عبر HTTPS أو من localhost لاستخدام الكاميرا');
+        setIsLoadingCamera(false);
+        return;
       }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } },
-        audio: false,
-      });
+      // Polyfill/fallbacks for older browsers (Safari/iOS/Firefox قديمة)
+      const getUserMediaCompat = (constraints: MediaStreamConstraints) => {
+        const anyNav: any = navigator;
+        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+          return navigator.mediaDevices.getUserMedia(constraints);
+        }
+        const legacy = anyNav.getUserMedia || anyNav.webkitGetUserMedia || anyNav.mozGetUserMedia || anyNav.msGetUserMedia;
+        if (legacy) {
+          return new Promise<MediaStream>((resolve, reject) => legacy.call(navigator, constraints, resolve, reject));
+        }
+        return Promise.reject(new Error('NOT_SUPPORTED'));
+      };
+
+      // Camera constraints tuned for compatibility
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: 'user' },
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        },
+        audio: false
+      };
+
+      let stream: MediaStream;
+      try {
+        stream = await getUserMediaCompat(constraints);
+      } catch (err: any) {
+        if (err?.message === 'NOT_SUPPORTED') {
+          setCameraError('المتصفح لا يدعم الكاميرا. جرب فتح الصفحة على Chrome أو Safari محدث ومع اتصال HTTPS.');
+        } else if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') {
+          setCameraError('تم رفض إذن الكاميرا. يرجى السماح بالوصول للكاميرا من إعدادات المتصفح ثم المحاولة مرة أخرى.');
+        } else if (err?.name === 'NotFoundError' || err?.name === 'OverconstrainedError') {
+          setCameraError('لم يتم العثور على كاميرا مناسبة على هذا الجهاز.');
+        } else {
+          setCameraError('تعذّر تشغيل الكاميرا، يرجى المحاولة مرة أخرى.');
+        }
+        setIsLoadingCamera(false);
+        return;
+      }
 
       // Wait for video element to mount
       let attempts = 0;
@@ -361,6 +404,11 @@ export default function PreparationPage() {
       if (!videoRef.current) throw new Error('Video element not found');
 
       const video = videoRef.current;
+      // Improve iOS Safari compatibility
+      try { video.setAttribute('playsinline', 'true'); } catch {}
+      ;(video as any).playsInline = true;
+      video.muted = true;
+
       video.srcObject = stream;
       streamRef.current = stream;
 
