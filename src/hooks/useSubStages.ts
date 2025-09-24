@@ -25,6 +25,15 @@ export interface ClosingOperation {
   File?: string[];
 }
 
+export interface SubStageNote {
+  id: number;
+  Note: string;
+  userName: string;
+  PhoneNumber: string;
+  Date: string;
+  File?: string[] | null;
+}
+
 export default function useSubStages() {
   const { user } = useAppSelector((state: any) => state.user || {});
   const [subStages, setSubStages] = useState<SubStage[]>([]);

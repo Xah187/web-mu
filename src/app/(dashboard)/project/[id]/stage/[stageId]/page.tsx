@@ -15,8 +15,11 @@ import StageStatusBadge from '@/components/stages/StageStatusBadge';
 import StageInfoModal from '@/components/stages/StageInfoModal';
 import SubStageOptionsModal from '@/components/stages/SubStageOptionsModal';
 import SubStageEditModal from '@/components/stages/SubStageEditModal';
+import SubStageNoteModal from '@/components/stages/SubStageNoteModal';
+import SubStageNotesModal from '@/components/stages/SubStageNotesModal';
 import StageEditModal from '@/components/stages/StageEditModal';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
+import useSubStageNotes from '@/hooks/useSubStageNotes';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -319,6 +322,7 @@ const SubStageCard = ({
   onToggleSelect,
   onSettings,
   onOpenAttachment,
+  onNoteClick,
   user: _user
 }: {
   subStage: SubStage;
@@ -328,8 +332,10 @@ const SubStageCard = ({
   onToggleSelect: () => void;
   onSettings: () => void;
   onOpenAttachment: () => void;
+  onNoteClick?: (note: any) => void;
   user: any;
 }) => {
+  const [showNotes, setShowNotes] = useState(false);
   const isCompleted = subStage.Done === 'true';
   let completedBy: ClosingOperation | null = null;
 
@@ -342,8 +348,30 @@ const SubStageCard = ({
     }
   }
 
-  const notes = subStage.Note ? JSON.parse(subStage.Note) : [];
+  // Parse notes and achievements
+  const notes = subStage.Note ? (() => {
+    try {
+      return JSON.parse(subStage.Note);
+    } catch {
+      return [];
+    }
+  })() : [];
+
+  const achievements = subStage.closingoperations ? (() => {
+    try {
+      return JSON.parse(subStage.closingoperations);
+    } catch {
+      return [];
+    }
+  })() : [];
+
   const hasNotes = notes.length > 0;
+  const hasAchievements = achievements.length > 0;
+  const hasNotesOrAchievements = hasNotes || hasAchievements;
+
+  const formatDate = (dateString: string) => {
+    return formatDateEnglish(dateString);
+  };
 
   return (
     <div
@@ -499,16 +527,161 @@ const SubStageCard = ({
       </div>
 
       {/* Expandable Notes Section */}
-      {hasNotes && (
+      {(hasNotes || hasAchievements) && (
         <div className="border-t border-gray-100">
           <button
+            onClick={() => setShowNotes(!showNotes)}
             className="w-full flex items-center justify-center hover:bg-gray-50 transition-colors duration-200"
             style={{ padding: `${scale(12)}px` }}
           >
-            <svg width={scale(18)} height={scale(18)} viewBox="0 0 24 24" fill="none" stroke="#6B7280">
+            <svg
+              width={scale(18)}
+              height={scale(18)}
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="#6B7280"
+              className={`transform transition-transform duration-200 ${showNotes ? 'rotate-180' : ''}`}
+            >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
+
+          {/* Notes and Achievements Content */}
+          {showNotes && (
+            <div style={{ padding: `${scale(16)}px` }}>
+              {/* Achievements */}
+              {achievements.map((achievement: any, index: number) => (
+                <div
+                  key={`achievement-${index}`}
+                  className="bg-green-50 border border-green-200 rounded-lg mb-3"
+                  style={{ padding: `${scale(12)}px` }}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center" style={{ gap: `${scale(8)}px` }}>
+                      <div
+                        className="bg-blue-100 rounded-full flex items-center justify-center"
+                        style={{
+                          width: `${scale(24)}px`,
+                          height: `${scale(24)}px`
+                        }}
+                      >
+                        <svg width={scale(12)} height={scale(12)} viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p
+                          className="font-ibm-arabic-semibold text-gray-900"
+                          style={{ fontSize: `${scale(12)}px` }}
+                        >
+                          {achievement.userName}
+                        </p>
+                        <p
+                          className="text-gray-500"
+                          style={{ fontSize: `${scale(10)}px` }}
+                        >
+                          {formatDate(achievement.Date)}
+                        </p>
+                      </div>
+                    </div>
+                    <div
+                      className="bg-green-100"
+                      style={{
+                        padding: `${scale(4)}px ${scale(8)}px`,
+                        borderRadius: `${scale(12)}px`
+                      }}
+                    >
+                      <span
+                        className="font-ibm-arabic-medium text-green-700"
+                        style={{ fontSize: `${scale(10)}px` }}
+                      >
+                        {achievement.type}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* Notes */}
+              {notes.map((note: any, index: number) => (
+                <div
+                  key={`note-${index}`}
+                  className="bg-gray-50 border border-gray-200 rounded-lg mb-3 cursor-pointer hover:bg-gray-100 transition-colors"
+                  style={{ padding: `${scale(12)}px` }}
+                  onClick={() => onNoteClick && onNoteClick(note)}
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center" style={{ gap: `${scale(8)}px` }}>
+                      <div
+                        className="bg-blue-100 rounded-full flex items-center justify-center"
+                        style={{
+                          width: `${scale(24)}px`,
+                          height: `${scale(24)}px`
+                        }}
+                      >
+                        <svg width={scale(12)} height={scale(12)} viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <p
+                          className="font-ibm-arabic-semibold text-gray-900"
+                          style={{ fontSize: `${scale(12)}px` }}
+                        >
+                          {note.userName}
+                        </p>
+                        <p
+                          className="text-gray-500"
+                          style={{ fontSize: `${scale(10)}px` }}
+                        >
+                          {formatDate(note.Date)}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Note Content */}
+                  <div style={{ width: '80%' }}>
+                    <p
+                      className="text-gray-800 font-ibm-arabic-regular"
+                      style={{
+                        fontSize: `${scale(12)}px`,
+                        lineHeight: `${scale(18)}px`
+                      }}
+                    >
+                      {note.Note}
+                    </p>
+                  </div>
+
+                  {/* Note Files */}
+                  {note.File && note.File.length > 0 && (
+                    <div
+                      className="flex flex-wrap mt-2"
+                      style={{ gap: `${scale(8)}px` }}
+                    >
+                      {note.File.map((fileName: string, fileIndex: number) => (
+                        <a
+                          key={fileIndex}
+                          href={`/api/files/${fileName}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center space-x-1 space-x-reverse px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs hover:bg-blue-200 transition-colors"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          <span className="truncate max-w-20" title={fileName}>
+                            {fileName}
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -546,6 +719,14 @@ const StageDetailsPage = () => {
   const [editingSubStage, setEditingSubStage] = useState<SubStage | null>(null);
   const [showStageEditModal, setShowStageEditModal] = useState(false);
   const [loadingStage, setLoadingStage] = useState(false);
+
+  // Notes states
+  const [showAddNoteModal, setShowAddNoteModal] = useState(false);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [noteSubStage, setNoteSubStage] = useState<SubStage | null>(null);
+
+  // Notes hook
+  const { addNote, loading: notesLoading } = useSubStageNotes();
 
   // Load stage details and sub-stages
   useEffect(() => {
@@ -821,6 +1002,42 @@ const StageDetailsPage = () => {
     }
   };
 
+  // Notes handlers
+  const handleAddNote = () => {
+    if (!selectedSubStage) return;
+    setNoteSubStage(selectedSubStage);
+    setShowOptionsModal(false);
+    setShowAddNoteModal(true);
+  };
+
+  const handleViewNotes = () => {
+    if (!selectedSubStage) return;
+    setNoteSubStage(selectedSubStage);
+    setShowOptionsModal(false);
+    setShowNotesModal(true);
+  };
+
+  const handleAddNoteSubmit = async (note: string, files?: File[]) => {
+    if (!noteSubStage) return;
+
+    const success = await addNote(noteSubStage.StageSubID, note, files);
+    if (success) {
+      setShowAddNoteModal(false);
+      setNoteSubStage(null);
+      // Refresh sub-stages to get updated notes
+      if (stageDetails?.StageID) {
+        fetchInitial(projectId, stageDetails.StageID);
+      }
+    }
+  };
+
+  const handleNotesUpdated = () => {
+    // Refresh sub-stages to get updated notes
+    if (stageDetails?.StageID) {
+      fetchInitial(projectId, stageDetails.StageID);
+    }
+  };
+
   if (subError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -991,6 +1208,11 @@ const StageDetailsPage = () => {
                     window.open(subStage.attached, '_blank');
                   }
                 }}
+                onNoteClick={(_note) => {
+                  // Handle note click - could open edit modal or show note details
+                  setNoteSubStage(subStage);
+                  setShowNotesModal(true);
+                }}
                 user={user}
               />
             ))}
@@ -1142,10 +1364,8 @@ const StageDetailsPage = () => {
             setSelectedSubStage(null);
           }}
           onEdit={handleEditSubStage}
-          onAddNote={() => {
-            // TODO: Implement add note functionality
-            console.log('Add note for:', selectedSubStage.StageSubID);
-          }}
+          onAddNote={handleAddNote}
+          onViewNotes={handleViewNotes}
           onDelete={() => {
             // TODO: Implement delete functionality
             console.log('Delete:', selectedSubStage.StageSubID);
@@ -1195,6 +1415,33 @@ const StageDetailsPage = () => {
         }
         isLoading={isToggleLoading}
       />
+
+      {/* Add Note Modal */}
+      {noteSubStage && (
+        <SubStageNoteModal
+          isOpen={showAddNoteModal}
+          onClose={() => {
+            setShowAddNoteModal(false);
+            setNoteSubStage(null);
+          }}
+          onSave={handleAddNoteSubmit}
+          subStage={noteSubStage}
+          loading={notesLoading}
+        />
+      )}
+
+      {/* Notes View Modal */}
+      {noteSubStage && (
+        <SubStageNotesModal
+          isOpen={showNotesModal}
+          onClose={() => {
+            setShowNotesModal(false);
+            setNoteSubStage(null);
+          }}
+          subStage={noteSubStage}
+          onNotesUpdated={handleNotesUpdated}
+        />
+      )}
     </ResponsiveLayout>
   );
 };

@@ -55,39 +55,6 @@ export default function BottomNavigation() {
       ),
     },
     {
-      name: 'reports',
-      label: 'التقارير',
-      icon: (focused: boolean) => (
-        <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
-          <g id="analytics-01">
-            <g id="Group 2110070291">
-              <path
-                id="Vector"
-                d="M7 17V13"
-                stroke={focused ? colors.BLUE : colors.BORDER}
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-              <path
-                id="Vector_2"
-                d="M12 17V7"
-                stroke={focused ? colors.BLUE : colors.BORDER}
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-              <path
-                id="Vector_3"
-                d="M17 17V11"
-                stroke={focused ? colors.BLUE : colors.BORDER}
-                strokeWidth="1.7"
-                strokeLinecap="round"
-              />
-            </g>
-          </g>
-        </svg>
-      ),
-    },
-    {
       name: 'publications',
       label: 'اليوميات',
       icon: (focused: boolean) => (
@@ -124,6 +91,39 @@ export default function BottomNavigation() {
       label: 'الإعدادات',
       icon: (focused: boolean) => (
         <SettingIcon focused={focused} size={scale(24)} />
+      ),
+    },
+    {
+      name: 'reports',
+      label: 'التقارير',
+      icon: (focused: boolean) => (
+        <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
+          <g id="analytics-01">
+            <g id="Group 2110070291">
+              <path
+                id="Vector"
+                d="M7 17V13"
+                stroke={focused ? colors.BLUE : colors.BORDER}
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+              <path
+                id="Vector_2"
+                d="M12 17V7"
+                stroke={focused ? colors.BLUE : colors.BORDER}
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+              <path
+                id="Vector_3"
+                d="M17 17V11"
+                stroke={focused ? colors.BLUE : colors.BORDER}
+                strokeWidth="1.7"
+                strokeLinecap="round"
+              />
+            </g>
+          </g>
+        </svg>
       ),
     },
   ];

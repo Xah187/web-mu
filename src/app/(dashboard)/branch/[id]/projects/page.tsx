@@ -769,6 +769,35 @@ const BranchProjectsPage = () => {
                 عرض جميع المشاريع
               </button>
             )}
+
+            {/* Employee-only buttons for requests and covenant - matching mobile app */}
+            <EmployeeOnly>
+              <div className="flex items-center justify-center gap-4 mt-6">
+                {/* Branch Requests Button - matching mobile app */}
+                <RequestsPermissionGuard>
+                  <button
+                    onClick={handleRequests}
+                    className="p-3 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors border border-blue-200"
+                    title="طلبات الفرع"
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-blue-600">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    </svg>
+                  </button>
+                </RequestsPermissionGuard>
+
+                {/* Branch Covenant (Finance) Button - matching mobile app */}
+                <PermissionBasedVisibility permission="covenant">
+                  <button
+                    onClick={handleFinance}
+                    className="px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200 font-ibm-arabic-bold text-green-700"
+                    title="عهد الفرع"
+                  >
+                    $
+                  </button>
+                </PermissionBasedVisibility>
+              </div>
+            </EmployeeOnly>
           </div>
         ) : (
           <>

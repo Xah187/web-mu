@@ -10,11 +10,13 @@ interface SubStageOptionsModalProps {
   onClose: () => void;
   onEdit: () => void;
   onAddNote: () => void;
+  onViewNotes: () => void;
   onDelete: () => void;
   loading?: boolean;
   subStage: {
     StageSubID: number;
     StageSubName: string;
+    Note?: string | null;
   };
 }
 
@@ -23,10 +25,23 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
   onClose,
   onEdit,
   onAddNote,
+  onViewNotes,
   onDelete,
   loading = false,
   subStage
 }) => {
+  // Parse notes to get count
+  const getNotesCount = () => {
+    if (!subStage.Note) return 0;
+    try {
+      const notes = JSON.parse(subStage.Note);
+      return Array.isArray(notes) ? notes.length : 0;
+    } catch {
+      return 0;
+    }
+  };
+
+  const notesCount = getNotesCount();
   return (
     <AnimatePresence>
       {isOpen && (
@@ -77,15 +92,41 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                   className="w-full flex items-center space-x-3 space-x-reverse p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  <span 
+                  <span
                     className="font-ibm-arabic-semibold text-gray-900"
                     style={{ fontSize: scale(14) }}
                   >
                     إضافة ملاحظة
                   </span>
                 </button>
+
+                {/* View Notes Option */}
+                {notesCount > 0 && (
+                  <button
+                    onClick={onViewNotes}
+                    className="w-full flex items-center justify-between space-x-3 space-x-reverse p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors"
+                  >
+                    <div className="flex items-center space-x-3 space-x-reverse">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span
+                        className="font-ibm-arabic-semibold text-gray-900"
+                        style={{ fontSize: scale(14) }}
+                      >
+                        عرض الملاحظات
+                      </span>
+                    </div>
+                    <span
+                      className="bg-blue-100 text-blue-800 text-xs font-ibm-arabic-semibold px-2 py-1 rounded-full"
+                      style={{ fontSize: scale(11) }}
+                    >
+                      {notesCount}
+                    </span>
+                  </button>
+                )}
 
                 {/* Edit Option */}
                 <button
