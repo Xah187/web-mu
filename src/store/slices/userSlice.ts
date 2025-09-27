@@ -27,6 +27,7 @@ interface UserState {
   isAuthenticated: boolean;
   size: number;
   language: 'ar' | 'en';
+  theme: 'light' | 'dark';
   Validity: PermissionType[];
   boss: BossType;
 }
@@ -36,6 +37,7 @@ const initialState: UserState = {
   isAuthenticated: false,
   size: 0,
   language: 'ar',
+  theme: 'light',
   Validity: [],
   boss: '' as BossType,
 };
@@ -68,6 +70,9 @@ const userSlice = createSlice({
     setLanguage: (state, action: PayloadAction<'ar' | 'en'>) => {
       state.language = action.payload;
     },
+    setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
+      state.theme = action.payload;
+    },
     setValidity: (state, action: PayloadAction<PermissionType[]>) => {
       state.Validity = action.payload;
     },
@@ -77,5 +82,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, updateCompanyInfo, setFontSize, setLanguage, setValidity, setBoss } = userSlice.actions;
+export const { setUser, clearUser, updateCompanyInfo, setFontSize, setLanguage, setTheme, setValidity, setBoss } = userSlice.actions;
 export default userSlice.reducer;

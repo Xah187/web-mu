@@ -37,12 +37,15 @@ const StageCard: React.FC<StageCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col items-center cursor-pointer group">
+    <div className="theme-card rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 p-6 flex flex-col items-center cursor-pointer group">
       {/* Stage Name */}
       <div className="flex items-center justify-center mb-6">
         <h3
-          className="font-ibm-arabic-bold text-gray-900 text-center line-clamp-2 group-hover:text-blue-600 transition-colors"
-          style={{ fontSize: scale(15) }}
+          className="font-ibm-arabic-bold theme-text-primary text-center line-clamp-2 transition-colors"
+          style={{
+            fontSize: scale(15),
+            color: 'var(--color-text-primary)'
+          }}
         >
           {stage.StageName}
         </h3>
@@ -53,8 +56,9 @@ const StageCard: React.FC<StageCardProps> = ({
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          className="text-gray-400 group-hover:text-blue-500 transition-colors mr-2"
+          className="theme-text-tertiary transition-colors mr-2"
           strokeWidth="2"
+          style={{ color: 'var(--color-text-tertiary)' }}
         >
           <path d="M9 18l6-6-6-6"/>
         </svg>

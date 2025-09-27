@@ -3,6 +3,7 @@
 import React from 'react';
 import { usePathname } from 'next/navigation';
 import SidebarToggle from '@/components/ui/SidebarToggle';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -99,11 +100,10 @@ export function PageHeader({
       </div>
 
       {/* Right Side - Actions */}
-      {actions && (
-        <div className="flex items-center gap-2 ml-3">
-          {actions}
-        </div>
-      )}
+      <div className="flex items-center gap-2 ml-3">
+        <ThemeToggle size="sm" />
+        {actions}
+      </div>
     </div>
   );
 }

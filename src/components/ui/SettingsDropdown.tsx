@@ -10,6 +10,7 @@ import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import { AdminGuard, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 import { Tostget } from '@/components/ui/Toast';
 import { toggleFinanceOperations, refreshUserData } from '@/lib/api/company/ApiCompany';
+import { useTheme } from '@/hooks/useTheme';
 
 interface SettingsDropdownProps {
   className?: string;
@@ -22,19 +23,27 @@ interface DropdownItemProps {
   color?: string;
   className?: string;
   hasBorder?: boolean;
+  icon?: React.ReactNode;
 }
 
-function DropdownItem({ title, onPress, color = colors.BLACK, className = '', hasBorder = false }: DropdownItemProps) {
+function DropdownItem({ title, onPress, color, className = '', hasBorder = false, icon }: DropdownItemProps) {
   return (
     <>
       <button
         onClick={onPress}
-        className={`w-full px-4 py-3 sm:py-3.5 hover:bg-gray-50 transition-colors text-right active:bg-gray-100 ${className}`}
-        style={{ color, minHeight: '44px' }} // Ensures touch-friendly minimum height
+        className={`w-full px-4 py-3 sm:py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-right active:bg-gray-100 dark:active:bg-gray-600 ${className}`}
+        style={{
+          color: color || 'var(--color-text-primary)',
+          minHeight: '44px',
+          backgroundColor: 'transparent'
+        }}
       >
-        <span className="font-ibm-arabic-semibold text-sm sm:text-base leading-relaxed">{title}</span>
+        <div className="flex items-center justify-between">
+          <span className="font-ibm-arabic-semibold text-sm sm:text-base leading-relaxed">{title}</span>
+          {icon && <div className="mr-3 flex-shrink-0">{icon}</div>}
+        </div>
       </button>
-      {hasBorder && <div className="border-t border-gray-200 my-1"></div>}
+      {hasBorder && <div className="border-t my-1" style={{ borderColor: 'var(--color-border)' }}></div>}
     </>
   );
 }
@@ -45,17 +54,17 @@ function DeleteAccountModal({ visible, onClose, onConfirm }: { visible: boolean;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl w-full max-w-sm">
+      <div className="theme-card rounded-xl w-full max-w-sm" style={{ backgroundColor: 'var(--color-card-background)', border: '1px solid var(--color-card-border)' }}>
         <div className="p-6 text-center">
           <div className="mb-4">
             <svg className="mx-auto h-12 w-12 text-red" fill="none" stroke="currentColor" viewBox="0 0 48 48">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v9a2 2 0 002 2h8a2 2 0 002-2V9m0 0V6a2 2 0 00-2-2H8a2 2 0 00-2 2v3m0 0h8m0 0V9" />
             </svg>
           </div>
-          <h3 className="font-cairo-bold text-black text-lg mb-2">
+          <h3 className="font-cairo-bold text-lg mb-2 theme-text-primary" style={{ color: 'var(--color-text-primary)' }}>
             حذف حسابك
           </h3>
-          <p className="font-cairo text-gray-600 mb-6">
+          <p className="font-cairo mb-6 theme-text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
             هل أنت متأكد من رغبتك في حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.
           </p>
 
@@ -72,7 +81,12 @@ function DeleteAccountModal({ visible, onClose, onConfirm }: { visible: boolean;
             </button>
             <button
               onClick={onClose}
-              className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-cairo font-medium hover:bg-gray-200 transition-colors"
+              className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors theme-button-secondary"
+              style={{
+                backgroundColor: 'var(--color-surface-secondary)',
+                color: 'var(--color-text-primary)',
+                border: '1px solid var(--color-border)'
+              }}
             >
               إلغاء
             </button>
@@ -88,6 +102,7 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
   const dispatch = useAppDispatch();
   const { user } = useAppSelector(state => state.user);
   const { isAdmin } = useJobBasedPermissions();
+  const { isDark, toggleTheme } = useTheme();
 
 
 
@@ -304,8 +319,11 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
         {/* Settings Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="p-2 rounded-full hover:bg-gray-100 transition-colors focus-ring flex items-center justify-center"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors focus-ring flex items-center justify-center"
+          style={{
+            color: 'var(--color-text-secondary)',
+            backgroundColor: 'transparent'
+          }}
           aria-label="الإعدادات"
         >
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -319,7 +337,15 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 w-44 sm:w-56 md:w-64" style={{ right: '0', left: 'auto', transform: 'translateX(calc(100% - 44px))' }}>
+          <div className="absolute top-full mt-2 rounded-xl shadow-lg py-2 z-50 w-44 sm:w-56 md:w-64 theme-card"
+               style={{
+                 right: '0',
+                 left: 'auto',
+                 transform: 'translateX(calc(100% - 44px))',
+                 backgroundColor: 'var(--color-card-background)',
+                 border: '1px solid var(--color-card-border)',
+                 boxShadow: 'var(--shadow-lg)'
+               }}>
             {/* Language */}
             <DropdownItem
               title="اللغة"
@@ -330,6 +356,29 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
             <DropdownItem
               title="حجم الخط"
               onPress={handleFontSize}
+            />
+
+            {/* Theme Toggle */}
+            <DropdownItem
+              title={isDark ? "الوضع الفاتح" : "الوضع الليلي"}
+              onPress={() => {
+                setIsOpen(false);
+                toggleTheme();
+              }}
+              icon={
+                isDark ? (
+                  // Sun Icon for Light Mode
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                  </svg>
+                ) : (
+                  // Moon Icon for Dark Mode
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                  </svg>
+                )
+              }
               hasBorder={true}
             />
 

@@ -147,12 +147,17 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
             {deleteUser.PhoneNumber}
           </p>
           
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-4">
-            <p 
-              className="text-sm text-yellow-800"
+          <div className="rounded-lg p-3 mt-4"
+               style={{
+                 backgroundColor: 'var(--color-warning)' + '20',
+                 border: '1px solid var(--color-warning)'
+               }}>
+            <p
+              className="text-sm"
               style={{
                 fontFamily: fonts.CAIROBOLD,
-                fontSize: verticalScale(12 + size)
+                fontSize: verticalScale(12 + size),
+                color: 'var(--color-warning)'
               }}
             >
               تحذير: لا يمكن التراجع عن هذا الإجراء
@@ -161,13 +166,16 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
         </div>
 
         {/* Footer */}
-        <div className="border-t border-gray-100 p-4 flex gap-3">
+        <div className="p-4 flex gap-3" style={{ borderTop: '1px solid var(--color-border)' }}>
           <button
             onClick={onClose}
-            className="flex-1 py-3 px-4 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+            className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors theme-button-secondary"
             style={{
               fontFamily: fonts.CAIROBOLD,
-              fontSize: 14 + size
+              fontSize: 14 + size,
+              backgroundColor: 'var(--color-surface-secondary)',
+              color: 'var(--color-text-primary)',
+              border: '1px solid var(--color-border)'
             }}
             disabled={loading}
           >

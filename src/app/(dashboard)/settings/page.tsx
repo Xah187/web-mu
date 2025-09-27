@@ -495,6 +495,8 @@ export default function SettingsPage() {
               }
             />
 
+
+
             {/* Stage templates access - exactly like mobile app */}
             {showTemplet && (
               <SettingItem

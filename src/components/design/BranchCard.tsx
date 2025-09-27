@@ -38,30 +38,31 @@ export default function BranchCard({
           onPress();
         }
       }}
-      className="branch-card bg-white transition-all duration-200 cursor-pointer relative hover:shadow-lg active:scale-95"
+      className="branch-card theme-card transition-all duration-200 cursor-pointer relative hover:shadow-lg active:scale-95"
       style={{
         borderRadius: 16,
-        backgroundColor: colors.WHITE,
+        backgroundColor: 'var(--color-card-background)',
         padding: `${verticalScale(10)}px ${scale(10)}px`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+        boxShadow: 'var(--shadow-sm)',
         minHeight: size <= 5 ? verticalScale(80) : 'auto',
+        border: '1px solid var(--color-card-border)',
         // Ripple effect simulation
-        backgroundImage: 'radial-gradient(circle, transparent 1%, ' + colors.WHITE + ' 1%)',
+        backgroundImage: 'radial-gradient(circle, transparent 1%, var(--color-card-background) 1%)',
         backgroundPosition: 'center',
         backgroundSize: '15000%',
-        transition: 'background-size 0.2s',
+        transition: 'all 0.3s ease',
       }}
       onMouseDown={(e) => {
         const target = e.currentTarget;
         target.style.backgroundSize = '100%';
-        target.style.backgroundColor = colors.PINK;
+        target.style.backgroundColor = 'var(--color-surface-secondary)';
       }}
       onMouseUp={(e) => {
         const target = e.currentTarget;
         setTimeout(() => {
           if (target) {
             target.style.backgroundSize = '15000%';
-            target.style.backgroundColor = colors.WHITE;
+            target.style.backgroundColor = 'var(--color-card-background)';
           }
         }, 200);
       }}
@@ -69,7 +70,7 @@ export default function BranchCard({
         const target = e.currentTarget;
         if (target) {
           target.style.backgroundSize = '15000%';
-          target.style.backgroundColor = colors.WHITE;
+          target.style.backgroundColor = 'var(--color-card-background)';
         }
       }}
     >
@@ -90,11 +91,11 @@ export default function BranchCard({
           }}
         >
           <h3
-            className="font-semibold text-center mb-1"
+            className="font-semibold text-center mb-1 theme-text-primary"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: verticalScale(isEmployee ? 16 + size : 20 + size),
-              color: colors.BLACK,
+              color: 'var(--color-text-primary)',
               fontWeight: '600',
               lineHeight: 1.2,
               wordBreak: 'break-word'
@@ -105,12 +106,12 @@ export default function BranchCard({
           
           {isEmployee && (
             <>
-              <p 
-                className="text-center mb-2"
+              <p
+                className="text-center mb-2 theme-text-secondary"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   fontSize: verticalScale(10 + size),
-                  color: '#4f5665',
+                  color: 'var(--color-text-secondary)',
                   fontWeight: '500'
                 }}
               >
@@ -118,23 +119,23 @@ export default function BranchCard({
               </p>
               
               <div className="text-center">
-                <span 
+                <span
                   style={{
                     fontSize: verticalScale(48),
                     fontFamily: fonts.IBMPlexSansArabicBold,
                     fontWeight: '700',
-                    color: colors.BLUE
+                    color: 'var(--color-primary)'
                   }}
                 >
                   {projectCount}
                 </span>
-                <span 
+                <span
                   className="mr-1"
                   style={{
                     fontSize: verticalScale(10 + size),
                     fontFamily: fonts.IBMPlexSansArabicMedium,
                     fontWeight: '500',
-                    color: colors.BLUE
+                    color: 'var(--color-primary)'
                   }}
                 >
                   {' '}مشاريع

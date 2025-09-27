@@ -172,23 +172,27 @@ export default function PermissionManager({
         </div>
 
         {/* Footer */}
-        <div className="border-t border-bordercolor p-4">
+        <div className="p-4" style={{ borderTop: '1px solid var(--color-border)' }}>
           <div className="flex gap-3">
             <button
               onClick={onCancel}
-              className="flex-1 bg-gray-200 text-black py-3 rounded-lg hover:bg-gray-300 transition-colors"
+              className="flex-1 py-3 rounded-lg transition-colors theme-button-secondary"
               style={{
-                fontFamily: fonts.IBMPlexSansArabicMedium
+                fontFamily: fonts.IBMPlexSansArabicMedium,
+                backgroundColor: 'var(--color-surface-secondary)',
+                color: 'var(--color-text-primary)',
+                border: '1px solid var(--color-border)'
               }}
             >
               إلغاء
             </button>
             <button
               onClick={handleSave}
-              className="flex-1 py-3 rounded-lg text-white transition-colors"
+              className="flex-1 py-3 rounded-lg text-white transition-colors theme-button-primary"
               style={{
-                backgroundColor: colors.BLUE,
-                fontFamily: fonts.IBMPlexSansArabicMedium
+                backgroundColor: 'var(--color-primary)',
+                fontFamily: fonts.IBMPlexSansArabicMedium,
+                border: '1px solid var(--color-primary)'
               }}
             >
               حفظ ({selectedPermissions.length})
@@ -210,33 +214,29 @@ function PermissionButton({ permission, isSelected, onClick }: PermissionButtonP
   return (
     <button
       onClick={onClick}
-      className={`
-        w-full p-3 rounded-lg border-2 transition-all duration-200 text-right
-        ${isSelected 
-          ? 'border-blue bg-blue/10' 
-          : 'border-bordercolor bg-white hover:bg-gray-50'
-        }
-      `}
+      className="w-full p-3 rounded-lg border-2 transition-all duration-200 text-right theme-card"
+      style={{
+        borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)',
+        backgroundColor: isSelected ? 'var(--color-primary)' + '20' : 'var(--color-card-background)',
+      }}
     >
       <div className="flex items-center justify-between">
-        <span 
-          className="flex-1 text-sm"
+        <span
+          className="flex-1 text-sm theme-text-primary"
           style={{
             fontFamily: fonts.IBMPlexSansArabicMedium,
-            color: isSelected ? colors.BLUE : colors.BLACK
+            color: isSelected ? 'var(--color-primary)' : 'var(--color-text-primary)'
           }}
         >
           {permission}
         </span>
         
-        <div 
-          className={`
-            w-5 h-5 rounded border-2 flex items-center justify-center transition-colors
-            ${isSelected 
-              ? 'bg-blue border-blue' 
-              : 'border-bordercolor'
-            }
-          `}
+        <div
+          className="w-5 h-5 rounded border-2 flex items-center justify-center transition-colors"
+          style={{
+            backgroundColor: isSelected ? 'var(--color-primary)' : 'transparent',
+            borderColor: isSelected ? 'var(--color-primary)' : 'var(--color-border)'
+          }}
         >
           {isSelected && (
             <span className="text-white text-xs">✓</span>

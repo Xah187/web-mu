@@ -157,18 +157,19 @@ export default function Input({
         {!label && !placeholder && (
           <label
             className={`
-              absolute right-4 bg-white px-2 pointer-events-none
+              absolute right-4 px-2 pointer-events-none
               transition-all duration-200 z-10
               ${(value && String(value).trim().length > 0) || isFocused
                 ? '-top-2 text-xs font-medium'
-                : 'top-1/2 -translate-y-1/2 text-sm text-gray-500'
+                : 'top-1/2 -translate-y-1/2 text-sm'
               }
             `}
             style={{
               fontSize: (value && String(value).trim().length > 0) || isFocused ? `${scale(11 + size)}px` : `${scale(14 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium,
               lineHeight: '1.2',
-              color: (value && String(value).trim().length > 0) || isFocused ? colors.BLUE : '#6b7280'
+              color: (value && String(value).trim().length > 0) || isFocused ? 'var(--color-primary)' : 'var(--color-text-secondary)',
+              backgroundColor: 'var(--color-card-background)'
             }}
           >
             {name}

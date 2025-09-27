@@ -124,12 +124,12 @@ export default function CreateRegistrationCompany() {
   };
 
   return (
-    <div className="min-h-screen bg-home flex flex-col create-company-page">
+    <div className="min-h-screen theme-bg-primary flex flex-col create-company-page">
       {/* Header Section - 30% height, blue background, logo at top */}
-      <div 
+      <div
         className="relative flex flex-col items-center justify-start"
         style={{
-          backgroundColor: colors.BLUE,
+          backgroundColor: 'var(--color-primary)',
           height: '20%',
           minHeight: '200px',
           paddingTop: '35px'

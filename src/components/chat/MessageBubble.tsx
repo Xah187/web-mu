@@ -56,15 +56,17 @@ export default function MessageBubble({
     <div
       className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md ${
         mine
-          ? 'ml-auto bg-blue-50 border-blue-100'
-          : 'mr-auto bg-white border-gray-100'
+          ? 'ml-auto'
+          : 'mr-auto'
       }`}
       style={{
         padding: `${scale(16)}px`,
         borderRadius: `${scale(16)}px`,
         marginBottom: `${scale(12)}px`,
-        border: `1px solid ${mine ? colors.BLUE + '20' : colors.BORDERCOLOR}`,
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+        backgroundColor: 'var(--color-card-background)',
+        border: `1px solid var(--color-card-border)`,
+        boxShadow: 'var(--shadow-sm)',
+        color: 'var(--color-text-primary)'
       }}
       onDoubleClick={() => onReply?.(message)}
       onMouseDown={handleLongPressStart}
@@ -77,13 +79,17 @@ export default function MessageBubble({
       {onReply && (
         <button
           onClick={handleReply}
-          className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-full z-10 shadow-sm"
+          className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full z-10 shadow-sm"
           style={{
             top: `${scale(8)}px`,
             left: `${scale(8)}px`,
             padding: `${scale(6)}px`,
-            borderRadius: `${scale(20)}px`
+            borderRadius: `${scale(20)}px`,
+            backgroundColor: 'var(--color-surface-secondary)',
+            color: 'var(--color-text-secondary)'
           }}
+          onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+          onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
           title="رد على هذه الرسالة"
         >
           <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -97,14 +103,19 @@ export default function MessageBubble({
         style={{ marginBottom: `${scale(12)}px` }}
       >
         <span
-          className="font-ibm-arabic-semibold text-gray-700"
-          style={{ fontSize: `${scale(13 + size)}px` }}
+          className="font-ibm-arabic-semibold"
+          style={{
+            fontSize: `${scale(13 + size)}px`,
+            color: 'var(--color-text-primary)'
+          }}
         >
           {senderName || 'غير معروف'}
         </span>
         <span
-          className="text-gray-400"
-          style={{ fontSize: `${scale(11 + size)}px` }}
+          style={{
+            fontSize: `${scale(11 + size)}px`,
+            color: 'var(--color-text-tertiary)'
+          }}
         >
           {formatDate(messageTime)}
         </span>
@@ -113,11 +124,13 @@ export default function MessageBubble({
       {/* عرض الرسالة المرد عليها إن وجدت */}
       {message.Reply && Object.keys(message.Reply).length > 0 && (
         <div
-          className="bg-gray-50 rounded-lg border-l-4 border-blue-500"
+          className="rounded-lg border-l-4"
           style={{
             marginBottom: `${scale(16)}px`,
             padding: `${scale(12)}px`,
-            borderRadius: `${scale(8)}px`
+            borderRadius: `${scale(8)}px`,
+            backgroundColor: 'var(--color-surface-secondary)',
+            borderLeftColor: 'var(--color-primary)'
           }}
         >
           <div
@@ -125,23 +138,28 @@ export default function MessageBubble({
             style={{ marginBottom: `${scale(6)}px` }}
           >
             <div
-              className="text-gray-600"
-              style={{ fontSize: `${scale(11 + size)}px` }}
+              style={{
+                fontSize: `${scale(11 + size)}px`,
+                color: 'var(--color-text-secondary)'
+              }}
             >
               رد على: {message.Reply.Sender}
             </div>
             <div
-              className="text-gray-500"
-              style={{ fontSize: `${scale(10 + size)}px` }}
+              style={{
+                fontSize: `${scale(10 + size)}px`,
+                color: 'var(--color-text-tertiary)'
+              }}
             >
               {formatShortTime(message.Reply.Date)}
             </div>
           </div>
           <div
-            className="text-gray-800 truncate"
+            className="truncate"
             style={{
               fontSize: `${scale(12 + size)}px`,
-              fontFamily: fonts.IBMPlexSansArabicRegular
+              fontFamily: fonts.IBMPlexSansArabicRegular,
+              color: 'var(--color-text-primary)'
             }}
           >
             {message.Reply.Data}
@@ -166,8 +184,39 @@ export default function MessageBubble({
       {/* File Display */}
       {message.File && Object.keys(message.File).length > 0 && (
         <div className="mb-2">
-          {/* File display logic can be added here */}
-          <div className="text-xs text-gray-500">📎 ملف مرفق</div>
+          {String(message.File?.type || '').startsWith('image/') && (message.File?.uri || message.File?.url) ? (
+            <img
+              src={(message.File.uri || message.File.url) as string}
+              alt={message.File?.name || 'image'}
+              className="rounded-lg max-w-full max-h-64 cursor-zoom-in"
+              onClick={() => {
+                // معاينة سريعة عبر نافذة جديدة مؤقتاً
+                const src = (message.File.uri || message.File.url) as string;
+                if (src) window.open(src, '_blank');
+              }}
+            />
+          ) : String(message.File?.type || '').startsWith('video/') && (message.File?.uri || message.File?.url) ? (
+            <video
+              src={(message.File.uri || message.File.url) as string}
+              controls
+              className="rounded-lg max-w-full max-h-64"
+            />
+          ) : message.File?.type === 'location' && message.File?.latitude && message.File?.longitude ? (
+            <a
+              href={`https://www.google.com/maps?q=${message.File.latitude},${message.File.longitude}`}
+              target="_blank"
+              rel="noreferrer"
+              className="text-blue-600 hover:underline text-sm"
+            >
+              📍 عرض الموقع على الخريطة
+            </a>
+          ) : (
+            <div className="text-xs text-gray-700 flex items-center gap-2">
+              <span>📎</span>
+              <span>{message.File?.name || 'ملف مرفق'}</span>
+              <span className="text-gray-400">{message.File?.type ? `(${message.File.type})` : ''}</span>
+            </div>
+          )}
         </div>
       )}
 
@@ -177,14 +226,24 @@ export default function MessageBubble({
           <button
             onClick={() => onReject?.(message.id)}
             disabled={actionLoading[message.id]}
-            className="flex-1 py-1 px-3 text-xs bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors disabled:opacity-50"
+            className="flex-1 py-1 px-3 text-xs rounded-lg transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: 'var(--color-error)' + '20',
+              color: 'var(--color-error)',
+              border: '1px solid var(--color-error)'
+            }}
           >
             {actionLoading[message.id] ? 'جاري...' : 'رفض'}
           </button>
           <button
             onClick={() => onApprove?.(message.id)}
             disabled={actionLoading[message.id]}
-            className="flex-1 py-1 px-3 text-xs bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors disabled:opacity-50"
+            className="flex-1 py-1 px-3 text-xs rounded-lg transition-colors disabled:opacity-50"
+            style={{
+              backgroundColor: 'var(--color-success)' + '20',
+              color: 'var(--color-success)',
+              border: '1px solid var(--color-success)'
+            }}
           >
             {actionLoading[message.id] ? 'جاري...' : 'موافقة'}
           </button>
@@ -195,11 +254,15 @@ export default function MessageBubble({
       {message.status && message.status !== 'pending' && (
         <div className="mt-2">
           <span
-            className={`text-xs px-2 py-1 rounded-full ${
-              message.status === 'approved'
-                ? 'bg-green-100 text-green-800'
-                : 'bg-red-100 text-red-800'
-            }`}
+            className="text-xs px-2 py-1 rounded-full"
+            style={{
+              backgroundColor: message.status === 'approved'
+                ? 'var(--color-success)' + '20'
+                : 'var(--color-error)' + '20',
+              color: message.status === 'approved'
+                ? 'var(--color-success)'
+                : 'var(--color-error)'
+            }}
           >
             {message.status === 'approved' ? 'تم الموافقة' : 'تم الرفض'}
           </span>
@@ -209,7 +272,7 @@ export default function MessageBubble({
       {/* Message Status Indicator for sent messages */}
       {mine && (
         <div className="flex justify-end mt-1">
-          <span className="text-xs text-gray-400">
+          <span className="text-xs theme-text-tertiary" style={{ color: 'var(--color-text-tertiary)' }}>
             {message.arrived ? '✓✓' : '✓'}
           </span>
         </div>

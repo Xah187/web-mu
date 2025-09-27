@@ -7,7 +7,7 @@ interface ManagementIconProps {
 
 // Briefcase icon to represent Management
 export default function ManagementIcon({ focused = false, size = 24 }: ManagementIconProps) {
-  const stroke = focused ? '#2117FB' : '#7e879a';
+  const stroke = focused ? 'var(--color-primary)' : 'var(--color-text-secondary)';
   const strokeWidth = 1.7;
   return (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">

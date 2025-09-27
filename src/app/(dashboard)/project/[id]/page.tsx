@@ -142,12 +142,25 @@ const ProjectHeader = ({
         {/* Stats Grid - Always 3 columns */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 mb-4">
           {/* Daily Cost Card */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
-            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-green-200 bg-green-50/60 shadow-sm overflow-hidden">
-              <p className="text-green-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+          <div className="theme-card rounded-xl shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border shadow-sm overflow-hidden"
+                 style={{
+                   borderColor: 'var(--color-success)',
+                   backgroundColor: 'var(--color-success)' + '20'
+                 }}>
+              <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
+                 style={{
+                   fontSize: scale(10),
+                   color: 'var(--color-success)'
+                 }}>
                 التكلفة اليومية
               </p>
-              <p className="font-ibm-arabic-bold text-green-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+              <p className="font-ibm-arabic-bold"
+                 style={{
+                   fontSize: scale(12),
+                   fontFeatureSettings: '"tnum"',
+                   color: 'var(--color-success)'
+                 }}>
                 {formatCurrency(project.ConstCompany || 0)}
                 <span className="text-xs mr-1">ر.س</span>
               </p>
@@ -155,24 +168,50 @@ const ProjectHeader = ({
           </div>
 
           {/* Days Count Card */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
-            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-blue-200 bg-blue-50/60 shadow-sm overflow-hidden">
-              <p className="text-blue-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+          <div className="theme-card rounded-xl shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border shadow-sm overflow-hidden"
+                 style={{
+                   borderColor: 'var(--color-primary)',
+                   backgroundColor: 'var(--color-primary)' + '20'
+                 }}>
+              <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
+                 style={{
+                   fontSize: scale(10),
+                   color: 'var(--color-primary)'
+                 }}>
                 عدد الأيام
               </p>
-              <p className="font-ibm-arabic-bold text-blue-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+              <p className="font-ibm-arabic-bold"
+                 style={{
+                   fontSize: scale(12),
+                   fontFeatureSettings: '"tnum"',
+                   color: 'var(--color-primary)'
+                 }}>
                 {project.DaysUntiltoday || 0}
               </p>
             </div>
           </div>
 
           {/* Total Cost Card */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
-            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-orange-200 bg-orange-50/60 shadow-sm overflow-hidden">
-              <p className="text-orange-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+          <div className="theme-card rounded-xl shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border shadow-sm overflow-hidden"
+                 style={{
+                   borderColor: 'var(--color-warning)',
+                   backgroundColor: 'var(--color-warning)' + '20'
+                 }}>
+              <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
+                 style={{
+                   fontSize: scale(10),
+                   color: 'var(--color-warning)'
+                 }}>
                 إجمالي التكلفة
               </p>
-              <p className="font-ibm-arabic-bold text-orange-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+              <p className="font-ibm-arabic-bold"
+                 style={{
+                   fontSize: scale(12),
+                   fontFeatureSettings: '"tnum"',
+                   color: 'var(--color-warning)'
+                 }}>
                 {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
                 {String(project.TotalcosttothCompany).length > 8 && '..'}
                 <span className="text-xs mr-1">ر.س</span>
@@ -187,47 +226,86 @@ const ProjectHeader = ({
         {/* Actions Grid - Always 3 columns */}
         <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
           {/* Requests Button Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+          <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
             <button
               onClick={onRequests}
-              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              style={{
+                borderColor: 'var(--color-primary)',
+                backgroundColor: 'var(--color-primary)' + '20'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
+              }}
             >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-blue-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-blue-100 transition-colors">
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#2117fb" strokeWidth="2">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
+                   style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-blue-600" style={{ fontSize: scale(9) }}>طلبات</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-primary)' }}>طلبات</span>
             </button>
           </div>
 
           {/* Finance Button Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+          <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
             <button
               onClick={onFinance}
-              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 hover:bg-green-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              style={{
+                borderColor: 'var(--color-success)',
+                backgroundColor: 'var(--color-success)' + '20'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-success)' + '30';
+                e.currentTarget.style.borderColor = 'var(--color-success)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-success)' + '20';
+                e.currentTarget.style.borderColor = 'var(--color-success)';
+              }}
             >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-green-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-green-100 transition-colors">
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
+                   style={{ backgroundColor: 'var(--color-success)' + '30' }}>
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-green-600" style={{ fontSize: scale(9) }}>مالية</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-success)' }}>مالية</span>
             </button>
           </div>
 
           {/* Archives Button Container */}
-          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+          <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
             <button
               onClick={onArchives}
-              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-orange-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+              style={{
+                borderColor: 'var(--color-warning)',
+                backgroundColor: 'var(--color-warning)' + '20'
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-warning)' + '30';
+                e.currentTarget.style.borderColor = 'var(--color-warning)';
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-warning)' + '20';
+                e.currentTarget.style.borderColor = 'var(--color-warning)';
+              }}
             >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-orange-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-orange-100 transition-colors">
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
+                   style={{ backgroundColor: 'var(--color-warning)' + '30' }}>
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" strokeWidth="2">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l6 6m0 0l6-6m-6 6V3" />
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-orange-600" style={{ fontSize: scale(9) }}>أرشيف</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-warning)' }}>أرشيف</span>
             </button>
           </div>
         </div>
@@ -740,28 +818,45 @@ const ProjectDetailsPage = () => {
           {/* Stats Cards - Direct on Page Background */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
             {/* Total Stages Card */}
-            <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200 shadow-sm text-center overflow-hidden">
-              <div className="text-xs text-blue-700 font-ibm-arabic-medium mb-1">إجمالي المراحل</div>
-              <div className="text-lg font-ibm-arabic-bold text-blue-800">{stages?.length || 0}</div>
+            <div className="p-3 rounded-xl border shadow-sm text-center overflow-hidden"
+                 style={{
+                   borderColor: 'var(--color-primary)',
+                   backgroundColor: 'var(--color-primary)' + '20'
+                 }}>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-primary)' }}>إجمالي المراحل</div>
+              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-primary)' }}>{stages?.length || 0}</div>
             </div>
 
             {/* Open/Completed Card */}
-            <div className="p-3 rounded-xl bg-green-50/60 border border-green-200 shadow-sm text-center overflow-hidden">
-              <div className="text-xs text-green-700 font-ibm-arabic-medium mb-1">المفتوحة / المكتملة</div>
-              <div className="text-lg font-ibm-arabic-bold text-green-800">
+            <div className="p-3 rounded-xl border shadow-sm text-center overflow-hidden"
+                 style={{
+                   borderColor: 'var(--color-success)',
+                   backgroundColor: 'var(--color-success)' + '20'
+                 }}>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-success)' }}>المفتوحة / المكتملة</div>
+              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-success)' }}>
                 {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
               </div>
             </div>
           </div>
 
           {/* Sort Control - Matching Page Design */}
-          <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200 shadow-sm overflow-hidden">
+          <div className="p-3 rounded-xl border shadow-sm overflow-hidden"
+               style={{
+                 borderColor: 'var(--color-warning)',
+                 backgroundColor: 'var(--color-warning)' + '20'
+               }}>
             <div className="flex items-center gap-3 justify-center">
-              <label className="text-sm text-orange-700 font-ibm-arabic-medium">ترتيب:</label>
+              <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-warning)' }}>ترتيب:</label>
               <select
                 value={sortOption}
                 onChange={(e) => setSortOption(e.target.value as any)}
-                className="border border-orange-300 rounded-lg px-3 py-1 text-sm bg-white/80 font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-800"
+                className="rounded-lg px-3 py-1 text-sm font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:border-transparent"
+                style={{
+                  border: '1px solid var(--color-warning)',
+                  backgroundColor: 'var(--color-card-background)',
+                  color: 'var(--color-warning)'
+                }}
               >
                 <option value="default">الافتراضي</option>
                 <option value="status">الحالة (المفتوحة أولاً)</option>

@@ -1,9 +1,11 @@
 'use client';
 
-import React, { useRef } from 'react';
+import React, { useRef, useState, useCallback } from 'react';
 import { fonts } from '@/constants/fonts';
 import { colors } from '@/constants/colors';
 import { scale } from '@/utils/responsiveSize';
+import AttachmentDropdown from './AttachmentDropdown';
+import useWebAttachment from '@/hooks/useWebAttachment';
 
 interface MessageInputProps {
   message: string;
@@ -15,7 +17,7 @@ interface MessageInputProps {
   placeholder?: string;
   showFileUpload?: boolean;
   showEmoji?: boolean;
-  onFileUpload?: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onFileUpload?: (fileData: any) => void;
   onEmojiClick?: () => void;
   disabled?: boolean;
 }
@@ -36,6 +38,16 @@ export default function MessageInput({
 }: MessageInputProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // استخدام hook الإرفاق الجديد
+  const {
+    capturePhoto,
+    captureVideo,
+    selectFile,
+    selectVideo,
+    shareLocation,
+    videoLoading
+  } = useWebAttachment();
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -66,21 +78,94 @@ export default function MessageInput({
     }
   };
 
+  // دوال معالجة الإرفاق الجديدة
+  const handleCameraCapture = useCallback(async () => {
+    const result = await capturePhoto();
+    if (result && onFileUpload) {
+      // تحويل البيانات لتتطابق مع التطبيق المحمول
+      const fileData = {
+        uri: result.uri,
+        name: result.name,
+        type: result.type,
+        size: result.size,
+        location: {}
+      };
+      onFileUpload(fileData);
+    }
+  }, [capturePhoto, onFileUpload]);
+
+  const handleVideoCapture = useCallback(async () => {
+    const result = await captureVideo();
+    if (result && onFileUpload) {
+      const fileData = {
+        uri: result.uri,
+        name: result.name,
+        type: result.type,
+        size: result.size,
+        uriImage: result.uriImage,
+        location: {}
+      };
+      onFileUpload(fileData);
+    }
+  }, [captureVideo, onFileUpload]);
+
+  const handleFileSelect = useCallback(async () => {
+    const result = await selectFile();
+    if (result && onFileUpload) {
+      const fileData = {
+        uri: result.uri,
+        name: result.name,
+        type: result.type,
+        size: result.size,
+        location: {}
+      };
+      onFileUpload(fileData);
+    }
+  }, [selectFile, onFileUpload]);
+
+  const handleVideoSelect = useCallback(async () => {
+    const result = await selectVideo();
+    if (result && onFileUpload) {
+      const fileData = {
+        uri: result.uri,
+        name: result.name,
+        type: result.type,
+        size: result.size,
+        uriImage: result.uriImage,
+        location: {}
+      };
+      onFileUpload(fileData);
+    }
+  }, [selectVideo, onFileUpload]);
+
+  const handleLocationShare = useCallback(async () => {
+    const result = await shareLocation();
+    if (result && onFileUpload) {
+      const locationData = {
+        type: 'location',
+        ...result.data
+      };
+      onFileUpload(locationData);
+    }
+  }, [shareLocation, onFileUpload]);
+
   return (
     <div
-      className="flex-shrink-0 bg-white border-t shadow-lg"
+      className="flex-shrink-0 border-t shadow-lg"
       style={{
-        borderColor: colors.BORDERCOLOR,
+        backgroundColor: 'var(--color-surface)',
+        borderColor: 'var(--color-border)',
         borderTopWidth: '1px'
       }}
     >
       {/* Reply Preview */}
       {replyToMessage && setReplyToMessage && (
         <div
-          className="bg-blue-50 border-t border-blue-200"
+          className="border-t"
           style={{
             padding: `${scale(16)}px`,
-            borderColor: colors.BLUE + '30'
+            backgroundColor: 'var(--color-primary)' + '20',
+            borderColor: 'var(--color-primary)' + '30'
           }}
         >
           <div
@@ -88,31 +173,36 @@ export default function MessageInput({
             style={{ marginBottom: `${scale(8)}px` }}
           >
             <span
-              className="text-blue-600 font-medium"
+              className="font-medium"
               style={{
                 fontSize: `${scale(13 + size)}px`,
-                fontFamily: fonts.IBMPlexSansArabicMedium
+                fontFamily: fonts.IBMPlexSansArabicMedium,
+                color: 'var(--color-primary)'
               }}
             >
               رد على: {replyToMessage.sender || replyToMessage.Sender || replyToMessage.userName}
             </span>
             <button
               onClick={() => setReplyToMessage(null)}
-              className="text-blue-400 hover:text-blue-600 transition-colors"
+              className="transition-colors"
               style={{
                 padding: `${scale(4)}px`,
                 borderRadius: `${scale(4)}px`,
-                fontSize: `${scale(16)}px`
+                fontSize: `${scale(16)}px`,
+                color: 'var(--color-primary)'
               }}
+              onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-primary-dark)'}
+              onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
             >
               ✕
             </button>
           </div>
           <div
-            className="text-gray-600 truncate"
+            className="truncate"
             style={{
               fontSize: `${scale(12 + size)}px`,
-              fontFamily: fonts.IBMPlexSansArabicRegular
+              fontFamily: fonts.IBMPlexSansArabicRegular,
+              color: 'var(--color-text-secondary)'
             }}
           >
             {replyToMessage.content || replyToMessage.message || replyToMessage.text}
@@ -132,31 +222,17 @@ export default function MessageInput({
             gap: `${scale(12)}px`
           }}
         >
-          {/* File Upload Button */}
+          {/* Attachment Dropdown - قائمة الإرفاق المنسدلة */}
           {showFileUpload && (
-            <button
-              onClick={handleFileClick}
+            <AttachmentDropdown
+              onCameraCapture={handleCameraCapture}
+              onVideoCapture={handleVideoCapture}
+              onFileSelect={handleFileSelect}
+              onVideoSelect={handleVideoSelect}
+              onLocationShare={handleLocationShare}
               disabled={disabled}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
-              style={{
-                padding: `${scale(8)}px`,
-                borderRadius: `${scale(20)}px`
-              }}
-              title="إرفاق ملف"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                style={{
-                  width: `${scale(20)}px`,
-                  height: `${scale(20)}px`
-                }}
-              >
-                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
-              </svg>
-            </button>
+              videoLoading={videoLoading}
+            />
           )}
 
           {/* Emoji Button */}
@@ -164,12 +240,15 @@ export default function MessageInput({
             <button
               onClick={handleEmojiClick}
               disabled={disabled}
-              className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-50"
+              className="rounded-full transition-colors disabled:opacity-50"
               style={{
                 padding: `${scale(8)}px`,
                 borderRadius: `${scale(20)}px`,
-                fontSize: `${scale(16)}px`
+                fontSize: `${scale(16)}px`,
+                color: 'var(--color-text-secondary)'
               }}
+              onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
+              onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
               title="إضافة إيموجي"
             >
               😊
@@ -185,15 +264,17 @@ export default function MessageInput({
             rows={1}
             placeholder={placeholder}
             disabled={disabled}
-            className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+            className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
             style={{
               fontFamily: fonts.IBMPlexSansArabicRegular,
               maxHeight: `${scale(160)}px`,
               fontSize: `${scale(14 + size)}px`,
               padding: `${scale(12)}px ${scale(16)}px`,
-              borderColor: colors.BORDERCOLOR,
+              borderColor: 'var(--color-border)',
               borderRadius: `${scale(12)}px`,
-              lineHeight: 1.5
+              lineHeight: 1.5,
+              backgroundColor: 'var(--color-input-background)',
+              color: 'var(--color-input-text)'
             }}
           />
 
@@ -201,14 +282,16 @@ export default function MessageInput({
           <button
             onClick={onSend}
             disabled={!message.trim() || disabled}
-            className="text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+            className="text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
             style={{
               padding: `${scale(12)}px ${scale(20)}px`,
-              backgroundColor: colors.BLUE,
+              backgroundColor: 'var(--color-primary)',
               borderRadius: `${scale(24)}px`,
               fontSize: `${scale(14 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium
             }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary)'}
             aria-label="إرسال"
             title="إرسال"
           >
@@ -222,7 +305,15 @@ export default function MessageInput({
             ref={fileInputRef}
             type="file"
             accept="image/*,video/*,.pdf,.doc,.docx"
-            onChange={onFileUpload}
+            onChange={async (e) => {
+              const file = e.currentTarget.files?.[0];
+              if (!file || !onFileUpload) return;
+              const uri = URL.createObjectURL(file);
+              const fileData = { uri, name: file.name, type: file.type, size: file.size };
+              onFileUpload(fileData);
+              // clear for re-selecting same file
+              e.currentTarget.value = '';
+            }}
             className="hidden"
           />
         )}

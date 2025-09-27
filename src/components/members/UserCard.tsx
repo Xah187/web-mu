@@ -170,10 +170,15 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                 />
                 
                 {/* Menu */}
-                <div className="absolute left-0 top-full mt-1 bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden z-50 min-w-[180px]">
+                <div className="absolute left-0 top-full mt-1 rounded-lg shadow-lg overflow-hidden z-50 min-w-[180px] theme-card"
+                     style={{
+                       backgroundColor: 'var(--color-card-background)',
+                       border: '1px solid var(--color-card-border)',
+                       boxShadow: 'var(--shadow-lg)'
+                     }}>
                   <button
                     onClick={handleEdit}
-                    className="w-full px-4 py-3 text-right hover:bg-gray-50 transition-colors flex items-center gap-3"
+                    className="w-full px-4 py-3 text-right hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
                   >
                     <svg 
                       width="18" 
@@ -188,11 +193,11 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                       <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
                       <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
-                    <span 
+                    <span
                       style={{
                         fontFamily: fonts.CAIROBOLD,
                         fontSize: 14 + size,
-                        color: colors.BLACK
+                        color: 'var(--color-text-primary)'
                       }}
                     >
                       تعديل البيانات

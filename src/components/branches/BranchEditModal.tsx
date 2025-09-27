@@ -342,12 +342,12 @@ export default function BranchEditModal({
                 background: 'none',
                 border: 'none',
                 cursor: 'pointer',
-                color: '#9ca3af',
+                color: 'var(--color-text-tertiary)',
                 transition: 'color 0.2s ease',
                 zIndex: 10
               }}
-              onMouseOver={(e) => e.currentTarget.style.color = '#6b7280'}
-              onMouseOut={(e) => e.currentTarget.style.color = '#9ca3af'}
+              onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
+              onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

@@ -41,12 +41,14 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
       }}
     >
       <div
-        className="bg-white w-full shadow-2xl"
+        className="theme-card w-full shadow-2xl"
         style={{
           borderRadius: `${scale(16)}px`,
           padding: `${scale(24)}px`,
           maxWidth: `${scale(400)}px`,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+          backgroundColor: 'var(--color-card-background)',
+          border: '1px solid var(--color-card-border)',
+          boxShadow: 'var(--shadow-lg)'
         }}
       >
         {/* Header */}
@@ -55,22 +57,24 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           style={{ marginBottom: `${scale(24)}px` }}
         >
           <h3
-            className="text-gray-900 font-ibm-arabic-bold"
+            className="theme-text-primary font-ibm-arabic-bold"
             style={{
               fontSize: `${scale(18 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicBold,
               marginBottom: `${scale(8)}px`,
-              lineHeight: 1.4
+              lineHeight: 1.4,
+              color: 'var(--color-text-primary)'
             }}
           >
             {title}
           </h3>
           <p
-            className="text-gray-600 font-ibm-arabic-medium"
+            className="theme-text-secondary font-ibm-arabic-medium"
             style={{
               fontSize: `${scale(14 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium,
-              lineHeight: 1.5
+              lineHeight: 1.5,
+              color: 'var(--color-text-secondary)'
             }}
           >
             {message}
@@ -87,7 +91,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
             disabled={isLoading}
             className="flex-1 text-white rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-sm hover:shadow-md"
             style={{
-              backgroundColor: colors.BLUE,
+              backgroundColor: 'var(--color-primary)',
               padding: `${scale(12)}px ${scale(16)}px`,
               borderRadius: `${scale(8)}px`,
               fontSize: `${scale(14 + size)}px`,

@@ -6,6 +6,7 @@ import { useAppSelector, useAppDispatch } from '@/store';
 import { setUser } from '@/store/slices/userSlice';
 import useNavigationHistory from '@/hooks/useNavigationHistory';
 import ResponsiveNavigation from '@/components/layout/ResponsiveNavigation';
+import ThemeProvider from '@/components/providers/ThemeProvider';
 
 export default function DashboardLayout({
   children,
@@ -67,20 +68,22 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="min-h-screen dashboard-layout" style={{ backgroundColor: 'var(--color-background)' }}>
-      {/* Responsive Navigation */}
-      <ResponsiveNavigation />
+    <ThemeProvider>
+      <div className="min-h-screen dashboard-layout" style={{ backgroundColor: 'var(--color-background)' }}>
+        {/* Responsive Navigation */}
+        <ResponsiveNavigation />
 
-      {/* Main Content with responsive spacing */}
-      <main
-        className="min-h-screen responsive-content"
-        style={{
-          paddingBottom: 'var(--content-padding-bottom)',
-          paddingTop: 'var(--safe-area-top)'
-        }}
-      >
-        {children}
-      </main>
-    </div>
+        {/* Main Content with responsive spacing */}
+        <main
+          className="min-h-screen responsive-content"
+          style={{
+            paddingBottom: 'var(--content-padding-bottom)',
+            paddingTop: 'var(--safe-area-top)'
+          }}
+        >
+          {children}
+        </main>
+      </div>
+    </ThemeProvider>
   );
 }

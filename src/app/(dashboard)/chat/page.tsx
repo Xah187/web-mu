@@ -1,15 +1,17 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAppSelector } from '@/store';
 import axiosInstance from '@/lib/api/axios';
 import socketService from '@/lib/socket/socketService';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { scale, verticalScale } from '@/utils/responsiveSize';
+import { scale } from '@/utils/responsiveSize';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import AttachmentDropdown from '@/components/chat/AttachmentDropdown';
+import useWebAttachment from '@/hooks/useWebAttachment';
 
 
 
@@ -145,17 +147,26 @@ export default function ChatPage() {
     const timeminet = raw.timeminet || raw.Date || new Date().toISOString();
     return { ...raw, File, Reply, timeminet };
   };
+
   const dedupMessages = (list: any[]) => {
     const seen = new Set<string>();
     const result: any[] = [];
     for (const m of list) {
-      const key = `${m?.chatID ?? ''}|${(m as any)?.idSendr ?? ''}`;
+      const key = `${m?.chatID ?? ''}|${(m as any)?.idSendr ?? ''}|${(m as any)?.message ?? ''}|${(m as any)?.timeminet ?? ''}`;
       if (seen.has(key)) continue;
       seen.add(key);
       result.push(m);
     }
     return result;
   };
+
+  // Helper function to add message with deduplication
+  const addMessageSafely = React.useCallback((newMessage: any) => {
+    setMessages((prev) => {
+      const updated = [...prev, newMessage];
+      return dedupMessages(updated);
+    });
+  }, []);
 
 
 
@@ -219,31 +230,6 @@ export default function ChatPage() {
 
   const handleShareMyLocation = () => {
 
-    // Helpers: normalize server messages (File may arrive as JSON string)
-    const guessKind = (name?: string, type?: string) => {
-      const ext = (name || '').split('.').pop()?.toLowerCase();
-      if ((type || '').startsWith('image/') || ['jpg','jpeg','png','gif','webp','bmp','svg','heic'].includes(ext||'')) return 'image';
-      if ((type || '').startsWith('video/') || ['mp4','mov','m4v','webm','avi','mkv'].includes(ext||'')) return 'video';
-      return 'file';
-    };
-    const normalizeMessage = (m: any) => {
-      let File = m?.File;
-      if (typeof File === 'string') {
-        try { File = JSON.parse(File); } catch {}
-      }
-      let Reply = m?.Reply;
-      if (typeof Reply === 'string') {
-        try { Reply = JSON.parse(Reply); } catch {}
-      }
-      if (File && typeof File === 'object') {
-        if (!File.type && File.name) {
-          const kind = guessKind(File.name, undefined);
-          File.type = kind === 'image' ? 'image/*' : kind === 'video' ? 'video/*' : 'application/octet-stream';
-        }
-      }
-      return { ...m, File, Reply } as any;
-    };
-    const gcsUrl = (name: string) => `https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${encodeURIComponent(name)}`;
 
     if (!navigator?.geolocation) return alert('Geolocation not supported');
     navigator.geolocation.getCurrentPosition((pos) => {
@@ -251,7 +237,7 @@ export default function ChatPage() {
       const url = `https://www.google.com/maps?q=${latitude},${longitude}`;
       const senderName = user?.data?.userName || user?.userName || 'User';
       const payload: any = { ProjectID: parseInt(ProjectID), StageID: typess, userName: senderName, Sender: senderName, message: url, File: {}, Reply: {}, Date: new Date().toISOString() };
-      setMessages((p) => [...p, payload]);
+      addMessageSafely(payload);
       socketService.emit('send_message', payload);
     }, () => alert('Unable to get location'));
   };
@@ -287,8 +273,9 @@ export default function ChatPage() {
         });
         const data = res.data?.data || res.data || [];
         const normalized: any[] = Array.isArray(data) ? (data as any[]).map(normalizeMessage) : [];
-        setMessages(normalized as ChatMessage[]);
-      } catch (e) {
+        const deduped = dedupMessages(normalized);
+        setMessages(deduped as ChatMessage[]);
+      } catch {
         // ignore for now
       } finally {
         setLoading(false);
@@ -299,8 +286,15 @@ export default function ChatPage() {
 
     // Listen for incoming messages
     const handleReceived = (msg: ChatMessage) => {
-      const n = normalizeMessage(msg);
-      setMessages((prev) => [...prev, n]);
+      const currentUserName = ((user?.data?.userName as string) || (user as any)?.userName || '') as string;
+      const senderName = (msg.userName ?? msg.Sender ?? '') as string;
+
+      // Only add message if it's from another user (not from current user)
+      // This prevents duplicate messages when current user sends a message
+      if (senderName?.toLowerCase?.() !== currentUserName?.toLowerCase?.()) {
+        const n = normalizeMessage(msg);
+        addMessageSafely(n);
+      }
     };
     socketService.on('received_message', handleReceived);
 
@@ -312,7 +306,7 @@ export default function ChatPage() {
           ProjectID: parseInt(ProjectID),
           type: typess,
         });
-      } catch (e) {
+      } catch {
         // ignore
       }
     };
@@ -321,7 +315,7 @@ export default function ChatPage() {
     return () => {
       socketService.off('received_message', handleReceived);
     };
-  }, [ProjectID, typess]);
+  }, [ProjectID, typess, addMessageSafely, user]);
 
   // Upload state (placeholder UI)
   const [uploading, setUploading] = useState<Uploading | null>(null);
@@ -331,6 +325,16 @@ export default function ChatPage() {
 
   // File input ref
   const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  // استخدام hook الإرفاق الجديد
+  const {
+    capturePhoto,
+    captureVideo,
+    selectFile,
+    selectVideo,
+    shareLocation,
+    videoLoading
+  } = useWebAttachment();
 
 
 
@@ -388,10 +392,10 @@ export default function ChatPage() {
       setUploading(null);
 
       // عرض الرسالة فورياً
-      setMessages((prev) => [...prev, { ...payload, chatID, Date: new Date().toISOString() }]);
+      addMessageSafely({ ...payload, chatID, Date: new Date().toISOString() });
       // السيرفر سيبث received_message الذي يحمل نفس البيانات النهائية
 
-    } catch (e: any) {
+    } catch {
       setUploading(null);
       setErrorMsg('تعذر رفع الملف. تحقق من الاتصال وحاول مرة أخرى.');
     }
@@ -404,6 +408,87 @@ export default function ChatPage() {
     // Clear immediately to avoid synthetic event pooling issues and allow re-selecting same file
     inputEl.value = '';
     await uploadToStorage(file);
+  };
+
+  // دالة معالجة الإرفاق الجديدة (مطابقة للتطبيق المحمول)
+  const handleFileUpload = async (fileData: any) => {
+    try {
+      if (fileData.type === 'location') {
+        // معالجة الموقع
+        const locationMessage = {
+          idSendr: buildIdSendr(),
+          ProjectID: parseInt(ProjectID),
+          StageID: typess,
+          Sender: user?.data?.userName || 'غير معروف',
+          message: '',
+          timeminet: new Date().toISOString(),
+          File: {
+            type: 'location',
+            latitude: fileData.latitude,
+            longitude: fileData.longitude,
+            accuracy: fileData.accuracy,
+            timestamp: fileData.timestamp
+          },
+          Reply: replyToMessage || {},
+          arrived: false,
+          kind: 'new'
+        };
+
+        // إضافة الرسالة محلياً
+        addMessageSafely(locationMessage);
+        setReplyToMessage(null);
+
+        // إرسال عبر Socket
+        socketService.emit('send_message', locationMessage);
+      } else {
+        // معالجة الملفات (صور، فيديوهات، مستندات)
+        // تحويل من blob URL إلى File object
+        const response = await fetch(fileData.uri);
+        const blob = await response.blob();
+        const file = new File([blob], fileData.name, { type: fileData.type });
+
+        await uploadToStorage(file);
+      }
+    } catch (error) {
+      console.error('Error handling file upload:', error);
+      setErrorMsg('خطأ في معالجة الملف');
+    }
+  };
+
+  // دوال معالجة الإرفاق للقائمة المنسدلة
+  const handleCameraCapture = async () => {
+    const result = await capturePhoto();
+    if (result) {
+      await handleFileUpload(result);
+    }
+  };
+
+  const handleVideoCapture = async () => {
+    const result = await captureVideo();
+    if (result) {
+      await handleFileUpload(result);
+    }
+  };
+
+  const handleFileSelect = async () => {
+    const result = await selectFile();
+    if (result) {
+      await handleFileUpload(result);
+    }
+  };
+
+  const handleVideoSelect = async () => {
+    const result = await selectVideo();
+    if (result) {
+      await handleFileUpload(result);
+    }
+  };
+
+  const handleLocationShare = async () => {
+    const result = await shareLocation();
+    if (result) {
+      await handleFileUpload(result);
+    }
   };
 
   const handleSend = async () => {
@@ -433,8 +518,8 @@ export default function ChatPage() {
       kind: 'new',
     };
 
-    // Optimistic UI
-    setMessages((prev) => [...prev, messagePayload]);
+    // Optimistic UI - add message immediately for better UX
+    addMessageSafely(messagePayload);
     setText('');
     setReplyToMessage(null); // إلغاء الرد بعد الإرسال
 
@@ -449,7 +534,13 @@ export default function ChatPage() {
           title={nameRoom || 'الدردشة'}
           subtitle={nameProject || undefined}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+            <button onClick={() => router.back()} className="p-2 rounded-lg transition-colors"
+                    style={{
+                      color: 'var(--color-text-secondary)'
+                    }}
+                    onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
+                    onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    aria-label="رجوع">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>
@@ -460,12 +551,12 @@ export default function ChatPage() {
     >
       <ContentSection className="p-0">
       {uploading && (
-        <div className="fixed bottom-20 right-4 bg-white shadow-lg border border-gray-200 rounded-xl p-3">
+        <div className="fixed bottom-20 right-4 shadow-lg rounded-xl p-3 theme-card" style={{ backgroundColor: 'var(--color-card-background)', borderColor: 'var(--color-border)' }}>
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-blue-200 border-t-blue animate-spin"></div>
+            <div className="w-8 h-8 rounded-full border-4 animate-spin" style={{ borderColor: 'var(--color-primary)' + '30', borderTopColor: 'var(--color-primary)' }}></div>
             <div>
-              <div className="text-sm font-ibm-arabic-semibold text-gray-800">جاري الرفع...</div>
-              <div className="text-xs text-gray-600">{uploading.progress.toFixed(0)}%</div>
+              <div className="text-sm font-ibm-arabic-semibold" style={{ color: 'var(--color-text-primary)' }}>جاري الرفع...</div>
+              <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{uploading.progress.toFixed(0)}%</div>
             </div>
           </div>
         </div>
@@ -489,8 +580,8 @@ export default function ChatPage() {
           </div>
         ) : messages.length === 0 ? (
           <div className="text-center py-12">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-400">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: 'var(--color-surface-secondary)' }}>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ color: 'var(--color-text-tertiary)' }}>
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
@@ -517,18 +608,29 @@ export default function ChatPage() {
             const mine = (senderName?.toLowerCase?.() || '') === (currentUserName?.toLowerCase?.() || '');
             const fileName = (m as any).File?.name as string | undefined;
             const fileType = (m as any).File?.type as string | undefined;
-            const isImage = fileType?.startsWith('image/');
-            const isVideo = fileType?.startsWith('video/');
+            const inferFromName = (name?: string): string | undefined => {
+              if (!name) return undefined;
+              const ext = name.split('.').pop()?.toLowerCase();
+              if (!ext) return undefined;
+              if (['jpg','jpeg','png','gif','webp','bmp'].includes(ext)) return 'image/' + (ext === 'jpg' ? 'jpeg' : ext);
+              if (['mp4','mov','webm','m4v','mkv','avi'].includes(ext)) return 'video/' + (ext === 'mov' ? 'quicktime' : ext);
+              return undefined;
+            };
+            const effectiveType = fileType || inferFromName(fileName);
+            const isImage = !!effectiveType && effectiveType.startsWith('image/');
+            const isVideo = !!effectiveType && effectiveType.startsWith('video/');
             return (
               <div
                 key={idx}
-                className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md ${mine ? 'ml-auto bg-blue-50 border-blue-100' : 'mr-auto bg-white border-gray-100'}`}
+                className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md ${mine ? 'ml-auto' : 'mr-auto'}`}
                 style={{
                   padding: `${scale(16)}px`,
                   borderRadius: `${scale(16)}px`,
                   marginBottom: `${scale(16)}px`,
-                  border: `1px solid ${mine ? colors.BLUE + '20' : colors.BORDERCOLOR}`,
-                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)'
+                  backgroundColor: 'var(--color-card-background)',
+                  border: `1px solid var(--color-border)`,
+                  boxShadow: 'var(--shadow-sm)',
+                  color: 'var(--color-text-primary)'
                 }}
                 onDoubleClick={() => setReplyToMessage(m)} // Double click للرد
                 onMouseDown={() => handleMouseDown(m)} // Mousedown للضغط الطويل
@@ -543,13 +645,17 @@ export default function ChatPage() {
                     e.stopPropagation(); // منع تفعيل الضغط الطويل
                     handleQuickReply(m);
                   }}
-                  className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 bg-gray-100 hover:bg-gray-200 rounded-full z-10 shadow-sm"
+                  className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full z-10 shadow-sm"
                   style={{
                     top: `${scale(8)}px`,
                     left: `${scale(8)}px`,
                     padding: `${scale(6)}px`,
-                    borderRadius: `${scale(20)}px`
+                    borderRadius: `${scale(20)}px`,
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    color: 'var(--color-text-secondary)'
                   }}
+                  onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+                  onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
                   title="رد على هذه الرسالة"
                 >
                   <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -562,14 +668,19 @@ export default function ChatPage() {
                   style={{ marginBottom: `${scale(12)}px` }}
                 >
                   <span
-                    className="font-ibm-arabic-semibold text-gray-700"
-                    style={{ fontSize: `${scale(13 + (size || 0))}px` }}
+                    className="font-ibm-arabic-semibold"
+                    style={{
+                      fontSize: `${scale(13 + (size || 0))}px`,
+                      color: 'var(--color-text-primary)'
+                    }}
                   >
                     {senderName || 'غير معروف'}
                   </span>
                   <span
-                    className="text-gray-400"
-                    style={{ fontSize: `${scale(11 + (size || 0))}px` }}
+                    style={{
+                      fontSize: `${scale(11 + (size || 0))}px`,
+                      color: 'var(--color-text-tertiary)'
+                    }}
                   >
                     {formatDate(((m as any).timeminet || (m as any).Date) as string)}
                   </span>
@@ -663,19 +774,21 @@ export default function ChatPage() {
 
       {/* Chat Input Bar - Fixed at Bottom */}
       <div
-        className="fixed bottom-16 left-0 right-0 bg-white border-t shadow-lg z-50"
+        className="chat-input-bar border-t shadow-lg z-50"
         style={{
-          borderColor: colors.BORDERCOLOR,
+          backgroundColor: 'var(--color-surface)',
+          borderColor: 'var(--color-border)',
           borderTopWidth: '1px'
         }}
       >
         {/* Reply Preview - داخل البار الثابت */}
         {replyToMessage && (
           <div
-            className="bg-blue-50 border-b border-blue-200"
+            className="border-b"
             style={{
               padding: `${scale(16)}px`,
-              borderColor: colors.BLUE + '30'
+              backgroundColor: 'var(--color-primary)' + '20',
+              borderColor: 'var(--color-primary)' + '30'
             }}
           >
             <div
@@ -683,22 +796,26 @@ export default function ChatPage() {
               style={{ marginBottom: `${scale(8)}px` }}
             >
               <div
-                className="text-blue-600 font-medium"
+                className="font-medium"
                 style={{
                   fontSize: `${scale(13 + (size || 0))}px`,
-                  fontFamily: fonts.IBMPlexSansArabicMedium
+                  fontFamily: fonts.IBMPlexSansArabicMedium,
+                  color: 'var(--color-primary)'
                 }}
               >
                 رد على: {(replyToMessage as any).Sender || (replyToMessage as any).userName || 'غير معروف'}
               </div>
               <button
                 onClick={() => setReplyToMessage(null)}
-                className="text-blue-400 hover:text-blue-600 transition-colors"
+                className="transition-colors"
                 style={{
                   padding: `${scale(4)}px`,
                   borderRadius: `${scale(4)}px`,
-                  fontSize: `${scale(16)}px`
+                  fontSize: `${scale(16)}px`,
+                  color: 'var(--color-primary)'
                 }}
+                onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-primary-dark)'}
+                onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
                 title="إلغاء الرد"
               >
 
@@ -707,10 +824,11 @@ export default function ChatPage() {
               </button>
             </div>
             <div
-              className="text-gray-600 truncate"
+              className="truncate"
               style={{
                 fontSize: `${scale(12 + (size || 0))}px`,
-                fontFamily: fonts.IBMPlexSansArabicRegular
+                fontFamily: fonts.IBMPlexSansArabicRegular,
+                color: 'var(--color-text-secondary)'
               }}
             >
               {(replyToMessage as any).message || (replyToMessage as any).text || 'رسالة'}
@@ -723,47 +841,26 @@ export default function ChatPage() {
           className="flex items-end"
           style={{ gap: `${scale(12)}px` }}
         >
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            title="إرفاق ملف"
-            className="flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-            style={{
-              width: `${scale(40)}px`,
-              height: `${scale(40)}px`,
-              borderRadius: `${scale(8)}px`,
-              borderColor: colors.BORDERCOLOR
-            }}
-          >
-            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15V8a5 5 0 0 0-10 0v9a3 3 0 0 0 6 0V9"/>
-            </svg>
-          </button>
+          {/* قائمة الإرفاق المنسدلة الجديدة */}
+          <AttachmentDropdown
+            onCameraCapture={handleCameraCapture}
+            onVideoCapture={handleVideoCapture}
+            onFileSelect={handleFileSelect}
+            onVideoSelect={handleVideoSelect}
+            onLocationShare={handleLocationShare}
+            disabled={false}
+            videoLoading={videoLoading}
+          />
+
           {errorMsg && (
             <div className="absolute bottom-16 left-4 right-4 sm:static sm:bottom-auto sm:left-auto sm:right-auto sm:mt-2">
-              <div className="bg-red-50 text-red-700 border border-red-200 rounded-lg px-3 py-2 text-sm">
+              <div className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: 'var(--color-error)' + '20', color: 'var(--color-error)', borderColor: 'var(--color-error)' }}>
                 {errorMsg}
               </div>
             </div>
           )}
 
           <input ref={fileInputRef} type="file" onChange={handleFileChange} className="hidden" />
-
-          <button
-            onClick={handleShareMyLocation}
-            title="مشاركة الموقع"
-            className="flex items-center justify-center rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-            style={{
-              width: `${scale(40)}px`,
-              height: `${scale(40)}px`,
-              borderRadius: `${scale(8)}px`,
-              borderColor: colors.BORDERCOLOR
-            }}
-          >
-            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
-              <circle cx="12" cy="10" r="3"/>
-            </svg>
-          </button>
 
           <textarea
             ref={textareaRef}
@@ -772,29 +869,34 @@ export default function ChatPage() {
             onKeyDown={handleKeyDown}
             rows={1}
             placeholder="اكتب رسالة..."
-            className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-200"
+            className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200"
             style={{
               fontFamily: fonts.IBMPlexSansArabicRegular,
               maxHeight: `${scale(160)}px`,
               fontSize: `${scale(14 + (size || 0))}px`,
               padding: `${scale(12)}px ${scale(16)}px`,
-              borderColor: colors.BORDERCOLOR,
+              borderColor: 'var(--color-border)',
               borderRadius: `${scale(12)}px`,
-              lineHeight: 1.5
+              lineHeight: 1.5,
+              backgroundColor: 'var(--color-input-background)',
+              color: 'var(--color-input-text)',
+
             }}
           />
 
           <button
             onClick={handleSend}
             disabled={!text.trim()}
-            className="text-white rounded-full hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
+            className="text-white rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm hover:shadow-md"
             style={{
               padding: `${scale(12)}px ${scale(20)}px`,
-              backgroundColor: colors.BLUE,
+              backgroundColor: 'var(--color-primary)',
               borderRadius: `${scale(24)}px`,
               fontSize: `${scale(14 + (size || 0))}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium
             }}
+            onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'}
+            onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary)'}
             aria-label="إرسال"
             title="إرسال"
           >
@@ -809,7 +911,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setPreview(null)}>
           <div className="max-w-4xl max-h-[85vh] p-2" onClick={(e) => e.stopPropagation()}>
             {preview.type === 'image' ? (
-              <img src={preview.url} className="max-h-[80vh] max-w-full rounded-xl" />
+              <img src={preview.url} alt="معاينة الصورة" className="max-h-[80vh] max-w-full rounded-xl" />
             ) : (
               <video src={preview.url} controls autoPlay className="max-h-[80vh] max-w-full rounded-xl" />
             )}

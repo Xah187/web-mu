@@ -154,29 +154,31 @@
   font-display: swap;
 }
 
-/* CSS Variables */
+/* Legacy CSS Variables - Updated to use theme system */
 :root {
-  --background: #f6f8fe;
-  --foreground: #212121;
-  --primary-color: #2117fb;
-  --border-color: #7e879a;
-  --home-bg: #f6f8fe;
-  --white: #ffffff;
-  --black: #212121;
-  --blue: #2117fb;
-  --border: #7e879a;
+  --background: var(--color-background);
+  --foreground: var(--color-text-primary);
+  --primary-color: var(--color-primary);
+  --border-color: var(--color-border);
+  --home-bg: var(--color-background);
+  --white: var(--color-surface);
+  --black: var(--color-text-primary);
+  --blue: var(--color-primary);
+  --border: var(--color-border);
 }
 
 /* Theme variables */
 :root {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background: var(--color-background);
+  --color-foreground: var(--color-text-primary);
   --font-sans: 'IBMPlexSansArabic-Regular', var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-/* Force light theme consistently */
-/* Removed automatic dark-mode override to match mobile design */
+/* Theme transitions for smooth switching */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
 
 /* Global Styles */
 * {

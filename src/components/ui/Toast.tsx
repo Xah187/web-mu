@@ -37,27 +37,27 @@ const Toast: React.FC<ToastProps> = ({
     switch (type) {
       case 'success':
         return {
-          backgroundColor: '#10b981',
+          backgroundColor: 'var(--color-success)',
           color: 'white',
-          borderColor: '#059669'
+          borderColor: 'var(--color-success)'
         };
       case 'error':
         return {
-          backgroundColor: '#ef4444',
+          backgroundColor: 'var(--color-error)',
           color: 'white',
-          borderColor: '#dc2626'
+          borderColor: 'var(--color-error)'
         };
       case 'warning':
         return {
-          backgroundColor: '#f59e0b',
+          backgroundColor: 'var(--color-warning)',
           color: 'white',
-          borderColor: '#d97706'
+          borderColor: 'var(--color-warning)'
         };
       default:
         return {
-          backgroundColor: colors.BLUE,
+          backgroundColor: 'var(--color-primary)',
           color: 'white',
-          borderColor: '#1d4ed8'
+          borderColor: 'var(--color-primary)'
         };
     }
   };

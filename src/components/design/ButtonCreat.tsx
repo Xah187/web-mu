@@ -98,9 +98,10 @@ export default function ButtonCreat({
       )}
       
       <span
-        className={text === 'إلغــاء' ? 'text-black' : ''}
+        className={text === 'إلغــاء' ? 'theme-text-primary' : ''}
         style={{
           fontSize: `${verticalScale(text === '$' ? 22 + size : 15 + size)}px`,
+          color: text === 'إلغــاء' ? 'var(--color-text-primary)' : undefined
         }}
       >
         {text}

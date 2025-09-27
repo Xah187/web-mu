@@ -301,8 +301,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             e.stopPropagation();
             onPressLocation?.();
           }}
-          className="flex-1 flex flex-col items-center justify-center bg-white border border-gray-200 py-1 px-1 mx-1 rounded-lg hover:bg-gray-50 transition-colors"
-          style={{ minHeight: 50, width: '30%' }}
+          className="flex-1 flex flex-col items-center justify-center theme-card py-1 px-1 mx-1 rounded-lg transition-colors"
+          style={{
+            minHeight: 50,
+            width: '30%',
+            backgroundColor: 'var(--color-card-background)',
+            border: '1px solid var(--color-card-border)'
+          }}
         >
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="mb-1">
             <path

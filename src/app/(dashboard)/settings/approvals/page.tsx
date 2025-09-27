@@ -322,22 +322,47 @@ export default function ApprovalsPage() {
     }
   };
 
-  // Format date functions (like main chat)
+  // Formatting helpers with AM/PM format (matching main chat)
+  const formatTime = (date: Date) => {
+    let hours = date.getHours();
+    const minutes = date.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // 0 should be 12
+    const minutesStr = minutes < 10 ? '0' + minutes : minutes;
+    return `${hours}:${minutesStr} ${ampm}`;
+  };
+
   const formatDate = (d?: string) => {
     if (!d) return '';
     try {
       const date = new Date(d);
-      return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+      const now = new Date();
+      const isToday = date.toDateString() === now.toDateString();
+      const isYesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000).toDateString() === date.toDateString();
+
+      // Format date - بالميلادي بترتيب سنة-شهر-يوم
+      if (isToday) {
+        return formatTime(date);
+      } else if (isYesterday) {
+        return `أمس ${formatTime(date)}`;
+      } else {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd} ${formatTime(date)}`;
+      }
     } catch {
       return '';
     }
   };
 
+  // دالة مساعدة لعرض الوقت المختصر في الرد
   const formatShortTime = (d?: string) => {
     if (!d) return '';
     try {
       const date = new Date(d);
-      return date.toLocaleTimeString('ar-SA', { hour: '2-digit', minute: '2-digit' });
+      return formatTime(date);
     } catch {
       return '';
     }
@@ -366,13 +391,93 @@ export default function ApprovalsPage() {
     }
   };
 
-  // File upload handler
-  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  // File upload handler - now accepts object from MessageInput
+  const handleFileUpload = async (input: any) => {
+    try {
+      // تطبيع الإدخال: حدث input أو كائن ملف
+      let fileData: any = null;
+      if (input && input.target && input.target.files) {
+        const file = input.target.files?.[0];
+        if (!file) return;
+        const uri = URL.createObjectURL(file);
+        fileData = { uri, name: file.name, type: file.type, size: file.size };
+      } else {
+        fileData = input;
+      }
 
-    // For now, just show a message that file upload is not implemented
-    Tostget('إرسال الملفات سيتم تطويره قريباً');
+      // مشاركة الموقع
+      if (fileData?.type === 'location') {
+        const senderName = user?.data?.userName || 'مستخدم';
+        const locationMessage: any = {
+          idSendr: buildIdSendr(),
+          ProjectID: approvalsProjectId,
+          StageID: 'اعتمادات',
+          Sender: senderName,
+          userName: senderName,
+          message: '',
+          timeminet: new Date().toISOString(),
+          File: {
+            type: 'location',
+            latitude: fileData.latitude,
+            longitude: fileData.longitude,
+            accuracy: fileData.accuracy,
+            timestamp: fileData.timestamp
+          },
+          Reply: replyToMessage ? {
+            Data: replyToMessage.message || replyToMessage.content || '',
+            Date: replyToMessage.timeminet || replyToMessage.timestamp || '',
+            type: 'اعتمادات',
+            Sender: replyToMessage.Sender || replyToMessage.sender || '',
+          } : {},
+          arrived: false,
+          kind: 'new',
+        };
+
+        setMessages(prev => [...prev, locationMessage]);
+        setReplyToMessage(null);
+        socketService.emit('send_message', locationMessage);
+        return;
+      }
+
+      // تحديد النوع: صورة / فيديو / ملف
+      const isImage = String(fileData?.type || '').startsWith('image/');
+      const isVideo = String(fileData?.type || '').startsWith('video/');
+
+      const senderName = user?.data?.userName || 'مستخدم';
+      const messagePayload: any = {
+        idSendr: buildIdSendr(),
+        ProjectID: approvalsProjectId,
+        StageID: 'اعتمادات',
+        Sender: senderName,
+        userName: senderName,
+        message: '',
+        timeminet: new Date().toISOString(),
+        File: {
+          uri: fileData?.uri,
+          name: fileData?.name,
+          type: isImage ? fileData.type : isVideo ? fileData.type : (fileData?.type || 'application/octet-stream'),
+          size: fileData?.size,
+          uriImage: fileData?.uriImage || undefined,
+        },
+        Reply: replyToMessage ? {
+          Data: replyToMessage.message || replyToMessage.content || '',
+          Date: replyToMessage.timeminet || replyToMessage.timestamp || '',
+          type: 'اعتمادات',
+          Sender: replyToMessage.Sender || replyToMessage.sender || '',
+        } : {},
+        arrived: false,
+        kind: 'new',
+      };
+
+      // Optimistic UI ثم إرسال عبر السوكيت
+      setMessages(prev => [...prev, messagePayload]);
+      setReplyToMessage(null);
+      socketService.emit('send_message', messagePayload);
+
+    } catch (e) {
+      console.error('handleFileUpload error:', e);
+      Tostget('تعذر إرسال المرفق');
+    }
   };
 
   return (
@@ -441,7 +546,7 @@ export default function ApprovalsPage() {
       </ContentSection>
 
       {/* Chat Input using MessageInput component - Fixed at bottom */}
-      <div className="fixed bottom-16 left-0 right-0 z-50">
+      <div className="chat-input-bar z-50">
         <MessageInput
           message={newMessage}
           setMessage={setNewMessage}
