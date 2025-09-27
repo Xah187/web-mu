@@ -319,7 +319,7 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className="absolute top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 left-0 sm:left-auto sm:right-0 w-64 sm:w-56 md:w-64">
+          <div className="absolute top-full mt-2 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50 w-44 sm:w-56 md:w-64" style={{ right: '0', left: 'auto', transform: 'translateX(calc(100% - 44px))' }}>
             {/* Language */}
             <DropdownItem
               title="اللغة"

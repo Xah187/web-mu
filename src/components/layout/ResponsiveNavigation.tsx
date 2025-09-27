@@ -16,7 +16,7 @@ interface NavItem {
 
 // Global state for sidebar
 let globalSidebarState = {
-  isCollapsed: false,
+  isCollapsed: true,
   setIsCollapsed: (value: boolean) => {},
   toggleSidebar: () => {}
 };
@@ -27,7 +27,7 @@ export default function ResponsiveNavigation() {
   const pathname = usePathname();
   const { size } = useAppSelector(state => state.user);
   const [isDesktop, setIsDesktop] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   // Track the real current path to avoid highlight glitches on hard reload/hydration
   const [currentPath, setCurrentPath] = useState<string>('');

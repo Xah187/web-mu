@@ -5,7 +5,7 @@ import { useSidebarState } from '@/components/layout/ResponsiveNavigation';
 
 export default function SidebarToggle() {
   const [isDesktop, setIsDesktop] = useState(false);
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
