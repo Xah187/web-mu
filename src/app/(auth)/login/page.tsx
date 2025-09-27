@@ -387,6 +387,7 @@ export default function LoginPage() {
                 value={phoneNumber}
                 onChange={handlePhoneNumberChange}
                 type="tel"
+                placeholder="أدخل رقم الهاتف"
                 onPressEnter={handleLogin}
                 height={`${scale(55)}px`}
                 marginBottom={0}

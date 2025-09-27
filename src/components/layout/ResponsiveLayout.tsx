@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { usePathname } from 'next/navigation';
+import SidebarToggle from '@/components/ui/SidebarToggle';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -30,7 +31,7 @@ export default function ResponsiveLayout({
       {/* Header */}
       {header && (
         <header className="page-header safe-area-top">
-          <div className="container flex items-center justify-between w-full">
+          <div className="flex items-center justify-between w-full">
             {header}
           </div>
         </header>
@@ -38,7 +39,7 @@ export default function ResponsiveLayout({
 
       {/* Main Content */}
       <main className="page-content">
-        <div className="container">
+        <div className="w-full">
           {children}
         </div>
       </main>
@@ -69,13 +70,14 @@ export function PageHeader({
 }: PageHeaderProps) {
   return (
     <div className={`flex items-center justify-between w-full ${className}`}>
-      {/* Left Side - Back Button + Title */}
+      {/* Left Side - Sidebar Toggle + Back Button + Title */}
       <div className="flex items-center gap-3 flex-1 min-w-0">
+        <SidebarToggle />
         {backButton}
         <div className="min-w-0 flex-1">
-          <h1 
+          <h1
             className="text-lg font-semibold text-gray-900 truncate"
-            style={{ 
+            style={{
               fontSize: 'var(--font-size-lg)',
               lineHeight: 'var(--line-height-tight)'
             }}
@@ -83,9 +85,9 @@ export function PageHeader({
             {title}
           </h1>
           {subtitle && (
-            <p 
+            <p
               className="text-sm text-gray-600 truncate mt-1"
-              style={{ 
+              style={{
                 fontSize: 'var(--font-size-sm)',
                 lineHeight: 'var(--line-height-normal)'
               }}

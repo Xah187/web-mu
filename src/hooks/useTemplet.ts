@@ -27,9 +27,14 @@ export default function useTemplet() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stageHomes, setStageHomes] = useState<StageHomeTemplet[]>([]);
+  const [hasMoreData, setHasMoreData] = useState(true);
 
-  const fetchStageHomes = useCallback(async (StageIDtemplet: number = 0) => {
+  const fetchStageHomes = useCallback(async (StageIDtemplet: number = 0, append: boolean = false) => {
     if (!user?.accessToken) return [] as StageHomeTemplet[];
+
+    // منع التحميل المتكرر
+    if (loading) return [];
+
     try {
       setLoading(true);
       setError(null);
@@ -38,7 +43,23 @@ export default function useTemplet() {
         { headers: { Authorization: `Bearer ${user.accessToken}` } }
       );
       const data: StageHomeTemplet[] = res.data?.data || [];
-      setStageHomes(data);
+
+      // تحديث حالة وجود المزيد من البيانات
+      setHasMoreData(data.length >= 10); // إذا كان العدد أقل من 10، فلا يوجد المزيد
+
+      if (append && StageIDtemplet > 0) {
+        // إضافة البيانات الجديدة للقائمة الموجودة
+        setStageHomes(prev => {
+          // تجنب التكرار
+          const existingIds = new Set(prev.map(item => item.StageIDtemplet));
+          const newItems = data.filter(item => !existingIds.has(item.StageIDtemplet));
+          return [...prev, ...newItems];
+        });
+      } else {
+        // استبدال القائمة بالكامل
+        setStageHomes(data);
+      }
+
       return data;
     } catch (e: any) {
       console.error('fetchStageHomes error:', e);
@@ -50,8 +71,12 @@ export default function useTemplet() {
     }
   }, [user?.accessToken]);
 
-  const fetchStageSub = useCallback(async (StageID: number, StageSubID: number) => {
+  const fetchStageSub = useCallback(async (StageID: number, StageSubID: number = 0, append: boolean = false) => {
     if (!user?.accessToken) return null as StageSubTemplet[] | null;
+
+    // منع التحميل المتكرر
+    if (loading) return null;
+
     try {
       setLoading(true);
       setError(null);
@@ -59,7 +84,9 @@ export default function useTemplet() {
         `Templet/BringStageSubTemplet?StageID=${StageID}&StageSubID=${StageSubID}`,
         { headers: { Authorization: `Bearer ${user.accessToken}` } }
       );
-      return (res.data?.data || []) as StageSubTemplet[];
+      const data = (res.data?.data || []) as StageSubTemplet[];
+
+      return data;
     } catch (e: any) {
       console.error('fetchStageSub error:', e);
       setError('خطأ في جلب القوالب الفرعية');
@@ -69,6 +96,15 @@ export default function useTemplet() {
       setLoading(false);
     }
   }, [user?.accessToken]);
+
+  const loadMoreStageHomes = useCallback(async () => {
+    if (!hasMoreData || loading || stageHomes.length === 0) return;
+
+    const lastItem = stageHomes[stageHomes.length - 1];
+    if (lastItem?.StageIDtemplet) {
+      await fetchStageHomes(lastItem.StageIDtemplet, true);
+    }
+  }, [hasMoreData, loading, stageHomes, fetchStageHomes]);
 
   const createStageHome = useCallback(async (payload: { Type: string; StageName: string; Days: number; }) => {
     if (!user?.accessToken) return false;
@@ -220,7 +256,9 @@ export default function useTemplet() {
     loading,
     error,
     stageHomes,
+    hasMoreData,
     fetchStageHomes,
+    loadMoreStageHomes,
     fetchStageSub,
     createStageHome,
     createStageSub,

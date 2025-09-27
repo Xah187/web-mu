@@ -180,7 +180,7 @@ function DeleteAccountModal({ visible, onClose, onConfirm }: { visible: boolean;
   );
 }
 
-export default function SettingsPage() {
+export default function ManagementPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { user, size, language: _language } = useAppSelector(state => state.user);
@@ -424,7 +424,7 @@ export default function SettingsPage() {
         </div>
       )}
 
-      <ResponsiveLayout header={<PageHeader title="الإعدادات" actions={<button onClick={() => setShowUserProfile(true)} className="w-9 h-9 rounded-full overflow-hidden bg-peach flex items-center justify-center" aria-label="الملف الشخصي"><Image src="/images/figma/male.png" alt="User" width={36} height={36} className="rounded-full" /></button>} />}>
+      <ResponsiveLayout header={<PageHeader title="الإدارة" actions={<button onClick={() => setShowUserProfile(true)} className="w-9 h-9 rounded-full overflow-hidden bg-peach flex items-center justify-center" aria-label="الملف الشخصي"><Image src="/images/figma/male.png" alt="User" width={36} height={36} className="rounded-full" /></button>} />}>
         <ContentSection>
         {/* Header with User Profile (hidden, replaced by header avatar button) */}
         {showInlineProfile && (
@@ -480,21 +480,9 @@ export default function SettingsPage() {
         {/* Spacer */}
         <div style={{ height: verticalScale(24) }}></div>
 
-        {/* Settings Grid */}
+        {/* Management Grid - Only management items */}
         <div className="px-4">
           <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
-            {/* Language */}
-            <SettingItem
-              title="اللغة"
-              onPress={handleLanguageChange}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M7 8.37931H11.5M11.5 8.37931H14.5M11.5 8.37931V7M17 8.37931H14.5M14.5 8.37931C13.9725 10.2656 12.8679 12.0487 11.6071 13.6158M11.6071 13.6158C10.5631 14.9134 9.41205 16.0628 8.39286 17M11.6071 13.6158C10.9643 12.8621 10.0643 11.6426 9.80714 11.0909M11.6071 13.6158L13.5357 15.6207" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  <circle cx="12" cy="12" r="10" stroke={colors.BLUE} strokeWidth="2" />
-                </svg>
-              }
-            />
-
             {/* Stage templates access - exactly like mobile app */}
             {showTemplet && (
               <SettingItem
@@ -568,86 +556,6 @@ export default function SettingsPage() {
               }
             />
 
-            {/* Font Size - Always show */}
-            <SettingItem
-              title="حجم الخط"
-              onPress={handleFontSize}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M4 7V4h16v3" stroke={colors.BLUE} strokeWidth="2" />
-                  <path d="M9 20h6" stroke={colors.BLUE} strokeWidth="2" />
-                  <path d="M12 4v16" stroke={colors.BLUE} strokeWidth="2" />
-                  <circle cx="7" cy="12" r="2" stroke={colors.BLUE} strokeWidth="1.5" fill="none" />
-                  <circle cx="17" cy="12" r="3" stroke={colors.BLUE} strokeWidth="1.5" fill="none" />
-                </svg>
-              }
-            />
-
-            {/* About and Contact */}
-            <SettingItem
-              title="حول منصة مشرف"
-              onPress={handleAbout}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <circle cx="12" cy="12" r="10" stroke={colors.BLUE} strokeWidth="2" />
-                  <path d="M12 16v-4" stroke={colors.BLUE} strokeWidth="2" />
-                  <path d="M12 8h.01" stroke={colors.BLUE} strokeWidth="2" />
-                </svg>
-              }
-            />
-
-            <SettingItem
-              title="تواصل معنا"
-              onPress={handleContact}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke={colors.BLUE} strokeWidth="2" />
-                </svg>
-              }
-            />
-
-            {/* Finance Toggle - Admin Only */}
-            <AdminGuard>
-              <SettingItem
-                title={financeDisabled ? 'تفعيل العمليات اليدوية لقسم المالية' : 'توقيف العمليات اليدوية لقسم المالية'}
-                onPress={handleFinanceToggle}
-                color={financeDisabled ? colors.RED : colors.BLUE}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={financeDisabled ? colors.RED : colors.BLUE} strokeWidth="2">
-                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
-                    <line x1="8" y1="21" x2="16" y2="21"/>
-                    <line x1="12" y1="17" x2="12" y2="21"/>
-                  </svg>
-                }
-              />
-            </AdminGuard>
-
-            <SettingItem
-              title="حذف حسابي"
-              onPress={() => setShowDeleteConfirm(true)}
-              color={colors.RED}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
-                  <polyline points="3,6 5,6 21,6" />
-                  <path d="m19,6v14a2,2 0,0 1,-2,2H7a2,2 0,0 1,-2,-2V6m3,0V4a2,2 0,0 1,2,-2h4a2,2 0,0 1,2,2v2" />
-                  <line x1="10" y1="11" x2="10" y2="17" />
-                  <line x1="14" y1="11" x2="14" y2="17" />
-                </svg>
-              }
-            />
-
-            <SettingItem
-              title="تسجيل خروج"
-              onPress={() => setShowLogoutConfirm(true)}
-              color={colors.RED}
-              icon={
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.RED} strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                  <polyline points="16,17 21,12 16,7" />
-                  <line x1="21" y1="12" x2="9" y2="12" />
-                </svg>
-              }
-            />
           </ResponsiveGrid>
         </div>
 

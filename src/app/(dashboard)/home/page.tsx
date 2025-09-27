@@ -27,6 +27,8 @@ import ResponsiveLayout, {
   ResponsiveGrid,
   Card
 } from '@/components/layout/ResponsiveLayout';
+import SettingsDropdown from '@/components/ui/SettingsDropdown';
+
 
 export default function HomePage() {
   const router = useRouter();
@@ -42,14 +44,14 @@ export default function HomePage() {
 
   // Validity-based permission system for specific operations
   const { Uservalidation } = useValidityUser();
-  
+
   // Branch operations hook
   const { updateBranchData, loading: branchOperationLoading } = useBranchOperations();
 
   // Local state
   const [notifications, setNotifications] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Branch edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState<any>(null);
@@ -226,7 +228,7 @@ export default function HomePage() {
         PhoneNumber: updatedBranch.PhoneNumber,
         Linkevaluation: updatedBranch.Linkevaluation
       });
-      
+
       // Refresh data to show updated information
       await refreshData();
     } catch (error: any) {
@@ -261,6 +263,7 @@ export default function HomePage() {
           subtitle={user?.data?.job || 'الوظيفة'}
           actions={
             <div className="flex items-center gap-3">
+              <SettingsDropdown showLabel={false} />
               {/* Notifications */}
               <button
                 className="p-2 rounded-full hover:bg-gray-100 transition-colors focus-ring"
@@ -291,107 +294,104 @@ export default function HomePage() {
         />
       }
     >
-      {/* Company Info Card */}
-      <Card className="mb-6">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex-1">
-            <h2
-              className="font-semibold mb-2"
-              style={{
-                fontSize: 'var(--font-size-xl)',
-                color: 'var(--color-text-primary)'
-              }}
-            >
-              {homeData?.nameCompany || user?.data?.CompanyName || 'اسم الشركة'}
-            </h2>
-            <p
-              className="text-sm"
-              style={{ color: 'var(--color-text-secondary)' }}
-            >
-              <span>رقم السجل التجاري: </span>
-              <span
-                className="font-semibold"
-                style={{ color: 'var(--color-primary)' }}
+      {/* Top section wrapped for consistent inner spacing */}
+      <ContentSection>
+        {/* Company Info Card */}
+        <Card className="mb-6">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              <h2
+                className="font-semibold mb-2"
+                style={{
+                  fontSize: 'var(--font-size-xl)',
+                  color: 'var(--color-text-primary)'
+                }}
               >
-                {homeData?.CommercialRegistrationNumber || user?.data?.CommercialRegistrationNumber || 'غير محدد'}
-              </span>
-            </p>
+                {homeData?.nameCompany || user?.data?.CompanyName || 'اسم الشركة'}
+              </h2>
+              <p
+                className="text-sm"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                <span>رقم السجل التجاري: </span>
+                <span
+                  className="font-semibold"
+                  style={{ color: 'var(--color-primary)' }}
+                >
+                  {homeData?.CommercialRegistrationNumber || user?.data?.CommercialRegistrationNumber || 'غير محدد'}
+                </span>
+              </p>
+            </div>
+
+            {isAdmin && (
+              <button
+                onClick={handleEditCompany}
+                className="p-2 rounded-lg transition-colors focus-ring"
+                style={{
+                  backgroundColor: loading ? 'var(--color-border-light)' : 'transparent',
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
+                disabled={loading}
+                title="تعديل بيانات الشركة"
+              >
+                {loading ? (
+                  <div
+                    className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full"
+                    style={{ borderColor: 'var(--color-primary)' }}
+                  ></div>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                )}
+              </button>
+            )}
           </div>
+        </Card>
 
-          {isAdmin && (
-            <button
-              onClick={handleEditCompany}
-              className="p-2 rounded-lg transition-colors focus-ring"
-              style={{
-                backgroundColor: loading ? 'var(--color-border-light)' : 'transparent',
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-              disabled={loading}
-              title="تعديل بيانات الشركة"
-            >
-              {loading ? (
-                <div
-                  className="animate-spin w-4 h-4 border-2 border-t-transparent rounded-full"
-                  style={{ borderColor: 'var(--color-primary)' }}
-                ></div>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              )}
-            </button>
-          )}
-        </div>
-      </Card>
+        {/* Action Buttons */}
+        <Card className="mb-6">
+          <h3
+            className="font-semibold mb-4"
+            style={{
+              fontSize: 'var(--font-size-lg)',
+              color: 'var(--color-text-primary)'
+            }}
+          >
+            الإجراءات السريعة
+          </h3>
 
+          <div className="action-buttons-container">
+            {/* Create Branch - requires Admin permission check */}
+            <AdminGuard>
+              <ButtonCreat
+                text="إنشاء فرع"
+                onpress={handleCreateBranch}
+                className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
+              />
+            </AdminGuard>
 
+            {/* Members - Admin can manage all members */}
+            <AdminGuard>
+              <ButtonCreat
+                text="الأعضاء"
+                onpress={handleMembers}
+                className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
+              />
+            </AdminGuard>
 
-      {/* Action Buttons */}
-      <Card className="mb-6">
-        <h3
-          className="font-semibold mb-4"
-          style={{
-            fontSize: 'var(--font-size-lg)',
-            color: 'var(--color-text-primary)'
-          }}
-        >
-          الإجراءات السريعة
-        </h3>
-
-        <div className="action-buttons-container">
-          {/* Create Branch - requires Admin permission check */}
-          <AdminGuard>
-            <ButtonCreat
-              text="إنشاء فرع"
-              onpress={handleCreateBranch}
-              className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
-            />
-          </AdminGuard>
-
-          {/* Members - Admin can manage all members */}
-          <AdminGuard>
-            <ButtonCreat
-              text="الأعضاء"
-              onpress={handleMembers}
-              className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
-            />
-          </AdminGuard>
-
-          {/* Covenant - show if user has covenant permission */}
-          <PermissionBasedVisibility permission="covenant">
-            <ButtonCreat
-              text="العهد"
-              number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
-              onpress={handleCovenant}
-              className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
-            />
-          </PermissionBasedVisibility>
-        </div>
-      </Card>
-
-
-
-
+            {/* Covenant - show if user has covenant permission */}
+            <PermissionBasedVisibility permission="covenant">
+              <ButtonCreat
+                text="العهد"
+                number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
+                onpress={handleCovenant}
+                className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
+              />
+            </PermissionBasedVisibility>
+          </div>
+        </Card>
+      </ContentSection>
 
       {/* Branches Section */}
       <ContentSection>

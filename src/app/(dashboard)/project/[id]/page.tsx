@@ -62,136 +62,177 @@ const ProjectHeader = ({
   const isOverdue = remainingDays < 0;
 
   return (
-    <div className="bg-white rounded-b-3xl px-4 pb-6">
-      {/* Top Navigation */}
-      {showTopNav && (
-      <div className="flex items-center justify-between pt-4 pb-4">
-        <button onClick={onBack} className="p-2">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
+    <>
+      <div className="bg-gray-50/30 rounded-b-3xl px-4 pb-8">
+        {/* Top Navigation */}
+        {showTopNav && (
+        <div className="flex items-center justify-between pt-4 pb-4">
+          <button onClick={onBack} className="p-2">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+          </button>
 
-        <button onClick={onNotifications} className="p-2">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-          </svg>
-        </button>
-      </div>
-      )}
-
-      {/* Project Title and Edit (hidden when using PageHeader) */}
-      {showTopNav && (
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3 space-x-reverse flex-1">
-          <h1 className="font-ibm-arabic-bold text-gray-900 flex-1" style={{ fontSize: scale(16) }}>
-            {project.Nameproject}
-          </h1>
-          <button onClick={onEdit} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          <button onClick={onNotifications} className="p-2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
             </svg>
           </button>
         </div>
-      </div>
-      )}
-
-        {/* Start Project Button */}
-        {!isStarted && user?.data?.jobdiscrption === 'موظف' && (
-          <button
-            onClick={onStartProject}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
-            style={{ fontSize: scale(12) }}
-          >
-            بدء تنفيذ المشروع
-          </button>
         )}
 
+        {/* Project Title and Edit (hidden when using PageHeader) */}
+        {showTopNav && (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center space-x-3 space-x-reverse flex-1">
+            <h1 className="font-ibm-arabic-bold text-gray-900 flex-1" style={{ fontSize: scale(16) }}>
+              {project.Nameproject}
+            </h1>
+            <button onClick={onEdit} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        )}
 
-      {/* Stats Container */}
-      <div className="border border-gray-200 rounded-2xl p-4 mb-6">
-        {/* Remaining Days - Top Center */}
-        <div className="text-center mb-4">
-          <p className="text-gray-600 text-sm mb-1" style={{ fontSize: scale(12) }}>إجمالي الأيام المتبقية</p>
-          <p
-            className={`font-ibm-arabic-bold ${isOverdue ? 'text-red-600' : 'text-gray-900'}`}
-            style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}
-          >
-            {remainingDays}
-          </p>
+          {/* Start Project Button */}
+          {!isStarted && user?.data?.jobdiscrption === 'موظف' && (
+            <button
+              onClick={onStartProject}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+              style={{ fontSize: scale(12) }}
+            >
+              بدء تنفيذ المشروع
+            </button>
+          )}
+      </div>
+
+      {/* Stats and Actions Section - Matching Stages Layout Exactly */}
+      <div className="pb-8">
+        {/* Spacer before stats - matching stages */}
+        <div className="h-4"></div>
+
+        {/* Remaining Days Section - Separated */}
+        <div className="mb-6">
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 overflow-hidden">
+            <div className="text-center">
+              <p className="text-gray-600 font-ibm-arabic-medium mb-2" style={{ fontSize: scale(11) }}>
+                إجمالي الأيام المتبقية
+              </p>
+              <div className="text-center">
+                <span
+                  className={`font-ibm-arabic-bold ${
+                    isOverdue ? 'text-red-600' : 'text-blue-600'
+                  }`}
+                  style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}
+                >
+                  {remainingDays}
+                </span>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="flex justify-center items-center space-x-4 space-x-reverse">
-          {/* Daily Cost */}
-          <div className="text-center flex-1">
-            <p className="text-gray-600 text-xs mb-1" style={{ fontSize: scale(12) }}>التكلفة اليومية</p>
-            <p className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(16), fontFeatureSettings: '"tnum"' }}>
-              {formatCurrency(project.ConstCompany || 0)}
-              <span className="text-xs mr-1">ر.س</span>
-            </p>
+        {/* Spacer between remaining days and stats */}
+        <div className="h-4 sm:h-5 lg:h-6"></div>
+
+        {/* Stats Grid - Always 3 columns */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6 mb-4">
+          {/* Daily Cost Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-green-200 bg-green-50/60 shadow-sm overflow-hidden">
+              <p className="text-green-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+                التكلفة اليومية
+              </p>
+              <p className="font-ibm-arabic-bold text-green-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+                {formatCurrency(project.ConstCompany || 0)}
+                <span className="text-xs mr-1">ر.س</span>
+              </p>
+            </div>
           </div>
 
-          {/* Separator */}
-          <div className="w-px h-12 bg-gray-200" />
-
-          {/* Days Count */}
-          <div className="text-center flex-1">
-            <p className="text-gray-600 text-xs mb-1" style={{ fontSize: scale(12) }}>عدد الأيام</p>
-            <p className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(16), fontFeatureSettings: '"tnum"' }}>
-              {project.DaysUntiltoday || 0}
-            </p>
+          {/* Days Count Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-blue-200 bg-blue-50/60 shadow-sm overflow-hidden">
+              <p className="text-blue-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+                عدد الأيام
+              </p>
+              <p className="font-ibm-arabic-bold text-blue-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+                {project.DaysUntiltoday || 0}
+              </p>
+            </div>
           </div>
 
-          {/* Separator */}
-          <div className="w-px h-12 bg-gray-200" />
+          {/* Total Cost Card */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
+            <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border border-orange-200 bg-orange-50/60 shadow-sm overflow-hidden">
+              <p className="text-orange-700 font-ibm-arabic-medium mb-1 sm:mb-2" style={{ fontSize: scale(10) }}>
+                إجمالي التكلفة
+              </p>
+              <p className="font-ibm-arabic-bold text-orange-800" style={{ fontSize: scale(12), fontFeatureSettings: '"tnum"' }}>
+                {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
+                {String(project.TotalcosttothCompany).length > 8 && '..'}
+                <span className="text-xs mr-1">ر.س</span>
+              </p>
+            </div>
+          </div>
+        </div>
 
-          {/* Total Cost */}
-          <div className="text-center flex-1">
-            <p className="text-gray-600 text-xs mb-1" style={{ fontSize: scale(12) }}>إجمالي التكلفة</p>
-            <p className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(16), fontFeatureSettings: '"tnum"' }}>
-              {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
-              {String(project.TotalcosttothCompany).length > 8 && '..'}
-              <span className="text-xs mr-1">ر.س</span>
-            </p>
+        {/* Spacer between stats and actions (slightly reduced) */}
+        <div className="h-4 sm:h-5 lg:h-6"></div>
+
+        {/* Actions Grid - Always 3 columns */}
+        <div className="grid grid-cols-3 gap-2 sm:gap-4 lg:gap-6">
+          {/* Requests Button Container */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+            <button
+              onClick={onRequests}
+              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 hover:bg-blue-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+            >
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-blue-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-blue-100 transition-colors">
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#2117fb" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              </div>
+              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-blue-600" style={{ fontSize: scale(9) }}>طلبات</span>
+            </button>
+          </div>
+
+          {/* Finance Button Container */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+            <button
+              onClick={onFinance}
+              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-green-200 hover:bg-green-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+            >
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-green-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-green-100 transition-colors">
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                </svg>
+              </div>
+              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-green-600" style={{ fontSize: scale(9) }}>مالية</span>
+            </button>
+          </div>
+
+          {/* Archives Button Container */}
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+            <button
+              onClick={onArchives}
+              className="group w-full bg-gray-50/50 rounded-lg border border-gray-200 shadow-sm hover:shadow-md hover:border-orange-200 hover:bg-orange-50/30 transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+            >
+              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 bg-orange-50 rounded-full flex items-center justify-center mb-1 group-hover:bg-orange-100 transition-colors">
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="#F59E0B" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l6 6m0 0l6-6m-6 6V3" />
+                </svg>
+              </div>
+              <span className="text-xs font-ibm-arabic-semibold text-gray-900 group-hover:text-orange-600" style={{ fontSize: scale(9) }}>أرشيف</span>
+            </button>
           </div>
         </div>
       </div>
-
-      {/* Action Buttons */}
-      <div className="flex justify-center gap-10 sm:gap-16">
-        <button
-          onClick={onRequests}
-          className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-          </svg>
-          <span className="text-sm font-ibm-arabic-semibold">طلبات</span>
-        </button>
-
-        <button
-          onClick={onFinance}
-          className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
-          </svg>
-          <span className="text-sm font-ibm-arabic-semibold">مالية</span>
-        </button>
-
-        <button
-          onClick={onArchives}
-          className="flex items-center space-x-2 space-x-reverse bg-white border border-gray-200 px-4 py-2 rounded-lg hover:bg-gray-50"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8l6 6m0 0l6-6m-6 6V3" />
-          </svg>
-          <span className="text-sm font-ibm-arabic-semibold">أرشيف</span>
-        </button>
-      </div>
-    </div>
+    </>
   );
 };
 
@@ -695,45 +736,44 @@ const ProjectDetailsPage = () => {
         {/* Spacer before stages */}
         <div className="h-4"></div>
         {/* Quick Stats + Sorting */}
-        <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          {/* Stats Card */}
-          <div className="bg-white border rounded-xl px-4 py-3 shadow-sm flex-1">
-            <div className="grid grid-cols-3 gap-2 text-center">
-              <div>
-                <div className="text-xs text-gray-500">إجمالي المراحل</div>
-                <div className="text-lg font-ibm-arabic-bold">{stages?.length || 0}</div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">المفتوحة / المكتملة</div>
-                <div className="text-lg font-ibm-arabic-bold">
-                  {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
-                </div>
-              </div>
-              <div>
-                <div className="text-xs text-gray-500">الأيام المتبقية</div>
-                <div className={`text-lg font-ibm-arabic-bold ${((project?.Daysremaining ?? 0) < 0) ? 'text-red-600' : 'text-blue-600'}`}>
-                  {project?.Daysremaining ?? 0}
-                </div>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Stats Cards - Direct on Page Background */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 flex-1">
+            {/* Total Stages Card */}
+            <div className="p-3 rounded-xl bg-blue-50/60 border border-blue-200 shadow-sm text-center overflow-hidden">
+              <div className="text-xs text-blue-700 font-ibm-arabic-medium mb-1">إجمالي المراحل</div>
+              <div className="text-lg font-ibm-arabic-bold text-blue-800">{stages?.length || 0}</div>
+            </div>
+
+            {/* Open/Completed Card */}
+            <div className="p-3 rounded-xl bg-green-50/60 border border-green-200 shadow-sm text-center overflow-hidden">
+              <div className="text-xs text-green-700 font-ibm-arabic-medium mb-1">المفتوحة / المكتملة</div>
+              <div className="text-lg font-ibm-arabic-bold text-green-800">
+                {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
               </div>
             </div>
           </div>
 
-          {/* Sort Control */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-gray-600">ترتيب:</label>
-            <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as any)}
-              className="border rounded-lg px-3 py-2 text-sm bg-white"
-            >
-              <option value="default">الافتراضي</option>
-              <option value="status">الحالة (المفتوحة أولاً)</option>
-              <option value="progress">التقدم (الأعلى أولاً)</option>
-              <option value="name">الاسم (أ-ي)</option>
-            </select>
+          {/* Sort Control - Matching Page Design */}
+          <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-200 shadow-sm overflow-hidden">
+            <div className="flex items-center gap-3 justify-center">
+              <label className="text-sm text-orange-700 font-ibm-arabic-medium">ترتيب:</label>
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as any)}
+                className="border border-orange-300 rounded-lg px-3 py-1 text-sm bg-white/80 font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent text-orange-800"
+              >
+                <option value="default">الافتراضي</option>
+                <option value="status">الحالة (المفتوحة أولاً)</option>
+                <option value="progress">التقدم (الأعلى أولاً)</option>
+                <option value="name">الاسم (أ-ي)</option>
+              </select>
+            </div>
           </div>
         </div>
 
+        {/* Spacer between stats and stages grid */}
+        <div className="h-4 sm:h-5 lg:h-6"></div>
 
         {loading && stages.length === 0 ? (
           <div className="flex items-center justify-center py-16">

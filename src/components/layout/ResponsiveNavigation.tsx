@@ -14,17 +14,58 @@ interface NavItem {
   icon: (focused: boolean) => React.ReactNode;
 }
 
-export default function BottomNavigation() {
+// Global state for sidebar
+let globalSidebarState = {
+  isCollapsed: false,
+  setIsCollapsed: (value: boolean) => {},
+  toggleSidebar: () => {}
+};
+
+export const useSidebarState = () => globalSidebarState;
+
+export default function ResponsiveNavigation() {
   const pathname = usePathname();
   const { size } = useAppSelector(state => state.user);
+  const [isDesktop, setIsDesktop] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Track the real current path to avoid highlight glitches on hard reload/hydration
   const [currentPath, setCurrentPath] = useState<string>('');
+  
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setCurrentPath(window.location.pathname);
+
+      // Check if desktop
+      const checkDesktop = () => {
+        setIsDesktop(window.innerWidth >= 1024);
+      };
+
+      checkDesktop();
+      window.addEventListener('resize', checkDesktop);
+
+      return () => window.removeEventListener('resize', checkDesktop);
     }
   }, []);
+
+  // Update global state and dashboard layout class
+  useEffect(() => {
+    globalSidebarState.isCollapsed = isCollapsed;
+    globalSidebarState.setIsCollapsed = setIsCollapsed;
+    globalSidebarState.toggleSidebar = () => setIsCollapsed(!isCollapsed);
+
+    if (typeof document !== 'undefined') {
+      const dashboardLayout = document.querySelector('.dashboard-layout');
+      if (dashboardLayout) {
+        if (isCollapsed) {
+          dashboardLayout.classList.add('sidebar-collapsed');
+        } else {
+          dashboardLayout.classList.remove('sidebar-collapsed');
+        }
+      }
+    }
+  }, [isCollapsed]);
+  
   useEffect(() => {
     if (pathname) setCurrentPath(pathname);
   }, [pathname]);
@@ -129,8 +170,8 @@ export default function BottomNavigation() {
   ];
 
   const isActive = (name: string) => {
-    const current = currentPath; // use stable client path
-    if (!current) return false; // avoid false highlight before mount
+    const current = currentPath;
+    if (!current) return false;
 
     const match = (base: string) =>
       current === base || current.startsWith(base + '/') || current.startsWith(base + '?');
@@ -142,6 +183,43 @@ export default function BottomNavigation() {
     return false;
   };
 
+  // Desktop Sidebar
+  if (isDesktop) {
+    return (
+      <>
+        <aside className={`desktop-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+
+        {/* Navigation Items */}
+        <nav className="sidebar-nav">
+          {navItems.map((item) => {
+            const focused = isActive(item.name);
+            return (
+              <Link
+                key={item.name}
+                href={`/${item.name === 'home' ? 'home' : item.name}`}
+                className={`sidebar-item ${focused ? 'active' : ''}`}
+                title={item.label}
+              >
+                <div className="sidebar-icon">
+                  {item.icon(focused)}
+                </div>
+                {!isCollapsed && (
+                  <span className="sidebar-label">
+                    {item.label}
+                  </span>
+                )}
+              </Link>
+            );
+          })}
+        </nav>
+        </aside>
+
+        {/* Overlay removed - content now adjusts to sidebar */}
+      </>
+    );
+  }
+
+  // Mobile Bottom Navigation
   return (
     <nav className="bottom-navigation">
       <div
