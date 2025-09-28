@@ -457,14 +457,14 @@ export default function PublicationsPage() {
 
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
-            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto">
+            <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-4 mx-auto">
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10"/>
                 <line x1="15" y1="9" x2="9" y2="15"/>
                 <line x1="9" y1="9" x2="15" y2="15"/>
               </svg>
             </div>
-            <h3 className="text-lg font-cairo-semibold text-gray-900 mb-2">خطأ في تحميل اليوميات</h3>
+            <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">خطأ في تحميل اليوميات</h3>
             <p className="text-gray-500 mb-4">{error}</p>
             <button
               onClick={handleRefresh}
@@ -498,7 +498,7 @@ export default function PublicationsPage() {
                 setViewMode('grid');
                 setCurrentReelIndex(0);
               }}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
               title="عرض الشبكة"
             >
               <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -511,9 +511,9 @@ export default function PublicationsPage() {
 
             <button
               onClick={handleFilterPress}
-              className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+              className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-              <FilterIcon size={scale(20)} />
+              <FilterIcon size={scale(20)} color="var(--theme-text-primary)" />
             </button>
 
 
@@ -690,7 +690,7 @@ export default function PublicationsPage() {
                       setViewMode('reels');
                       setCurrentReelIndex(0);
                     }}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     title="عرض الفيديوهات"
                   >
                     <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -700,9 +700,9 @@ export default function PublicationsPage() {
                   </button>
                   <button
                     onClick={handleFilterPress}
-                    className="p-2 rounded-full hover:bg-gray-100 transition-colors"
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                   >
-                    <FilterIcon size={scale(20)} />
+                    <FilterIcon size={scale(20)} color="var(--theme-text-primary)" />
                   </button>
 
                 </div>
@@ -761,7 +761,7 @@ export default function PublicationsPage() {
             </>
           ) : (
             <div className="flex flex-col items-center justify-center py-20">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <g id="megaphone-01">
                     <path d="M13.8181 4.68994L10.0802 7.05656C9.25187 7.65018 9.23691 7.66058 8.39636 7.66683L5.67759 7.68625C4.11919 7.69745 2.85323 8.97169 2.85323 10.5302V11.3216C2.85323 12.8867 4.12783 14.1616 5.69273 14.1616H8.41702C9.00055 14.1616 9.55987 14.3923 9.97525 14.8029L13.816 18.5897C14.3899 19.1573 15.2672 19.2723 15.9671 18.87C16.6715 18.4651 17.0711 17.6367 16.9244 16.7954L15.9607 11.1074"/>
@@ -769,7 +769,7 @@ export default function PublicationsPage() {
                   </g>
                 </svg>
               </div>
-              <h3 className="text-lg font-cairo-semibold text-gray-900 mb-2">لا توجد يوميات</h3>
+              <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">لا توجد يوميات</h3>
               <p className="text-gray-500 text-center">لم يتم العثور على أي يوميات حتى الآن</p>
               {(filterData.nameProject || filterData.userName || filterData.branch || filterData.type !== 'بحسب التاريخ') && (
                 <button

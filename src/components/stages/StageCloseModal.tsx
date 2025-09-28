@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colors } from '@/constants/colors';
+import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import useValidityUser from '@/hooks/useValidityUser';
 import axiosInstance from '@/lib/api/axios';
@@ -147,7 +148,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
@@ -159,56 +160,151 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div
+              className="w-full max-w-md shadow-2xl max-h-[90vh] overflow-y-auto"
+              style={{
+                backgroundColor: 'var(--theme-card-background)',
+                border: '1px solid var(--theme-border)',
+                borderRadius: `${scale(20)}px`,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+            >
               {/* Header */}
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h2 
-                    className="font-ibm-arabic-bold text-gray-900"
-                    style={{ fontSize: scale(18) }}
+              <div
+                className="text-center relative"
+                style={{
+                  borderBottom: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: scale(24),
+                  paddingRight: scale(24),
+                  paddingTop: scale(20),
+                  paddingBottom: scale(20),
+                  marginBottom: scale(16),
+                  borderTopLeftRadius: `${scale(20)}px`,
+                  borderTopRightRadius: `${scale(20)}px`
+                }}
+              >
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{
+                      backgroundColor: isStageOpen
+                        ? 'var(--theme-error-alpha, rgba(239, 68, 68, 0.1))'
+                        : 'var(--theme-success-alpha, rgba(16, 185, 129, 0.1))'
+                    }}
+                  >
+                    {isStageOpen ? (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M18 6 6 18M6 6l12 12" stroke="var(--theme-error, #ef4444)" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                    ) : (
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <path d="M9 12l2 2 4-4" stroke="var(--theme-success, #10b981)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="12" cy="12" r="10" stroke="var(--theme-success, #10b981)" strokeWidth="2"/>
+                      </svg>
+                    )}
+                  </div>
+                  <h2
+                    className="font-bold"
+                    style={{
+                      fontSize: `${scale(18)}px`,
+                      fontFamily: fonts.IBMPlexSansArabicBold,
+                      color: 'var(--theme-text-primary)',
+                      lineHeight: 1.4
+                    }}
                   >
                     {actionText.title}
                   </h2>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
                 </div>
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                  style={{
+                    padding: '10px',
+                    backgroundColor: 'var(--theme-surface-secondary)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text-secondary)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
 
               {/* Content */}
-              <div className="p-6 space-y-4">
+              <div style={{ paddingLeft: scale(24), paddingRight: scale(24), paddingBottom: scale(16) }}>
                 {/* Stage Info */}
-                <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                  <h3 
-                    className="font-ibm-arabic-semibold text-gray-900"
-                    style={{ fontSize: scale(16) }}
+                <div
+                  className="rounded-xl"
+                  style={{
+                    backgroundColor: 'var(--theme-surface-secondary)',
+                    border: '1px solid var(--theme-border)',
+                    padding: scale(16),
+                    marginBottom: scale(16)
+                  }}
+                >
+                  <h3
+                    className="font-semibold"
+                    style={{
+                      fontSize: `${scale(16)}px`,
+                      fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                      color: 'var(--theme-text-primary)',
+                      marginBottom: scale(12)
+                    }}
                   >
                     {stage.StageName}
                   </h3>
-                  
-                  <div className="space-y-1 text-sm">
-                    <p className="font-ibm-arabic-medium text-gray-600">
-                      نسبة الإنجاز: <span className="text-blue-600 font-bold">{stage.rate}%</span>
+
+                  <div style={{ marginBottom: scale(8) }}>
+                    <p
+                      className="font-medium"
+                      style={{
+                        fontSize: `${scale(14)}px`,
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        color: 'var(--theme-text-secondary)',
+                        marginBottom: scale(4)
+                      }}
+                    >
+                      نسبة الإنجاز: <span style={{ color: 'var(--theme-primary)', fontWeight: 'bold' }}>{stage.rate}%</span>
                     </p>
-                    
+
                     {stage.EndDate && (
-                      <p className="font-ibm-arabic-medium text-gray-600">
+                      <p
+                        className="font-medium"
+                        style={{
+                          fontSize: `${scale(14)}px`,
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          color: 'var(--theme-text-secondary)',
+                          marginBottom: scale(4)
+                        }}
+                      >
                         تاريخ الانتهاء المتوقع: {formatDate(stage.EndDate)}
                       </p>
                     )}
 
                     {stage.CloseDate && (
                       <>
-                        <p className="font-ibm-arabic-medium text-gray-600">
+                        <p
+                          className="font-medium"
+                          style={{
+                            fontSize: `${scale(14)}px`,
+                            fontFamily: fonts.IBMPlexSansArabicMedium,
+                            color: 'var(--theme-text-secondary)',
+                            marginBottom: scale(4)
+                          }}
+                        >
                           تاريخ الإغلاق: {formatDate(stage.CloseDate)}
                         </p>
                         {stage.Difference !== undefined && (
-                          <p className="font-ibm-arabic-medium text-gray-600">
+                          <p
+                            className="font-medium"
+                            style={{
+                              fontSize: `${scale(14)}px`,
+                              fontFamily: fonts.IBMPlexSansArabicMedium,
+                              color: 'var(--theme-text-secondary)'
+                            }}
+                          >
                             الفارق: {stage.Difference} يوم
                           </p>
                         )}
@@ -219,18 +315,38 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
 
                 {/* Validation Messages */}
                 {isStageOpen && !isStageCompleted && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-600 font-ibm-arabic-medium text-sm">
+                  <div
+                    className="rounded-xl"
+                    style={{
+                      backgroundColor: 'var(--theme-error-alpha, rgba(239, 68, 68, 0.1))',
+                      border: '1px solid var(--theme-error)',
+                      padding: scale(16),
+                      marginBottom: scale(16)
+                    }}
+                  >
+                    <p
+                      className="font-medium"
+                      style={{
+                        color: 'var(--theme-error)',
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        fontSize: `${scale(14)}px`
+                      }}
+                    >
                       لا يمكن إغلاق المرحلة قبل إنهاء جميع المهام الفرعية (100%)
                     </p>
                   </div>
                 )}
 
                 {/* Note Input */}
-                <div className="space-y-2">
-                  <label 
-                    className="block font-ibm-arabic-medium text-gray-700"
-                    style={{ fontSize: scale(14) }}
+                <div style={{ marginBottom: scale(24) }}>
+                  <label
+                    className="block font-medium"
+                    style={{
+                      fontSize: `${scale(14)}px`,
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      color: 'var(--theme-text-secondary)',
+                      marginBottom: scale(8)
+                    }}
                   >
                     الملاحظة *
                   </label>
@@ -238,38 +354,91 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     placeholder={actionText.placeholder}
-                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular text-right resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02] resize-none"
                     rows={4}
-                    style={{ fontSize: scale(14) }}
+                    style={{
+                      padding: `${scale(12)}px ${scale(16)}px`,
+                      backgroundColor: 'var(--theme-input-background)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-primary)',
+                      fontSize: `${scale(14)}px`,
+                      fontFamily: fonts.IBMPlexSansArabicRegular,
+                      textAlign: 'right'
+                    }}
                   />
                 </div>
+              </div>
 
-                {/* Action Buttons */}
-                <div className="flex space-x-3 space-x-reverse pt-4">
-                  <button
-                    onClick={onClose}
-                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-ibm-arabic-semibold hover:bg-gray-200 transition-colors"
-                    style={{ fontSize: scale(14) }}
-                  >
-                    إلغاء
-                  </button>
-                  
-                  <button
-                    onClick={handleCloseOrOpenStage}
-                    disabled={loading || !note.trim() || (isStageOpen && !isStageCompleted)}
-                    className={`flex-1 px-4 py-3 text-white rounded-lg font-ibm-arabic-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${actionText.buttonColor}`}
-                    style={{ fontSize: scale(14) }}
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center space-x-2 space-x-reverse">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                        <span>جاري المعالجة...</span>
-                      </div>
-                    ) : (
-                      actionText.buttonText
-                    )}
+              {/* Footer */}
+              <div
+                className="flex gap-3"
+                style={{
+                  borderTop: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: scale(24),
+                  paddingRight: scale(24),
+                  paddingTop: scale(16),
+                  paddingBottom: scale(16),
+                  margin: `${scale(8)}px 0`
+                }}
+              >
+                <button
+                  onClick={onClose}
+                  className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                  style={{
+                    padding: `${scale(12)}px ${scale(24)}px`,
+                    backgroundColor: 'var(--theme-surface-secondary)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: `${scale(16)}px`,
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                    border: '1px solid var(--theme-border)',
+                    width: '45%'
+                  }}
+                >
+                  إلغاء
+                </button>
+
+                <button
+                  onClick={handleCloseOrOpenStage}
+                  disabled={loading || !note.trim() || (isStageOpen && !isStageCompleted)}
+                  className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  style={{
+                    padding: `${scale(12)}px ${scale(24)}px`,
+                    backgroundColor: isStageOpen ? 'var(--theme-error)' : 'var(--theme-success)',
+                    color: 'white',
+                    fontSize: `${scale(16)}px`,
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                    border: 'none',
+                    width: '45%'
+                  }}
+                >
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div
+                        className="animate-spin rounded-full border-b-2 border-white"
+                        style={{ width: scale(16), height: scale(16) }}
+                      />
+                      <span>جاري المعالجة...</span>
+                    </div>
+                  ) : (
+                    actionText.buttonText
+                  )}
                   </button>
                 </div>
+
+              {/* Decorative bottom element */}
+              <div
+                className="flex justify-center"
+                style={{
+                  paddingBottom: scale(8),
+                  borderBottomLeftRadius: `${scale(20)}px`,
+                  borderBottomRightRadius: `${scale(20)}px`
+                }}
+              >
+                <div
+                  className="w-12 h-1 rounded-full"
+                  style={{ backgroundColor: 'var(--theme-border)' }}
+                />
               </div>
             </div>
           </motion.div>

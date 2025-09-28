@@ -149,15 +149,15 @@ export default function ManagementPage() {
   const [showUserProfile, setShowUserProfile] = useState(false);
 
   const handleApprovals = () => {
-    router.push('/settings/approvals');
+    router.push('/management/settings/approvals');
   };
 
   const handleDecisions = () => {
-    router.push('/settings/decisions');
+    router.push('/management/settings/decisions');
   };
 
   const handleConsultations = () => {
-    router.push('/settings/consultations');
+    router.push('/management/settings/consultations');
   };
 
   const handleAttendance = async () => {

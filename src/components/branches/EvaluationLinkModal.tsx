@@ -148,16 +148,19 @@ export default function EvaluationLinkModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div 
-        className="bg-white rounded-2xl w-full overflow-hidden shadow-2xl"
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div
+        className="w-full overflow-hidden shadow-2xl"
         style={{
-          maxWidth: '480px',
-          minWidth: '400px',
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)',
+          borderRadius: `${scale(20)}px`,
+          maxWidth: `${scale(480)}px`,
+          minWidth: `${scale(400)}px`,
           fontFamily: fonts.IBMPlexSansArabicSemiBold,
           transform: keyboardVisible ? `translateY(${scale(-224)}px)` : 'translateY(0)',
           transition: 'transform 0.3s ease',
-          margin: 'auto'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
         }}
       >
         {/* Header */}

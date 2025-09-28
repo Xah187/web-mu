@@ -119,7 +119,7 @@ export interface UseFinanceReturn {
   updateExpense: (id: number, data: any) => Promise<void>;
   updateRevenue: (id: number, data: any) => Promise<void>;
   updateReturn: (id: number, data: any) => Promise<void>;
-  deleteFinanceItem: (id: number, type: string) => Promise<void>;
+  deleteFinanceItem: (item: FinanceItem, operationType: string) => Promise<boolean>;
   clearSearch: () => void;
   refresh: () => void;
 }
@@ -155,8 +155,15 @@ export default function useFinance(): UseFinanceReturn {
           headers: { Authorization: `Bearer ${user.accessToken}` },
         }
       );
-      
+
+      console.log(`${endpoint} response:`, response.data);
       const data = response.data?.data || [];
+      console.log(`${endpoint} data:`, data);
+
+      // Log image data for debugging
+      if (data.length > 0) {
+        console.log(`${endpoint} - First item Image field:`, data[0]?.Image, typeof data[0]?.Image);
+      }
       if (lastId === 0) {
         setter(data);
       } else {
@@ -195,7 +202,8 @@ export default function useFinance(): UseFinanceReturn {
           headers: { Authorization: `Bearer ${user.accessToken}` },
         }
       );
-      
+
+      console.log('BringTotalAmountproject response:', response.data);
       setTotals(response.data || null);
     } catch (e: any) {
       console.error('Error fetching totals:', e);
@@ -341,9 +349,9 @@ export default function useFinance(): UseFinanceReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       const formData = new FormData();
-      formData.append('InvoiceNo', id.toString());
+      formData.append('Expenseid', id.toString()); // Fixed: use Expenseid instead of InvoiceNo
       Object.keys(data).forEach(key => {
         if (data[key] !== undefined && data[key] !== null) {
           if (key === 'image' && data[key]) {
@@ -353,14 +361,16 @@ export default function useFinance(): UseFinanceReturn {
           }
         }
       });
-      
-      await axiosInstance.put('/brinshCompany/ExpenseUpdate', formData, {
-        headers: { 
+
+      console.log('updateExpense - sending data:', { id, data });
+
+      await axiosInstance.put('/brinshCompany/ExpenseUpdate', formData, { // Use PUT like mobile app
+        headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'multipart/form-data'
         },
       });
-      
+
       Tostget('تم تحديث المصروف بنجاح');
     } catch (e: any) {
       console.error('Error updating expense:', e);
@@ -376,7 +386,7 @@ export default function useFinance(): UseFinanceReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       const formData = new FormData();
       formData.append('RevenueId', id.toString());
       Object.keys(data).forEach(key => {
@@ -388,14 +398,16 @@ export default function useFinance(): UseFinanceReturn {
           }
         }
       });
-      
-      await axiosInstance.put('/brinshCompany/RevenueUpdate', formData, {
-        headers: { 
+
+      console.log('updateRevenue - sending data:', { id, data });
+
+      await axiosInstance.put('/brinshCompany/RevenuesUpdate', formData, { // Use PUT like mobile app
+        headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'multipart/form-data'
         },
       });
-      
+
       Tostget('تم تحديث الإيراد بنجاح');
     } catch (e: any) {
       console.error('Error updating revenue:', e);
@@ -411,7 +423,7 @@ export default function useFinance(): UseFinanceReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
       const formData = new FormData();
       formData.append('ReturnsId', id.toString());
       Object.keys(data).forEach(key => {
@@ -423,14 +435,16 @@ export default function useFinance(): UseFinanceReturn {
           }
         }
       });
-      
-      await axiosInstance.put('/brinshCompany/ReturnUpdate', formData, {
-        headers: { 
+
+      console.log('updateReturn - sending data:', { id, data });
+
+      await axiosInstance.put('/brinshCompany/ReturnsUpdate', formData, { // Use PUT like mobile app
+        headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'multipart/form-data'
         },
       });
-      
+
       Tostget('تم تحديث المرتجع بنجاح');
     } catch (e: any) {
       console.error('Error updating return:', e);
@@ -441,22 +455,39 @@ export default function useFinance(): UseFinanceReturn {
     }
   }, [user?.accessToken]);
 
-  const deleteFinanceItem = useCallback(async (id: number, type: string) => {
-    if (!user?.accessToken) return;
+  const deleteFinanceItem = useCallback(async (item: FinanceItem, operationType: string): Promise<boolean> => {
+    if (!user?.accessToken) return false;
     try {
       setLoading(true);
       setError(null);
-      
-      await axiosInstance.delete('/brinshCompany/DeleteFinance', {
-        headers: { Authorization: `Bearer ${user.accessToken}` },
-        data: { id, type }
+
+      // Determine ID and type based on operation type (matching mobile app logic)
+      let id: number;
+      let type: string;
+
+      if (operationType === 'مصروفات') {
+        id = item.Expenseid || 0;
+        type = 'مصروفات';
+      } else if (operationType === 'عهد') {
+        id = item.RevenueId || 0;
+        type = 'عهد';
+      } else {
+        id = item.ReturnsId || 0;
+        type = 'مرتجعات';
+      }
+
+      // Use GET request like mobile app
+      await axiosInstance.get(`/brinshCompany/DeleteFinance?id=${id}&type=${type}`, {
+        headers: { Authorization: `Bearer ${user.accessToken}` }
       });
-      
+
       Tostget('تم حذف العنصر بنجاح');
+      return true;
     } catch (e: any) {
       console.error('Error deleting finance item:', e);
       setError('خطأ في حذف العنصر');
       Tostget('خطأ في حذف العنصر');
+      return false;
     } finally {
       setLoading(false);
     }

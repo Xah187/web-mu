@@ -3,7 +3,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colors } from '@/constants/colors';
-import { scale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
+import { fonts } from '@/constants/fonts';
 
 interface StageInfoModalProps {
   isOpen: boolean;
@@ -60,7 +61,7 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
             onClick={onClose}
           />
 
@@ -72,25 +73,68 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div
+              className="w-full shadow-2xl max-h-[90vh] overflow-y-auto"
+              style={{
+                backgroundColor: 'var(--theme-card-background)',
+                border: '1px solid var(--theme-border)',
+                borderRadius: `${scale(20)}px`,
+                maxWidth: `${scale(450)}px`,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+            >
               {/* Header */}
-              <div className="p-6 border-b border-gray-100">
-                <div className="flex items-center justify-between">
-                  <h2 
-                    className="font-ibm-arabic-bold text-gray-900"
-                    style={{ fontSize: scale(18) }}
+              <div
+                className="text-center"
+                style={{
+                  borderBottom: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: scale(24),
+                  paddingRight: scale(24),
+                  paddingTop: scale(20),
+                  paddingBottom: scale(20),
+                  marginBottom: scale(16),
+                  borderTopLeftRadius: `${scale(20)}px`,
+                  borderTopRightRadius: `${scale(20)}px`
+                }}
+              >
+                <div className="flex items-center justify-center gap-3 mb-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--theme-info-alpha, rgba(59, 130, 246, 0.1))' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="var(--theme-info, #3b82f6)" strokeWidth="2"/>
+                      <path d="M12 16V12" stroke="var(--theme-info, #3b82f6)" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M12 8H12.01" stroke="var(--theme-info, #3b82f6)" strokeWidth="2" strokeLinecap="round"/>
+                    </svg>
+                  </div>
+                  <h2
+                    className="font-bold"
+                    style={{
+                      fontSize: `${scale(18)}px`,
+                      fontFamily: fonts.IBMPlexSansArabicBold,
+                      color: 'var(--theme-text-primary)',
+                      lineHeight: 1.4
+                    }}
                   >
                     تفاصيل المرحلة
                   </h2>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
                 </div>
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                  style={{
+                    padding: '10px',
+                    backgroundColor: 'var(--theme-surface-secondary)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text-secondary)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M18 6 6 18M6 6l12 12"/>
+                  </svg>
+                </button>
               </div>
 
               {/* Content */}

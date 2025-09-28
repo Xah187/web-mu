@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { colors } from '@/constants/colors';
-import { scale } from '@/utils/responsiveSize';
+import { scale, verticalScale } from '@/utils/responsiveSize';
+import { fonts } from '@/constants/fonts';
 import { SubStageNote } from '@/hooks/useSubStages';
 import SubStageNotesView from './SubStageNotesView';
 import SubStageNoteModal from './SubStageNoteModal';
@@ -92,14 +93,20 @@ const SubStageNotesModal: React.FC<SubStageNotesModalProps> = ({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
             onClick={onClose}
           >
             <motion.div
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-xl w-full max-w-2xl mx-auto max-h-[80vh] flex flex-col"
+              className="w-full max-w-2xl mx-auto max-h-[80vh] flex flex-col shadow-xl"
+              style={{
+                backgroundColor: 'var(--theme-card-background)',
+                border: '1px solid var(--theme-border)',
+                borderRadius: `${scale(20)}px`,
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               {/* Header */}

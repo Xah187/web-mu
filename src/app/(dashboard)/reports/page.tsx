@@ -377,12 +377,11 @@ export default function ReportsPage() {
                     >
                       النوع:
                     </span>
-                    <span 
-                      className="font-semibold"
+                    <span
+                      className="font-semibold theme-text-primary"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: verticalScale(16),
-                        color: colors.BLACK
+                        fontSize: verticalScale(16)
                       }}
                     >
                       {reportData.TypeOFContract}

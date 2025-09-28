@@ -74,8 +74,17 @@ export default function OperationFileModal({
   // نموذج تأكيد الحذف
   if (showDeleteConfirm) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div
+          className="w-full max-w-md shadow-2xl"
+          style={{
+            backgroundColor: 'var(--theme-card-background)',
+            border: '1px solid var(--theme-border)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}
+        >
           <div className="text-center">
             {/* أيقونة التحذير */}
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
@@ -137,8 +146,17 @@ export default function OperationFileModal({
   // نموذج التعديل
   if (showEditForm) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div
+          className="w-full max-w-md shadow-2xl"
+          style={{
+            backgroundColor: 'var(--theme-card-background)',
+            border: '1px solid var(--theme-border)',
+            borderRadius: '20px',
+            padding: '24px',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          }}
+        >
           <div className="text-center mb-6">
             {/* أيقونة التعديل */}
             <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
@@ -211,8 +229,17 @@ export default function OperationFileModal({
 
   // القائمة الرئيسية للعمليات
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div
+        className="w-full max-w-md shadow-2xl"
+        style={{
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)',
+          borderRadius: '20px',
+          padding: '24px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+      >
         <div className="text-center mb-6">
           <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">
             عمليات {type === 'folder' ? 'المجلد' : 'الملف'}

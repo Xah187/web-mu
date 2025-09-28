@@ -126,12 +126,13 @@ export default function Combobox({
     <div className={`relative ${className}`} ref={containerRef}>
       {label && (
         <label
-          className="block text-gray-700 text-right"
+          className="block text-right"
           style={{
             fontSize: `${scale(14 + size)}px`,
             fontFamily: fonts.IBMPlexSansArabicMedium,
             marginBottom: `${scale(8)}px`,
-            fontWeight: 500
+            fontWeight: 500,
+            color: 'var(--theme-text-primary)'
           }}
         >
           {label}
@@ -150,25 +151,36 @@ export default function Combobox({
           w-full h-full text-center
           border rounded-xl
           flex items-center justify-center
-          hover:border-blue transition-all duration-200
+          transition-all duration-200
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}
           relative
         `}
         style={{
-          backgroundColor,
+          backgroundColor: disabled
+            ? 'var(--theme-surface-secondary)'
+            : 'var(--theme-input-background)',
           fontSize: fontSize || scale(15 + size),
           padding: `${scale(12)}px ${scale(16)}px`,
-          borderColor: colors.BORDERCOLOR,
+          borderColor: isOpen
+            ? 'var(--theme-primary)'
+            : 'var(--theme-border)',
           borderRadius: `${scale(12)}px`,
-          fontFamily: fonts.IBMPlexSansArabicMedium
+          fontFamily: fonts.IBMPlexSansArabicMedium,
+          color: disabled
+            ? 'var(--theme-text-tertiary)'
+            : 'var(--theme-text-primary)',
+          boxShadow: isOpen
+            ? '0 0 0 3px var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))'
+            : 'none'
         }}
       >
         <span
-          className="text-black flex-1"
+          className="flex-1"
           style={{
             direction: 'ltr',
             unicodeBidi: 'embed',
-            textAlign: 'center'
+            textAlign: 'center',
+            color: 'inherit'
           }}
         >
           {selectedItem ? (selectedItem.code || selectedItem.name) : (value || placeholder)}
@@ -179,7 +191,8 @@ export default function Combobox({
             position: 'absolute',
             left: `${scale(12)}px`,
             top: '50%',
-            transform: 'translateY(-50%)'
+            transform: 'translateY(-50%)',
+            color: 'var(--theme-text-secondary)'
           }}
         >
           <ArrowDownIcon
@@ -192,15 +205,16 @@ export default function Combobox({
 
       {isOpen && (
         <div
-          className={`absolute top-full bg-white border overflow-hidden z-50 sm:max-w-none max-w-[calc(100vw-40px)]`}
+          className={`absolute top-full border overflow-hidden z-50 sm:max-w-none max-w-[calc(100vw-40px)]`}
           style={{
             marginTop: `${scale(4)}px`,
-            borderColor: colors.BORDERCOLOR,
+            backgroundColor: 'var(--theme-surface)',
+            borderColor: 'var(--theme-border)',
             borderRadius: `${scale(12)}px`,
             width: `${scale(280)}px`, // عرض افتراضي
             minWidth: `${scale(200)}px`, // حد أدنى للعرض
             maxHeight: `${verticalScale(280)}px`,
-            boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+            boxShadow: 'var(--theme-card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.1))',
             // تطبيق التموضع المحسوب ديناميكياً
             ...dropdownStyle,
           }}
@@ -209,7 +223,7 @@ export default function Combobox({
             className="border-b"
             style={{
               padding: `${scale(12)}px`,
-              borderBottomColor: colors.BORDERCOLOR
+              borderBottomColor: 'var(--theme-border)'
             }}
           >
             <input
@@ -217,13 +231,15 @@ export default function Combobox({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث..."
-              className="w-full border rounded-md text-right transition-colors duration-200 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full border rounded-md text-right transition-colors duration-200 focus:ring-2 focus:border-transparent focus:ring-blue-500"
               style={{
                 fontSize: scale(12 + size),
                 padding: `${scale(8)}px ${scale(12)}px`,
-                borderColor: colors.BORDERCOLOR,
+                backgroundColor: 'var(--theme-input-background)',
+                borderColor: 'var(--theme-border)',
                 borderRadius: `${scale(6)}px`,
-                fontFamily: fonts.IBMPlexSansArabicMedium
+                fontFamily: fonts.IBMPlexSansArabicMedium,
+                color: 'var(--theme-text-primary)'
               }}
             />
           </div>
@@ -242,13 +258,26 @@ export default function Combobox({
                   setSearchTerm('');
                 }}
                 className={`
-                  w-full text-right hover:bg-gray-50 active:bg-gray-100
-                  transition-colors duration-200 border-b border-gray-100 last:border-b-0
-                  ${(item.name === value || item.code === value) ? 'bg-blue-50 hover:bg-blue-100' : 'text-gray-700'}
+                  w-full text-right transition-colors duration-200 border-b last:border-b-0
                 `}
                 style={{
-                  padding: `${scale(14)}px ${scale(16)}px`, // padding أكبر قليلاً
-                  minHeight: `${scale(48)}px`, // حد أدنى للارتفاع لسهولة النقر
+                  backgroundColor: (item.name === value || item.code === value)
+                    ? 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))'
+                    : 'transparent',
+                  borderBottomColor: 'var(--theme-border-light)',
+                  color: 'var(--theme-text-primary)',
+                  padding: `${scale(14)}px ${scale(16)}px`,
+                  minHeight: `${scale(48)}px`
+                }}
+                onMouseEnter={(e) => {
+                  if (!(item.name === value || item.code === value)) {
+                    e.currentTarget.style.backgroundColor = 'var(--theme-surface-secondary)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!(item.name === value || item.code === value)) {
+                    e.currentTarget.style.backgroundColor = 'transparent';
+                  }
                 }}
               >
                 <div
@@ -259,7 +288,9 @@ export default function Combobox({
                     className="font-ibm-arabic-medium flex-1 text-right"
                     style={{
                       fontSize: scale(14 + size), // خط أكبر قليلاً
-                      color: (item.name === value || item.code === value) ? colors.BLUE : '#374151',
+                      color: (item.name === value || item.code === value)
+                        ? 'var(--theme-primary)'
+                        : 'var(--theme-text-primary)',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       lineHeight: 1.5, // line height أفضل للقراءة
                       wordBreak: 'break-word', // كسر الكلمات الطويلة
@@ -274,13 +305,15 @@ export default function Combobox({
                         fontSize: scale(13 + size), // خط أكبر قليلاً
                         direction: 'ltr',
                         unicodeBidi: 'embed',
-                        color: (item.name === value || item.code === value) ? colors.BLUE : colors.BLUE,
+                        color: 'var(--theme-primary)',
                         fontFamily: fonts.IBMPlexSansArabicBold,
                         lineHeight: 1.4,
-                        backgroundColor: (item.name === value || item.code === value) ? 'rgba(59, 130, 246, 0.1)' : 'rgba(59, 130, 246, 0.05)',
+                        backgroundColor: (item.name === value || item.code === value)
+                          ? 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.15))'
+                          : 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.05))',
                         padding: `${scale(4)}px ${scale(8)}px`,
                         borderRadius: `${scale(6)}px`,
-                        border: `1px solid ${(item.name === value || item.code === value) ? colors.BLUE : 'rgba(59, 130, 246, 0.2)'}`,
+                        border: `1px solid var(--theme-primary)`,
                       }}
                     >
                       {item.code}

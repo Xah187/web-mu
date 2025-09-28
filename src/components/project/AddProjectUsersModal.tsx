@@ -130,65 +130,345 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={onClose}>
-      <div className="bg-white rounded-2xl p-6 w-full max-w-2xl" onClick={(e)=>e.stopPropagation()}>
-        <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">إضافة مستخدمين للمشروع</h3>
-
-        <div className="flex items-center gap-3 mb-4">
-          <input value={search} onChange={(e)=>setSearch(e.target.value)} className="flex-1 px-3 py-2 border rounded-lg" placeholder="ابحث بالاسم أو الرقم" />
-          <button onClick={()=>fetchMembers(true)} className="px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">تحديث</button>
-        </div>
-
-        <div className="max-h-80 overflow-auto border rounded-lg">
-          {filtered.map(m => (
-            <label key={m.id} className="flex items-center justify-between px-3 py-2 border-b">
-              <div className="flex items-center gap-3">
-                <input type="checkbox" checked={selected.includes(m.id)} onChange={()=>toggle(m.id)} />
-                <div>
-                  <div className="text-sm font-ibm-arabic-semibold">{m.userName}</div>
-                  <div className="text-xs text-gray-600">{m.PhoneNumber}</div>
-                </div>
-              </div>
-            </label>
-          ))}
-          {hasMore && (
-            <div className="p-3 text-center">
-              <button disabled={loading} onClick={()=>fetchMembers(false)} className="px-4 py-2 bg-blue-50 rounded-lg hover:bg-blue-100 disabled:opacity-50">
-                {loading ? 'جارٍ التحميل...' : 'تحميل المزيد'}
-              </button>
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl shadow-2xl"
+        style={{
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)',
+          borderRadius: '20px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+        onClick={(e)=>e.stopPropagation()}
+      >
+        {/* Header */}
+        <div
+          className="text-center relative"
+          style={{
+            borderBottom: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            paddingTop: '20px',
+            paddingBottom: '20px',
+            marginBottom: '16px',
+            borderTopLeftRadius: '20px',
+            borderTopRightRadius: '20px'
+          }}
+        >
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="var(--theme-primary, #6366f1)" strokeWidth="2"/>
+                <circle cx="9" cy="7" r="4" stroke="var(--theme-primary, #6366f1)" strokeWidth="2"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="var(--theme-primary, #6366f1)" strokeWidth="2"/>
+              </svg>
             </div>
-          )}
-        </div>
-
-        <div className="mt-4">
+            <h3
+              className="font-bold"
+              style={{
+                fontSize: '18px',
+                fontFamily: 'var(--font-ibm-arabic-bold)',
+                color: 'var(--theme-text-primary)',
+                lineHeight: 1.4
+              }}
+            >
+              إضافة مستخدمين للمشروع
+            </h3>
+          </div>
           <button
-            onClick={()=>setPermModalOpen(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            onClick={onClose}
+            className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+            style={{
+              padding: '10px',
+              backgroundColor: 'var(--theme-surface-secondary)',
+              border: '1px solid var(--theme-border)',
+              color: 'var(--theme-text-secondary)'
+            }}
           >
-            اختيار الصلاحيات ({selectedPerms.length})
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
           </button>
         </div>
 
-        <div className="flex space-x-3 space-x-reverse mt-6">
-          <button onClick={submit} disabled={loading} className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50">
+        {/* Content */}
+        <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+          <div className="flex items-center gap-3" style={{ marginBottom: '16px' }}>
+            <input
+              value={search}
+              onChange={(e)=>setSearch(e.target.value)}
+              className="flex-1 rounded-xl transition-all duration-200 focus:scale-[1.02]"
+              style={{
+                padding: '12px 16px',
+                backgroundColor: 'var(--theme-input-background)',
+                border: '1px solid var(--theme-border)',
+                color: 'var(--theme-text-primary)',
+                fontSize: '16px',
+                fontFamily: 'var(--font-ibm-arabic-medium)'
+              }}
+              placeholder="ابحث بالاسم أو الرقم"
+            />
+            <button
+              onClick={()=>fetchMembers(true)}
+              className="rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+              style={{
+                padding: '12px 16px',
+                backgroundColor: 'var(--theme-surface-secondary)',
+                border: '1px solid var(--theme-border)',
+                color: 'var(--theme-text-primary)',
+                fontSize: '14px',
+                fontFamily: 'var(--font-ibm-arabic-medium)'
+              }}
+            >
+              تحديث
+            </button>
+          </div>
+
+          <div
+            className="max-h-80 overflow-auto rounded-xl"
+            style={{
+              backgroundColor: 'var(--theme-surface-secondary)',
+              border: '1px solid var(--theme-border)',
+              marginBottom: '16px'
+            }}
+          >
+            {filtered.map(m => (
+              <label
+                key={m.id}
+                className="flex items-center justify-between transition-all duration-200 hover:scale-[1.01]"
+                style={{
+                  padding: '12px 16px',
+                  borderBottom: '1px solid var(--theme-border)',
+                  cursor: 'pointer'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={selected.includes(m.id)}
+                    onChange={()=>toggle(m.id)}
+                    className="w-4 h-4 rounded"
+                    style={{
+                      accentColor: 'var(--theme-primary)'
+                    }}
+                  />
+                  <div>
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-ibm-arabic-semibold)',
+                        color: 'var(--theme-text-primary)',
+                        marginBottom: '4px'
+                      }}
+                    >
+                      {m.userName}
+                    </div>
+                    <div
+                      style={{
+                        fontSize: '12px',
+                        fontFamily: 'var(--font-ibm-arabic-regular)',
+                        color: 'var(--theme-text-secondary)'
+                      }}
+                    >
+                      {m.PhoneNumber}
+                    </div>
+                  </div>
+                </div>
+              </label>
+            ))}
+            {hasMore && (
+              <div className="p-3 text-center">
+                <button
+                  disabled={loading}
+                  onClick={()=>fetchMembers(false)}
+                  className="rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))',
+                    border: '1px solid var(--theme-primary)',
+                    color: 'var(--theme-primary)',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)'
+                  }}
+                >
+                  {loading ? 'جارٍ التحميل...' : 'تحميل المزيد'}
+                </button>
+              </div>
+            )}
+          </div>
+
+          <div style={{ marginTop: '16px', marginBottom: '24px' }}>
+            <button
+              onClick={()=>setPermModalOpen(true)}
+              className="rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+              style={{
+                padding: '12px 20px',
+                backgroundColor: 'var(--theme-primary)',
+                color: 'white',
+                fontSize: '16px',
+                fontFamily: 'var(--font-ibm-arabic-semibold)',
+                border: 'none'
+              }}
+            >
+              اختيار الصلاحيات ({selectedPerms.length})
+            </button>
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div
+          className="flex gap-3"
+          style={{
+            borderTop: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+            paddingLeft: '24px',
+            paddingRight: '24px',
+            paddingTop: '16px',
+            paddingBottom: '16px',
+            margin: '8px 0',
+            borderBottomLeftRadius: '20px',
+            borderBottomRightRadius: '20px'
+          }}
+        >
+          <button
+            onClick={submit}
+            disabled={loading}
+            className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+            style={{
+              padding: '12px 24px',
+              backgroundColor: 'var(--theme-success)',
+              color: 'white',
+              fontSize: '16px',
+              fontFamily: 'var(--font-ibm-arabic-semibold)',
+              border: 'none',
+              width: '45%'
+            }}
+          >
             {loading ? 'جارٍ الحفظ...' : 'حفظ'}
           </button>
-          <button onClick={onClose} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors">
+          <button
+            onClick={onClose}
+            className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+            style={{
+              padding: '12px 24px',
+              backgroundColor: 'var(--theme-surface-secondary)',
+              color: 'var(--theme-text-primary)',
+              fontSize: '16px',
+              fontFamily: 'var(--font-ibm-arabic-semibold)',
+              border: '1px solid var(--theme-border)',
+              width: '45%'
+            }}
+          >
             إلغاء
           </button>
         </div>
 
         {permModalOpen && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-xl">
-              <h4 className="text-md font-ibm-arabic-bold mb-3">صلاحيات المشروع للمستخدم</h4>
-              <PermissionList
-                selectedPermissions={selectedPerms}
-                onPermissionChange={(perms)=>setSelectedPerms(perms as PermissionType[])}
-              />
-              <div className="flex gap-3 mt-4">
-                <button onClick={()=>setPermModalOpen(false)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">تم</button>
-                <button onClick={()=>{ setSelectedPerms([]); setPermModalOpen(false); }} className="px-4 py-2 bg-gray-200 rounded-lg">إلغاء</button>
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div
+              className="w-full max-w-xl shadow-2xl"
+              style={{
+                backgroundColor: 'var(--theme-card-background)',
+                border: '1px solid var(--theme-border)',
+                borderRadius: '20px',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+            >
+              {/* Sub-modal Header */}
+              <div
+                className="text-center relative"
+                style={{
+                  borderBottom: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: '24px',
+                  paddingRight: '24px',
+                  paddingTop: '20px',
+                  paddingBottom: '20px',
+                  marginBottom: '16px',
+                  borderTopLeftRadius: '20px',
+                  borderTopRightRadius: '20px'
+                }}
+              >
+                <div className="flex items-center justify-center gap-3">
+                  <div
+                    className="w-8 h-8 rounded-full flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--theme-warning-alpha, rgba(245, 158, 11, 0.1))' }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                      <path d="M9 12l2 2 4-4" stroke="var(--theme-warning, #f59e0b)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z" stroke="var(--theme-warning, #f59e0b)" strokeWidth="2"/>
+                    </svg>
+                  </div>
+                  <h4
+                    style={{
+                      fontSize: '16px',
+                      fontFamily: 'var(--font-ibm-arabic-bold)',
+                      color: 'var(--theme-text-primary)',
+                      lineHeight: 1.4
+                    }}
+                  >
+                    صلاحيات المشروع للمستخدم
+                  </h4>
+                </div>
+              </div>
+
+              {/* Sub-modal Content */}
+              <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+                <PermissionList
+                  selectedPermissions={selectedPerms}
+                  onPermissionChange={(perms)=>setSelectedPerms(perms as PermissionType[])}
+                />
+              </div>
+
+              {/* Sub-modal Footer */}
+              <div
+                className="flex gap-3"
+                style={{
+                  borderTop: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: '24px',
+                  paddingRight: '24px',
+                  paddingTop: '16px',
+                  paddingBottom: '16px',
+                  margin: '8px 0',
+                  borderBottomLeftRadius: '20px',
+                  borderBottomRightRadius: '20px'
+                }}
+              >
+                <button
+                  onClick={()=>setPermModalOpen(false)}
+                  className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--theme-success)',
+                    color: 'white',
+                    fontSize: '16px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    border: 'none',
+                    width: '45%'
+                  }}
+                >
+                  تم
+                </button>
+                <button
+                  onClick={()=>{ setSelectedPerms([]); setPermModalOpen(false); }}
+                  className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                  style={{
+                    padding: '12px 24px',
+                    backgroundColor: 'var(--theme-surface-secondary)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: '16px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    border: '1px solid var(--theme-border)',
+                    width: '45%'
+                  }}
+                >
+                  إلغاء
+                </button>
               </div>
             </div>
           </div>

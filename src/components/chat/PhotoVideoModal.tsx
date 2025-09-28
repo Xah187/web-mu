@@ -16,7 +16,24 @@ interface Props {
 const TabButton: React.FC<{ active: boolean; onClick: () => void; children: React.ReactNode }> = ({ active, onClick, children }) => (
   <button
     onClick={onClick}
-    className={`px-4 py-2 rounded-lg border text-sm transition-colors ${active ? "bg-blue text-white border-blue" : "bg-white text-gray-700 border-gray-200 hover:bg-gray-50"}`}
+    className="rounded-xl text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+    style={{
+      padding: '8px 16px',
+      fontSize: '13px',
+      fontWeight: '600',
+      backgroundColor: active
+        ? 'var(--theme-primary)'
+        : 'var(--theme-surface-secondary)',
+      color: active
+        ? '#ffffff'
+        : 'var(--theme-text-primary)',
+      border: active
+        ? '2px solid var(--theme-primary)'
+        : '1px solid var(--theme-border)',
+      boxShadow: active
+        ? '0 2px 8px rgba(99, 102, 241, 0.2)'
+        : '0 1px 3px rgba(0, 0, 0, 0.05)'
+    }}
   >
     {children}
   </button>
@@ -45,15 +62,54 @@ export default function PhotoVideoModal({ isOpen, onClose, onCapture, resolution
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70" onClick={onClose}>
-      <div className="w-full max-w-2xl bg-white rounded-2xl shadow-xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between p-3 border-b">
-          <div className="flex items-center gap-2">
-            <TabButton active={tab === "photo"} onClick={() => setTab("photo")}>Photo</TabButton>
-            <TabButton active={tab === "video"} onClick={() => setTab("video")}>Video</TabButton>
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6" onClick={onClose}>
+      <div
+        className="w-full max-w-2xl shadow-xl overflow-hidden"
+        style={{
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)',
+          borderRadius: '20px',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div
+          className="flex items-center justify-between p-4"
+          style={{
+            borderBottom: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)'
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="var(--theme-primary)" strokeWidth="2"/>
+                <circle cx="9" cy="9" r="2" stroke="var(--theme-primary)" strokeWidth="2"/>
+                <path d="M21 15L16 10L5 21" stroke="var(--theme-primary)" strokeWidth="2"/>
+              </svg>
+            </div>
+            <div className="flex items-center gap-2">
+              <TabButton active={tab === "photo"} onClick={() => setTab("photo")}>📷 صورة</TabButton>
+              <TabButton active={tab === "video"} onClick={() => setTab("video")}>🎥 فيديو</TabButton>
+            </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-lg hover:bg-gray-100" aria-label="Close">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          <button
+            onClick={onClose}
+            className="rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+            style={{
+              padding: '10px',
+              backgroundColor: 'var(--theme-surface-secondary)',
+              border: '1px solid var(--theme-border)',
+              color: 'var(--theme-text-secondary)'
+            }}
+            aria-label="Close"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
           </button>
         </div>
 

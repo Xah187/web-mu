@@ -67,13 +67,13 @@ export default function AboutPage() {
   const textStyle = {
     fontSize: verticalScale(14 + size),
     fontFamily: fonts.IBMPlexSansArabicSemiBold,
-    color: '#212121',
+    color: 'var(--color-text-primary)',
   };
 
   const subHeaderStyle = {
     fontSize: verticalScale(17 + size),
     fontFamily: fonts.IBMPlexSansArabicSemiBold,
-    color: colors.BLACK,
+    color: 'var(--color-text-primary)',
     marginBottom: 8,
   };
 
@@ -83,8 +83,22 @@ export default function AboutPage() {
         <PageHeader
           title="حول منصة مشرف"
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
-              <ArrowIcon size={24} />
+            <button
+              onClick={() => router.push('/home')}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-primary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              aria-label="رجوع"
+            >
+              <ArrowIcon size={24} color="var(--color-text-primary)" />
             </button>
           }
         />
@@ -93,9 +107,9 @@ export default function AboutPage() {
       <ContentSection>
 
       {/* Content */}
-      <div className="flex-1 p-5 bg-home">
+      <div className="flex-1 p-5" style={{ backgroundColor: 'var(--color-background-primary)' }}>
         {/* Introduction Section */}
-        <div className="bg-white p-5 rounded-3xl mb-5">
+        <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
           <p className="text-right" style={textStyle}>
             منصة مشرف هي الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة
             بالمقاولات والإشراف الفني والمالي للمباني، حيث توفر تجربة ذكية
@@ -106,7 +120,7 @@ export default function AboutPage() {
 
         {/* Why Moshrif Section */}
         <p style={subHeaderStyle}>لماذا منصة مشرف؟</p>
-        <div className="bg-white p-5 rounded-3xl mb-5">
+        <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
           <p className="text-right" style={textStyle}>
             في ظل التطور التكنولوجي المتسارع، أصبح من الضروري الاعتماد على حلول
             رقمية تسهّل عمليات البناء والإشراف وتضمن تحقيق الأهداف بأعلى
@@ -121,7 +135,16 @@ export default function AboutPage() {
           <button
             key={feature.id}
             onClick={() => setExpandedFeature(expandedFeature === feature.id ? 0 : feature.id)}
-            className="w-full bg-white p-5 rounded-3xl mb-5 text-right hover:bg-gray-50 transition-colors"
+            className="w-full p-5 rounded-3xl mb-5 text-right transition-colors"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--color-card-background)';
+            }}
           >
             <p style={textStyle}>{feature.name}</p>
             {expandedFeature === feature.id && (
@@ -134,30 +157,30 @@ export default function AboutPage() {
 
         {/* How it Works Section */}
         <p style={subHeaderStyle}>كيف تعمل منصة مشرف؟</p>
-        <div className="bg-white p-5 rounded-3xl mb-5">
+        <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
           <div className="space-y-3">
             <div>
-              <p style={{ ...textStyle, color: colors.BLUE }}>- تسجيل المشروع</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- تسجيل المشروع</p>
               <p style={textStyle}>يقوم المالك أو المقاول بإدخال بيانات المشروع وتفاصيله عبر المنصة.</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: colors.BLUE }}>- إضافة الفرق والأدوار</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- إضافة الفرق والأدوار</p>
               <p style={textStyle}>يتم تحديد المشرفين والمهندسين المسؤولين عن التنفيذ والمتابعة.</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: colors.BLUE }}>- تحديث مستمر</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- تحديث مستمر</p>
               <p style={textStyle}>يتم تسجيل مراحل المشروع خطوة بخطوة مع توثيق كافة العمليات إلكترونيًا.</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: colors.BLUE }}>- إصدار التقارير</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- إصدار التقارير</p>
               <p style={textStyle}>يمكن استخراج التقارير المالية والفنية بدقة عالية عند الحاجة.</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: colors.BLUE }}>- التواصل الفعّال</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- التواصل الفعّال</p>
               <p style={textStyle}>تتيح المنصة قنوات اتصال مباشرة بين جميع الأطراف لضمان تحقيق الأهداف.</p>
             </div>
           </div>
@@ -185,7 +208,7 @@ export default function AboutPage() {
           <p
             className="text-center"
             style={{
-              color: colors.BLUE,
+              color: 'var(--color-primary)',
               fontFamily: fonts.IBMPlexSansArabicRegular,
               fontSize: verticalScale(14 + size),
             }}

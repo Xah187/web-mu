@@ -6,148 +6,201 @@ import { useSelector } from 'react-redux';
 import useFinance, { FinanceItem, Totaltofixt, truncateNumber, convertArabicToEnglish, formatDateEnglish } from '@/hooks/useFinance';
 import useValidityUser from '@/hooks/useValidityUser';
 import { scale } from '@/utils/responsiveSize';
+import { Tostget } from '@/components/ui/Toast';
 
-import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import ResponsiveLayout, { PageHeader, ContentSection, Card } from '@/components/layout/ResponsiveLayout';
+import CreateFinanceModal from '@/components/finance/CreateFinanceModal';
+import ViewFinanceModal from '@/components/finance/ViewFinanceModal';
 
-// Header Component - Exactly matching mobile app
-const FinanceHeader = ({
-  onBack,
-  onArchive,
-  onShare,
-  onChat,
-  projectName,
-  totals
-}: {
-  onBack: () => void;
-  onArchive: () => void;
-  onShare: () => void;
-  onChat: () => void;
-  projectName: string;
-  totals: any;
-}) => {
-
+// Finance Summary Card Component - Modern design
+const FinanceSummaryCard = ({ totals }: { totals: any }) => {
+  const [selectedTotal, setSelectedTotal] = useState({ number: 0, visible: false });
 
   return (
-    <div className="bg-white rounded-b-3xl" style={{ height: scale(280) }}>
-      {/* Top Navigation */}
-      <div className="flex items-center justify-between pt-4 px-4">
-        <button
-          onClick={onBack}
-          className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <path d="M19 12H5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M12 19L5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
-
-      {/* Title Section */}
-      <div className="px-6 mt-3">
-        <h1 className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(17) }}>المالية</h1>
-        <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(12) }}>{projectName}</p>
-      </div>
-
-      {/* Finance Summary - Exactly like mobile app */}
-      <div className="mx-4 mt-6 mb-4 border border-gray-200 rounded-2xl" style={{ height: scale(120) }}>
-        {/* Top Row */}
-        <div className="flex items-center justify-around h-16 px-4">
-          {/* العهد */}
-          <div className="flex flex-col items-center flex-1 px-3">
-            <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>العهد</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
-               style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
-              {Totaltofixt(totals?.TotalRevenue || 0)}
+    <Card className="mb-6">
+      <div className="relative">
+        {/* Labels Row */}
+        <div className="flex items-center justify-around px-4 py-2">
+          <div className="flex-1 text-center">
+            <p
+              className="font-ibm-arabic-medium"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)'
+              }}
+            >
+              العهد
             </p>
+          </div>
+          <div className="flex-1 text-center">
+            <p
+              className="font-ibm-arabic-medium"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)'
+              }}
+            >
+              المصروفات
+            </p>
+          </div>
+          <div className="flex-1 text-center">
+            <p
+              className="font-ibm-arabic-medium"
+              style={{
+                fontSize: 'var(--font-size-sm)',
+                color: 'var(--color-text-secondary)'
+              }}
+            >
+              المرتجعات
+            </p>
+          </div>
+        </div>
+
+        {/* Values Row */}
+        <div className="flex items-center justify-around px-4 py-2">
+          {/* العهد */}
+          <div className="flex flex-col items-center justify-center flex-1">
+            <button
+              onClick={() => setSelectedTotal({ number: totals?.TotalRevenue || 0, visible: true })}
+              className="font-ibm-arabic-semibold hover:text-blue-600 transition-colors text-center w-full"
+              style={{
+                fontSize: 'var(--font-size-xl)',
+                fontFeatureSettings: '"tnum"',
+                color: 'var(--color-text-primary)',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              {Totaltofixt(totals?.TotalRevenue || 0)}
+            </button>
           </div>
 
           {/* Separator */}
-          <div className="w-px h-16 bg-gray-200"></div>
+          <div
+            className="w-px"
+            style={{
+              height: '40px',
+              backgroundColor: 'var(--color-border)'
+            }}
+          ></div>
 
           {/* المصروفات */}
-          <div className="flex flex-col items-center flex-1 px-3">
-            <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>المصروفات</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
-               style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
+          <div className="flex flex-col items-center justify-center flex-1">
+            <button
+              onClick={() => setSelectedTotal({ number: totals?.TotalExpense || 0, visible: true })}
+              className="font-ibm-arabic-semibold hover:text-blue-600 transition-colors text-center w-full"
+              style={{
+                fontSize: 'var(--font-size-xl)',
+                fontFeatureSettings: '"tnum"',
+                color: 'var(--color-text-primary)',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               {Totaltofixt(totals?.TotalExpense || 0)}
-            </p>
+            </button>
           </div>
 
           {/* Separator */}
-          <div className="w-px h-16 bg-gray-200"></div>
+          <div
+            className="w-px"
+            style={{
+              height: '40px',
+              backgroundColor: 'var(--color-border)'
+            }}
+          ></div>
 
           {/* المرتجعات */}
-          <div className="flex flex-col items-center flex-1 px-3">
-            <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>المرتجعات</p>
-            <p className="font-ibm-arabic-semibold text-gray-900 mt-1"
-               style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
+          <div className="flex flex-col items-center justify-center flex-1">
+            <button
+              onClick={() => setSelectedTotal({ number: totals?.TotalReturns || 0, visible: true })}
+              className="font-ibm-arabic-semibold hover:text-blue-600 transition-colors text-center w-full"
+              style={{
+                fontSize: 'var(--font-size-xl)',
+                fontFeatureSettings: '"tnum"',
+                color: 'var(--color-text-primary)',
+                textAlign: 'center',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
               {Totaltofixt(totals?.TotalReturns || 0)}
-            </p>
+            </button>
           </div>
         </div>
 
-        {/* Horizontal Separator */}
-        <div className="w-full h-px bg-gray-200 mx-auto" style={{ width: '90%' }}></div>
+        {/* Separator Line */}
+        <div
+          className="w-full h-px mx-4"
+          style={{
+            backgroundColor: 'var(--color-border)',
+            width: 'calc(100% - 32px)'
+          }}
+        ></div>
 
-        {/* Bottom Row - الرصيد المتبقي */}
-        <div className="flex items-center justify-center h-12">
-          <div className="flex flex-col items-center">
-            <p className="font-ibm-arabic-medium text-gray-900 text-center" style={{ fontSize: scale(12) }}>الرصيد المتبقي</p>
-            <p className="font-ibm-arabic-semibold text-gray-900"
-               style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}>
-              {Totaltofixt(totals?.RemainingBalance || 0)}
-            </p>
-          </div>
+        {/* Bottom Label Row */}
+        <div className="flex items-center justify-center py-2">
+          <p
+            className="font-ibm-arabic-medium text-center"
+            style={{
+              fontSize: 'var(--font-size-sm)',
+              color: 'var(--color-text-secondary)'
+            }}
+          >
+            الرصيد المتبقي
+          </p>
         </div>
 
+        {/* Bottom Value Row */}
+        <div className="flex items-center justify-center py-2">
+          <button
+            onClick={() => setSelectedTotal({ number: totals?.RemainingBalance || 0, visible: true })}
+            className="font-ibm-arabic-semibold hover:text-blue-600 transition-colors text-center"
+            style={{
+              fontSize: 'var(--font-size-xl)',
+              fontFeatureSettings: '"tnum"',
+              color: 'var(--color-text-primary)',
+              textAlign: 'center',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}
+          >
+            {Totaltofixt(totals?.RemainingBalance || 0)}
+          </button>
+        </div>
 
+        {/* Full Number Display Overlay */}
+        {selectedTotal.visible && (
+          <div
+            className="absolute inset-0 rounded-xl flex items-center justify-center cursor-pointer"
+            style={{ backgroundColor: 'var(--color-surface-secondary)' }}
+            onClick={() => setSelectedTotal({ number: 0, visible: false })}
+          >
+            <p
+              className="font-ibm-arabic-semibold"
+              style={{
+                fontSize: 'var(--font-size-lg)',
+                color: 'var(--color-text-primary)'
+              }}
+            >
+              {Totaltofixt(selectedTotal.number)}
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Action Buttons - Exactly like mobile app */}
-      <div className="flex justify-around px-4 pb-4">
-        <button
-          onClick={onChat}
-          className="flex items-center bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-2">
-            <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(12) }}>تواصل</span>
-        </button>
-
-        <button
-          onClick={onArchive}
-          className="flex items-center bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-2">
-            <path d="M21 8V21H3V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M23 3H1V8H23V3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M10 12H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          <span className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(12) }}>أرشيف</span>
-        </button>
-
-        <button
-          onClick={onShare}
-          className="flex items-center bg-gray-100 px-3 py-2 rounded-lg hover:bg-gray-200 transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-2">
-            <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 6.65685 16.3431 8 18 8Z" stroke="currentColor" strokeWidth="2"/>
-            <path d="M6 15C7.65685 15 9 13.6569 9 12C9 10.3431 7.65685 9 6 9C4.34315 9 3 10.3431 3 12C3 13.6569 4.34315 15 6 15Z" stroke="currentColor" strokeWidth="2"/>
-            <path d="M18 22C19.6569 22 21 20.6569 21 19C21 17.3431 19.6569 16 18 16C16.3431 16 15 17.3431 15 19C15 20.6569 16.3431 22 18 22Z" stroke="currentColor" strokeWidth="2"/>
-            <path d="M8.59 13.51L15.42 17.49" stroke="currentColor" strokeWidth="2"/>
-            <path d="M15.41 6.51L8.59 10.49" stroke="currentColor" strokeWidth="2"/>
-          </svg>
-          <span className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(12) }}>كشف الحساب</span>
-        </button>
-      </div>
-    </div>
+    </Card>
   );
 };
 
 
 
-// Collapsible Finance Section - Exactly matching mobile app
+// Modern Finance Section Component
 const FinanceSection = ({
   title,
   items,
@@ -173,29 +226,40 @@ const FinanceSection = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-
-
   const handleHeaderClick = () => {
     if (items.length > 0) {
       setIsExpanded(!isExpanded);
     } else {
       onFetchData();
-      setIsExpanded(false);
+      setIsExpanded(true);
     }
   };
 
+  // Auto-fetch data when component mounts
+  useEffect(() => {
+    if (items.length === 0) {
+      onFetchData();
+    }
+  }, []);
+
   return (
-    <div className="bg-white rounded-2xl mx-4 mb-4 py-3" style={{ width: '90%', alignSelf: 'center' }}>
+    <Card className="mb-4">
       {/* Header - Always visible */}
       <button
         onClick={handleHeaderClick}
-        className="flex items-center justify-between w-full px-4 py-2"
+        className="flex items-center justify-between w-full p-0 mb-4"
       >
-        <h3 className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(15) }}>
+        <h3
+          className="font-ibm-arabic-semibold"
+          style={{
+            fontSize: 'var(--font-size-lg)',
+            color: 'var(--color-text-primary)'
+          }}
+        >
           {title}
         </h3>
         {loading ? (
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
         ) : (
           <svg
             width="20"
@@ -203,6 +267,7 @@ const FinanceSection = ({
             viewBox="0 0 24 24"
             fill="none"
             className={`transform transition-transform duration-200 ${isExpanded ? 'rotate-90' : ''}`}
+            style={{ color: 'var(--color-text-secondary)' }}
           >
             <path d="M9 18L15 12L9 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -211,19 +276,26 @@ const FinanceSection = ({
 
       {/* Content - Only visible when expanded */}
       {isExpanded && (
-        <div className="overflow-hidden">
+        <div className="space-y-2">
           {items.map((item, index) => (
             <button
               key={index}
               onClick={() => onItemView(item)}
-              className="w-full p-3 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 transition-colors"
+              className="w-full p-3 rounded-lg hover:bg-gray-50 transition-colors border border-gray-100"
+              style={{ backgroundColor: 'var(--color-surface-secondary)' }}
             >
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3 space-x-reverse">
+                <div className="flex items-center gap-3">
                   {/* Icon or Invoice Number */}
-                  <div className="w-12 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <div
+                    className="w-12 h-8 rounded-lg flex items-center justify-center"
+                    style={{ backgroundColor: 'var(--color-surface)' }}
+                  >
                     {type === 'مصروفات' ? (
-                      <span className="text-xs font-ibm-arabic-regular text-gray-600">
+                      <span
+                        className="text-xs font-ibm-arabic-regular"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
                         {item.InvoiceNo}
                       </span>
                     ) : (
@@ -237,10 +309,22 @@ const FinanceSection = ({
 
                   {/* Details */}
                   <div className="flex-1 text-right">
-                    <p className="font-ibm-arabic-semibold text-gray-900 text-sm truncate" style={{ fontSize: scale(13) }}>
+                    <p
+                      className="font-ibm-arabic-semibold text-sm truncate"
+                      style={{
+                        fontSize: 'var(--font-size-sm)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                    >
                       {String(item.Data).slice(0, 17)}
                     </p>
-                    <p className="font-ibm-arabic-regular text-gray-500 text-xs" style={{ fontSize: scale(10) }}>
+                    <p
+                      className="font-ibm-arabic-regular text-xs"
+                      style={{
+                        fontSize: 'var(--font-size-xs)',
+                        color: 'var(--color-text-tertiary)'
+                      }}
+                    >
                       {formatDateEnglish(item.Date)}
                     </p>
                   </div>
@@ -248,7 +332,14 @@ const FinanceSection = ({
 
                 {/* Amount */}
                 <div className="text-left">
-                  <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13), fontFeatureSettings: '"tnum"' }}>
+                  <p
+                    className="font-ibm-arabic-semibold"
+                    style={{
+                      fontSize: 'var(--font-size-sm)',
+                      fontFeatureSettings: '"tnum"',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
                     {Totaltofixt(item.Amount)} ر.س
                   </p>
                 </div>
@@ -258,12 +349,12 @@ const FinanceSection = ({
 
           {/* Load More Button */}
           {hasMore && items.length > 0 && (
-            <div className="flex items-center justify-center py-3">
+            <div className="flex items-center justify-center pt-3">
               <button
                 onClick={onLoadMore}
                 disabled={loading}
-                className="flex items-center text-blue-600 font-ibm-arabic-regular disabled:opacity-50"
-                style={{ fontSize: scale(13) }}
+                className="flex items-center text-blue-600 font-ibm-arabic-regular disabled:opacity-50 hover:underline"
+                style={{ fontSize: 'var(--font-size-sm)' }}
               >
                 <span className="ml-2">تحميل المزيد</span>
                 {loading ? (
@@ -278,7 +369,7 @@ const FinanceSection = ({
           )}
         </div>
       )}
-    </div>
+    </Card>
   );
 };
 
@@ -305,7 +396,8 @@ export default function FinancePage() {
     fetchTotals,
     searchFinance,
     clearSearch,
-    refresh
+    refresh,
+    deleteFinanceItem
   } = useFinance();
 
   const [showAddModal, setShowAddModal] = useState(false);
@@ -318,6 +410,7 @@ export default function FinancePage() {
   // Load initial data
   useEffect(() => {
     if (projectId && user?.accessToken) {
+      console.log('Loading finance data for project:', projectId);
       refresh();
       fetchTotals(projectId);
       fetchRevenues(projectId);
@@ -325,6 +418,18 @@ export default function FinancePage() {
       fetchReturns(projectId);
     }
   }, [projectId, user?.accessToken]);
+
+  // Debug: Log data changes
+  useEffect(() => {
+    console.log('Finance data updated:', {
+      revenues: revenues.length,
+      expenses: expenses.length,
+      returns: returns.length,
+      totals,
+      user: user?.data?.DisabledFinance,
+      projectId
+    });
+  }, [revenues, expenses, returns, totals, user, projectId]);
 
   const handleBack = () => {
     router.back();
@@ -350,12 +455,15 @@ export default function FinancePage() {
   };
 
   const handleAddFinance = async () => {
-    // Check if user can create finance items (similar to mobile app logic)
-    if (user?.data?.jobdiscrption === 'موظف' || user?.data?.job === 'Admin') {
-      setEditingItem(null);
-      setShowAddModal(true);
+    // Check if manual finance operations are enabled (matching mobile app logic)
+    if (user?.data?.DisabledFinance === 'true') {
+      // Check if user has permission to create finance operations
+      if (await Uservalidation('انشاء عمليات مالية', projectId)) {
+        setEditingItem(null);
+        setShowAddModal(true);
+      }
     } else {
-      alert('ليس في نطاق صلاحياتك');
+      Tostget('العمليات المالية اليدوية متوقفه حالياً');
     }
   };
 
@@ -364,24 +472,41 @@ export default function FinancePage() {
   };
 
   const handleItemEdit = async (item: FinanceItem) => {
-    // Check if user can edit finance items (similar to mobile app logic)
-    if (user?.data?.jobdiscrption === 'موظف' || user?.data?.job === 'Admin') {
-      setEditingItem(item);
-      setShowAddModal(true);
+    // Check if manual finance operations are enabled (matching mobile app logic)
+    if (user?.data?.DisabledFinance === 'true') {
+      // Check if user has permission to create finance operations (same as mobile app)
+      if (await Uservalidation('انشاء عمليات مالية', projectId)) {
+        setEditingItem(item);
+        setShowAddModal(true);
+      }
     } else {
-      alert('ليس في نطاق صلاحياتك');
+      Tostget('العمليات المالية اليدوية متوقفه حالياً');
     }
   };
 
   const handleItemDelete = async (item: FinanceItem) => {
-    // Check if user can delete finance items (similar to mobile app logic)
-    if (user?.data?.jobdiscrption === 'موظف' || user?.data?.job === 'Admin') {
-      // Show confirmation dialog
-      if (confirm('هل أنت متأكد من حذف هذا العنصر؟')) {
-        // Delete logic here
+    // Check if manual finance operations are enabled (matching mobile app logic)
+    if (user?.data?.DisabledFinance === 'true') {
+      // Check if user has permission to delete finance operations
+      if (await Uservalidation('حذف عمليات مالية' as any, projectId)) {
+        // Determine operation type based on item properties
+        let operationType = '';
+        if (item.Expenseid) operationType = 'مصروفات';
+        else if (item.RevenueId) operationType = 'عهد';
+        else if (item.ReturnsId) operationType = 'مرتجعات';
+
+        const success = await deleteFinanceItem(item, operationType);
+        if (success) {
+          // Refresh data after successful deletion
+          refresh();
+          fetchTotals(projectId);
+          fetchRevenues(projectId);
+          fetchExpenses(projectId);
+          fetchReturns(projectId);
+        }
       }
     } else {
-      alert('ليس في نطاق صلاحياتك');
+      Tostget('العمليات المالية اليدوية متوقفه حالياً');
     }
   };
 
@@ -476,56 +601,72 @@ export default function FinancePage() {
       }
     >
       <ContentSection>
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <button
-          onClick={handleAddFinance}
-          className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-2">
-            <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          إنشاء عملية
-        </button>
+        {/* Finance Summary Card */}
+        <FinanceSummaryCard totals={totals} />
 
-        {searchResults.length > 0 && (
-          <button
-            onClick={clearSearch}
-            className="bg-gray-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-700 transition-colors"
-          >
-            إلغاء فلتر
-          </button>
-        )}
+        {/* Action Buttons Card */}
+        <Card className="mb-6">
+          <div className="flex items-center justify-between">
+            <button
+              onClick={handleAddFinance}
+              className="inline-flex items-center gap-2 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0 transition-colors"
+              style={{ fontSize: 'var(--font-size-base)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-1">
+                <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              إنشاء عملية
+            </button>
 
-        <button
-          onClick={handleFilter}
-          className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-            <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </button>
-      </div>
+            <div className="flex items-center gap-2">
+              {searchResults.length > 0 && (
+                <button
+                  onClick={clearSearch}
+                  className="px-4 py-2 rounded-lg font-ibm-arabic-semibold transition-colors"
+                  style={{
+                    backgroundColor: 'var(--color-text-secondary)',
+                    color: 'var(--color-surface)',
+                    fontSize: 'var(--font-size-sm)'
+                  }}
+                >
+                  إلغاء فلتر
+                </button>
+              )}
 
-      {/* Scrollable Content */}
-      <div className="flex-1 overflow-y-auto pb-20" style={{ height: 'calc(100vh - 350px)' }}>
-        {searchResults.length > 0 ? (
-          <FinanceSection
-            title={`نتائج البحث`}
-            items={searchResults}
-            type="search"
-            onLoadMore={() => {}}
-            hasMore={false}
-            loading={loading}
-            onItemEdit={handleItemEdit}
-            onItemDelete={handleItemDelete}
-            onItemView={handleItemView}
-            onFetchData={() => {}}
-          />
-        ) : (
-          <>
-                          <FinanceSection
+              <button
+                onClick={handleFilter}
+                className="p-2 rounded-lg transition-colors hover:bg-gray-100"
+                style={{ color: 'var(--color-text-secondary)' }}
+                title="فلتر"
+                aria-label="فلتر"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </Card>
+
+        {/* Finance Sections */}
+        <div className="space-y-0">
+          {searchResults.length > 0 ? (
+            <FinanceSection
+              title={`نتائج البحث`}
+              items={searchResults}
+              type="search"
+              onLoadMore={() => {}}
+              hasMore={false}
+              loading={loading}
+              onItemEdit={handleItemEdit}
+              onItemDelete={handleItemDelete}
+              onItemView={handleItemView}
+              onFetchData={() => {}}
+            />
+          ) : (
+            <>
+              <FinanceSection
                 title="عهد"
                 items={revenues}
                 type="عهد"
@@ -563,12 +704,43 @@ export default function FinancePage() {
                 onItemView={handleItemView}
                 onFetchData={() => fetchReturns(projectId)}
               />
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
 
-      {/* Modals would go here */}
-      {/* TODO: Add Add/Edit, Filter, Share, and View modals */}
+      {/* Create/Edit Finance Modal */}
+      <CreateFinanceModal
+        isOpen={showAddModal}
+        onClose={() => {
+          setShowAddModal(false);
+          setEditingItem(null);
+        }}
+        projectId={projectId}
+        editingItem={editingItem}
+        onSuccess={() => {
+          // Refresh data after successful operation
+          refresh();
+          fetchTotals(projectId);
+          fetchRevenues(projectId);
+          fetchExpenses(projectId);
+          fetchReturns(projectId);
+        }}
+      />
+
+      {/* View Finance Modal */}
+      <ViewFinanceModal
+        isOpen={showViewModal}
+        onClose={() => {
+          setShowViewModal(false);
+          setSelectedItem(null);
+        }}
+        item={selectedItem}
+        onEdit={handleItemEdit}
+        onDelete={handleItemDelete}
+        loading={loading}
+      />
+
+      {/* TODO: Add Filter and Share modals */}
       </ContentSection>
     </ResponsiveLayout>
   );

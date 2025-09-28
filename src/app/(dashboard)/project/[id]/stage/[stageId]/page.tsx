@@ -10,6 +10,7 @@ import useSubStages, { SubStage, ClosingOperation } from '@/hooks/useSubStages';
 import { formatDateEnglish } from '@/hooks/useFinance';
 import useProjectDetails from '@/hooks/useProjectDetails';
 import axiosInstance from '@/lib/api/axios';
+import { Tostget } from '@/components/ui/Toast';
 import StageCloseModal from '@/components/stages/StageCloseModal';
 import StageStatusBadge from '@/components/stages/StageStatusBadge';
 import StageInfoModal from '@/components/stages/StageInfoModal';
@@ -719,6 +720,7 @@ const StageDetailsPage = () => {
   const [editingSubStage, setEditingSubStage] = useState<SubStage | null>(null);
   const [showStageEditModal, setShowStageEditModal] = useState(false);
   const [loadingStage, setLoadingStage] = useState(false);
+  const [deletingSubStage, setDeletingSubStage] = useState(false);
 
   // Notes states
   const [showAddNoteModal, setShowAddNoteModal] = useState(false);
@@ -1038,6 +1040,46 @@ const StageDetailsPage = () => {
     }
   };
 
+  const handleDeleteSubStage = async () => {
+    if (!selectedSubStage) return;
+
+    // التحقق من الصلاحيات
+    const hasPermission = await Uservalidation('حذف مرحلة فرعية' as any, projectId);
+    if (!hasPermission) {
+      return;
+    }
+
+    try {
+      setDeletingSubStage(true);
+
+      // استخدام نفس API endpoint المستخدم في التطبيق المحمول
+      await axiosInstance.get(`/brinshCompany/DeleteStageSub?StageSubID=${selectedSubStage.StageSubID}`, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.accessToken}`
+        }
+      });
+
+      // إغلاق المودال وتحديث القائمة
+      setShowOptionsModal(false);
+      setSelectedSubStage(null);
+
+      // تحديث قائمة المهام الفرعية
+      if (stageDetails?.StageID) {
+        await fetchInitial(projectId, stageDetails.StageID);
+      }
+
+      // رسالة نجاح
+      Tostget('تم حذف المهمة الفرعية بنجاح');
+
+    } catch (error) {
+      console.error('Error deleting sub-stage:', error);
+      Tostget('فشل في حذف المهمة الفرعية');
+    } finally {
+      setDeletingSubStage(false);
+    }
+  };
+
   if (subError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -1284,53 +1326,196 @@ const StageDetailsPage = () => {
 
       {/* Add Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">إضافة مهمة فرعية جديدة</h3>
-            <form onSubmit={(e) => {
-              e.preventDefault();
-              const formData = new FormData(e.currentTarget);
-              handleAddSubStage(
-                formData.get('name') as string,
-                formData.get('file') as File | undefined
-              );
-            }}>
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-ibm-arabic-medium text-gray-700 mb-2">اسم المهمة</label>
-                  <input
-                    name="name"
-                    type="text"
-                    required
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="أدخل اسم المهمة الفرعية"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-ibm-arabic-medium text-gray-700 mb-2">مرفق (اختياري)</label>
-                  <input
-                    name="file"
-                    type="file"
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-              <div className="flex space-x-3 space-x-reverse mt-6">
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              className="text-center relative"
+              style={{
+                borderBottom: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-success-alpha, rgba(16, 185, 129, 0.1))' }}
                 >
-                  إضافة
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowAddModal(false)}
-                  className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2v20M2 12h20" stroke="var(--theme-success, #10b981)" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-bold)',
+                    color: 'var(--theme-text-primary)',
+                    lineHeight: 1.4
+                  }}
                 >
-                  إلغاء
-                </button>
+                  إضافة مهمة فرعية جديدة
+                </h3>
               </div>
-            </form>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  border: '1px solid var(--theme-border)',
+                  color: 'var(--theme-text-secondary)'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                handleAddSubStage(
+                  formData.get('name') as string,
+                  formData.get('file') as File | undefined
+                );
+              }}>
+                <div style={{ marginBottom: '24px' }}>
+                  <div style={{ marginBottom: '16px' }}>
+                    <label
+                      className="block font-medium"
+                      style={{
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-ibm-arabic-medium)',
+                        color: 'var(--theme-text-secondary)',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      اسم المهمة
+                    </label>
+                    <input
+                      name="name"
+                      type="text"
+                      required
+                      placeholder="أدخل اسم المهمة الفرعية"
+                      className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--theme-input-background)',
+                        border: '1px solid var(--theme-border)',
+                        color: 'var(--theme-text-primary)',
+                        fontSize: '16px',
+                        fontFamily: 'var(--font-ibm-arabic-medium)'
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block font-medium"
+                      style={{
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-ibm-arabic-medium)',
+                        color: 'var(--theme-text-secondary)',
+                        marginBottom: '8px'
+                      }}
+                    >
+                      مرفق (اختياري)
+                    </label>
+                    <input
+                      name="file"
+                      type="file"
+                      className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                      style={{
+                        padding: '12px 16px',
+                        backgroundColor: 'var(--theme-input-background)',
+                        border: '1px solid var(--theme-border)',
+                        color: 'var(--theme-text-primary)',
+                        fontSize: '16px',
+                        fontFamily: 'var(--font-ibm-arabic-medium)'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Footer */}
+                <div
+                  className="flex gap-3"
+                  style={{
+                    borderTop: '1px solid var(--theme-border)',
+                    background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                    paddingLeft: '24px',
+                    paddingRight: '24px',
+                    paddingTop: '16px',
+                    paddingBottom: '16px',
+                    margin: '8px 0'
+                  }}
+                >
+                  <button
+                    type="submit"
+                    className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: 'var(--theme-success)',
+                      color: 'white',
+                      fontSize: '16px',
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      border: 'none',
+                      width: '45%'
+                    }}
+                  >
+                    إضافة
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddModal(false)}
+                    className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                    style={{
+                      padding: '12px 24px',
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      color: 'var(--theme-text-primary)',
+                      fontSize: '16px',
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      border: '1px solid var(--theme-border)',
+                      width: '45%'
+                    }}
+                  >
+                    إلغاء
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Decorative bottom element */}
+            <div
+              className="flex justify-center"
+              style={{
+                paddingBottom: '8px',
+                borderBottomLeftRadius: '20px',
+                borderBottomRightRadius: '20px'
+              }}
+            >
+              <div
+                className="w-12 h-1 rounded-full"
+                style={{ backgroundColor: 'var(--theme-border)' }}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -1366,10 +1551,8 @@ const StageDetailsPage = () => {
           onEdit={handleEditSubStage}
           onAddNote={handleAddNote}
           onViewNotes={handleViewNotes}
-          onDelete={() => {
-            // TODO: Implement delete functionality
-            console.log('Delete:', selectedSubStage.StageSubID);
-          }}
+          onDelete={handleDeleteSubStage}
+          loading={deletingSubStage}
           subStage={selectedSubStage}
         />
       )}

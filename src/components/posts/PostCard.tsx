@@ -111,8 +111,9 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
 
   return (
     <div
-      className="bg-white rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 w-full h-full flex flex-col post-card-grid"
+      className="rounded-2xl shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 w-full h-full flex flex-col post-card-grid"
       style={{
+        backgroundColor: 'var(--theme-card-background)',
         paddingTop: verticalScale(8),
         paddingBottom: verticalScale(8),
         minHeight: scale(280), // ارتفاع أصغر للشبكة
@@ -168,7 +169,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
                   fontSize: verticalScale(10),
-                  color: '#212121'
+                  color: 'var(--theme-text-primary)'
                 }}
               >
                 {post.postBy}
@@ -177,7 +178,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
                   fontSize: verticalScale(10),
-                  color: '#212121',
+                  color: 'var(--theme-text-primary)',
                   marginLeft: '2px',
                   marginRight: '2px'
                 }}
@@ -188,7 +189,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
                   fontSize: verticalScale(10),
-                  color: '#212121'
+                  color: 'var(--theme-text-primary)'
                 }}
                 className="line-clamp-1 truncate"
               >
@@ -202,7 +203,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               style={{
                 fontFamily: fonts.IBMPlexSansArabicSemiBold,
                 fontSize: verticalScale(9),
-                color: '#666666'
+                color: 'var(--theme-text-secondary)'
               }}
             >
               {formatDate(post.timeminet)}
@@ -232,7 +233,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
             fontFamily: fonts.IBMPlexSansArabicRegular,
             fontSize: verticalScale(11),
             marginBottom: verticalScale(12),
-            color: '#212121',
+            color: 'var(--theme-text-primary)',
             lineHeight: '1.4'
           }}
           dir="rtl"
@@ -311,7 +312,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
       >
         {/* Like Button - محسن للشبكة */}
         <button
-          className="flex items-center hover:bg-gray-50 transition-colors rounded-lg"
+          className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg"
           style={{
             marginLeft: scale(8),
             marginRight: scale(8),
@@ -326,7 +327,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: scale(11),
-              color: '#212121',
+              color: 'var(--theme-text-primary)',
               marginLeft: scale(6)
             }}
           >
@@ -342,14 +343,14 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
         <svg width="1" height="21" viewBox="0 0 1 21" fill="none">
           <path
             d="M0.5 1L0.499999 20"
-            stroke="#EBEBED"
+            stroke="var(--theme-border)"
             strokeLinecap="round"
           />
         </svg>
 
         {/* Comment Button - محسن للشبكة */}
         <button
-          className="flex items-center hover:bg-gray-50 transition-colors rounded-lg"
+          className="flex items-center hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors rounded-lg"
           style={{
             marginLeft: scale(8),
             marginRight: scale(8),
@@ -369,13 +370,13 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: scale(11),
-              color: '#212121',
+              color: 'var(--theme-text-primary)',
               marginLeft: scale(6)
             }}
           >
             {post.Comment}
           </span>
-          <CommentIcon size={18} />
+          <CommentIcon size={18} stroke="var(--theme-text-primary)" />
         </button>
       </div>
     </div>

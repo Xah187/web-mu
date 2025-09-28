@@ -841,29 +841,23 @@ const ProjectDetailsPage = () => {
           </div>
 
           {/* Sort Control - Matching Page Design */}
-          <div className="p-3 rounded-xl border shadow-sm overflow-hidden"
-               style={{
-                 borderColor: 'var(--color-warning)',
-                 backgroundColor: 'var(--color-warning)' + '20'
-               }}>
-            <div className="flex items-center gap-3 justify-center">
-              <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-warning)' }}>ترتيب:</label>
-              <select
-                value={sortOption}
-                onChange={(e) => setSortOption(e.target.value as any)}
-                className="rounded-lg px-3 py-1 text-sm font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:border-transparent"
-                style={{
-                  border: '1px solid var(--color-warning)',
-                  backgroundColor: 'var(--color-card-background)',
-                  color: 'var(--color-warning)'
-                }}
-              >
-                <option value="default">الافتراضي</option>
-                <option value="status">الحالة (المفتوحة أولاً)</option>
-                <option value="progress">التقدم (الأعلى أولاً)</option>
-                <option value="name">الاسم (أ-ي)</option>
-              </select>
-            </div>
+          <div className="flex items-center gap-3 justify-center">
+            <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-warning)' }}>ترتيب:</label>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as any)}
+              className="rounded-lg px-3 py-1 text-sm font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:border-transparent"
+              style={{
+                border: '1px solid var(--color-warning)',
+                backgroundColor: 'var(--color-card-background)',
+                color: 'var(--color-warning)'
+              }}
+            >
+              <option value="default">الافتراضي</option>
+              <option value="status">الحالة (المفتوحة أولاً)</option>
+              <option value="progress">التقدم (الأعلى أولاً)</option>
+              <option value="name">الاسم (أ-ي)</option>
+            </select>
           </div>
         </div>
 
@@ -936,39 +930,162 @@ const ProjectDetailsPage = () => {
 
       {/* Add Stage Modal */}
       {showAddStageModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">إضافة مرحلة جديدة</h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              className="text-center relative"
+              style={{
+                borderBottom: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-success-alpha, rgba(16, 185, 129, 0.1))' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 5v14M5 12h14" stroke="var(--theme-success, #10b981)" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-bold)',
+                    color: 'var(--theme-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  إضافة مرحلة جديدة
+                </h3>
+              </div>
+              <button
+                onClick={() => {
+                  setShowAddStageModal(false);
+                  setNewStageName('');
+                  setNewStageDays('');
+                }}
+                className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  border: '1px solid var(--theme-border)',
+                  color: 'var(--theme-text-secondary)'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
 
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-ibm-arabic-medium text-gray-700 mb-2">اسم المرحلة</label>
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <label
+                  className="block"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--theme-text-primary)',
+                    marginBottom: '8px'
+                  }}
+                >
+                  اسم المرحلة
+                </label>
                 <input
                   type="text"
                   value={newStageName}
                   onChange={(e) => setNewStageName(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--theme-input-background)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: '16px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)'
+                  }}
                   placeholder="أدخل اسم المرحلة"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-ibm-arabic-medium text-gray-700 mb-2">عدد الأيام</label>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label
+                  className="block"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--theme-text-primary)',
+                    marginBottom: '8px'
+                  }}
+                >
+                  عدد الأيام
+                </label>
                 <input
                   type="number"
                   value={newStageDays}
                   onChange={(e) => setNewStageDays(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--theme-input-background)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: '16px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)'
+                  }}
                   placeholder="أدخل عدد الأيام"
                   min="1"
                 />
               </div>
             </div>
 
-            <div className="flex space-x-3 space-x-reverse mt-6">
+            {/* Footer */}
+            <div
+              className="flex gap-3"
+              style={{
+                borderTop: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '16px',
+                margin: '8px 0',
+                borderBottomLeftRadius: '20px',
+                borderBottomRightRadius: '20px'
+              }}
+            >
               <button
                 onClick={confirmAddStage}
                 disabled={!newStageName.trim() || !newStageDays.trim() || loading}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--theme-success)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none',
+                  width: '45%'
+                }}
               >
                 {loading ? 'جاري الإضافة...' : 'إضافة'}
               </button>
@@ -978,10 +1095,34 @@ const ProjectDetailsPage = () => {
                   setNewStageName('');
                   setNewStageDays('');
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  color: 'var(--theme-text-primary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: '1px solid var(--theme-border)',
+                  width: '45%'
+                }}
               >
                 إلغاء
               </button>
+            </div>
+
+            {/* Decorative bottom element */}
+            <div
+              className="flex justify-center"
+              style={{
+                paddingBottom: '8px',
+                borderBottomLeftRadius: '20px',
+                borderBottomRightRadius: '20px'
+              }}
+            >
+              <div
+                className="w-12 h-1 rounded-full"
+                style={{ backgroundColor: 'var(--theme-border)' }}
+              />
             </div>
           </div>
         </div>
@@ -990,14 +1131,114 @@ const ProjectDetailsPage = () => {
 
       {/* Edit Start Date Modal */}
       {showEditStartDateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">تعديل تاريخ بداية المشروع</h3>
-            <div>
-              <label className="block text-sm font-ibm-arabic-medium text-gray-700 mb-2">تاريخ البداية</label>
-              <input type="date" value={startDate} onChange={(e)=>setStartDate(e.target.value)} className="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              className="text-center relative"
+              style={{
+                borderBottom: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-3">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-warning-alpha, rgba(245, 158, 11, 0.1))' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                    <path d="M8 2v4M16 2v4M3 10h18M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" stroke="var(--theme-warning, #f59e0b)" strokeWidth="2"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-bold)',
+                    color: 'var(--theme-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  تعديل تاريخ بداية المشروع
+                </h3>
+              </div>
+              <button
+                onClick={()=>setShowEditStartDateModal(false)}
+                className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                style={{
+                  padding: '10px',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  border: '1px solid var(--theme-border)',
+                  color: 'var(--theme-text-secondary)'
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+              </button>
             </div>
-            <div className="flex space-x-3 space-x-reverse mt-6">
+
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <div style={{ marginBottom: '24px' }}>
+                <label
+                  className="block"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--theme-text-primary)',
+                    marginBottom: '8px'
+                  }}
+                >
+                  تاريخ البداية
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e)=>setStartDate(e.target.value)}
+                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    padding: '12px 16px',
+                    backgroundColor: 'var(--theme-input-background)',
+                    border: '1px solid var(--theme-border)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: '16px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)'
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div
+              className="flex gap-3"
+              style={{
+                borderTop: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '16px',
+                margin: '8px 0',
+                borderBottomLeftRadius: '20px',
+                borderBottomRightRadius: '20px'
+              }}
+            >
               <button
                 onClick={async ()=>{
                   try {
@@ -1012,11 +1253,49 @@ const ProjectDetailsPage = () => {
                     Tostget('فشل تحديث التاريخ');
                   }
                 }}
-                className="flex-1 bg-blue-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--theme-warning)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none',
+                  width: '45%'
+                }}
               >
                 حفظ
               </button>
-              <button onClick={()=>setShowEditStartDateModal(false)} className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors">إلغاء</button>
+              <button
+                onClick={()=>setShowEditStartDateModal(false)}
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  color: 'var(--theme-text-primary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: '1px solid var(--theme-border)',
+                  width: '45%'
+                }}
+              >
+                إلغاء
+              </button>
+            </div>
+
+            {/* Decorative bottom element */}
+            <div
+              className="flex justify-center"
+              style={{
+                paddingBottom: '8px',
+                borderBottomLeftRadius: '20px',
+                borderBottomRightRadius: '20px'
+              }}
+            >
+              <div
+                className="w-12 h-1 rounded-full"
+                style={{ backgroundColor: 'var(--theme-border)' }}
+              />
             </div>
           </div>
         </div>

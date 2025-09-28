@@ -50,7 +50,21 @@ export default function ConsultationsPage() {
         <PageHeader
           title="استشارات"
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+            <button
+              onClick={() => router.push('/management')}
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-primary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
+              aria-label="رجوع"
+            >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>

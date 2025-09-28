@@ -64,7 +64,7 @@ export default function Modal({
             onClick={closeOnOutsideClick ? onClose : undefined}
             className="fixed inset-0 z-50 backdrop-blur-sm"
             style={{
-              backgroundColor: 'rgba(0, 0, 0, 0.5)',
+              backgroundColor: 'rgba(0, 0, 0, 0.6)',
               zIndex: 1050
             }}
           />
@@ -77,54 +77,74 @@ export default function Modal({
             transition={{ duration: 0.2, ease: 'easeOut' }}
             className={`
               fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2
-              bg-white shadow-xl overflow-hidden
+              shadow-xl overflow-hidden
               ${className}
             `}
             style={{
               width,
               maxWidth,
-              borderRadius: `${scale(16)}px`,
-              maxHeight: '90vh',
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: `${scale(20)}px`,
+              maxHeight: '95vh',
               zIndex: 1051,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(0, 0, 0, 0.05)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
             }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
             {(title || showCloseButton) && (
               <div
-                className="flex items-center justify-between border-b"
+                className="flex items-center justify-between"
                 style={{
-                  padding: `${scale(20)}px ${scale(24)}px`,
-                  borderBottomColor: colors.BORDERCOLOR,
-                  borderBottomWidth: '1px'
+                  borderBottom: '1px solid var(--theme-border)',
+                  background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                  paddingLeft: scale(24),
+                  paddingRight: scale(24),
+                  paddingTop: scale(20),
+                  paddingBottom: scale(20)
                 }}
               >
                 {title && (
-                  <h2
-                    className="text-black font-ibm-arabic-bold"
-                    style={{
-                      fontSize: `${scale(18 + size)}px`,
-                      lineHeight: 1.4,
-                      fontFamily: fonts.IBMPlexSansArabicBold
-                    }}
-                  >
-                    {title}
-                  </h2>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-8 h-8 rounded-full flex items-center justify-center"
+                      style={{ backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))' }}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke="var(--theme-primary)" strokeWidth="2"/>
+                        <circle cx="9" cy="9" r="2" stroke="var(--theme-primary)" strokeWidth="2"/>
+                        <path d="M21 15L16 10L5 21" stroke="var(--theme-primary)" strokeWidth="2"/>
+                      </svg>
+                    </div>
+                    <h2
+                      className="font-bold"
+                      style={{
+                        fontSize: `${scale(18 + size)}px`,
+                        lineHeight: 1.4,
+                        fontFamily: fonts.IBMPlexSansArabicBold,
+                        color: 'var(--theme-text-primary)'
+                      }}
+                    >
+                      {title}
+                    </h2>
+                  </div>
                 )}
                 {showCloseButton && (
                   <button
                     onClick={onClose}
-                    className="rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                    className="rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
                     style={{
-                      padding: `${scale(8)}px`,
-                      marginRight: title ? 'auto' : '0',
-                      borderRadius: `${scale(8)}px`
+                      padding: `${scale(10)}px`,
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-secondary)',
+                      marginRight: title ? 'auto' : '0'
                     }}
                   >
                     <CloseIcon
                       size={scale(20)}
-                      stroke={colors.DARK}
+                      stroke="currentColor"
                     />
                   </button>
                 )}
@@ -135,11 +155,22 @@ export default function Modal({
             <div
               className="overflow-auto"
               style={{
-                padding: `${scale(24)}px`,
-                maxHeight: title || showCloseButton ? 'calc(90vh - 80px)' : '90vh'
+                paddingLeft: scale(24),
+                paddingRight: scale(24),
+                paddingTop: scale(16),
+                paddingBottom: scale(16),
+                maxHeight: title || showCloseButton ? 'calc(95vh - 120px)' : '95vh'
               }}
             >
               {children}
+            </div>
+
+            {/* Decorative bottom element */}
+            <div className="flex justify-center" style={{ paddingBottom: scale(8) }}>
+              <div
+                className="w-12 h-1 rounded-full"
+                style={{ backgroundColor: 'var(--theme-border)' }}
+              />
             </div>
           </motion.div>
         </>

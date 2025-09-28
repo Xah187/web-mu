@@ -113,21 +113,59 @@ export default function FilterModal({
   const selectedType = filterData.type || 'بحسب التاريخ';
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-hidden">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
+      <div
+        className="rounded-3xl w-full max-w-md max-h-[95vh] overflow-hidden shadow-2xl transform transition-all duration-300 ease-out"
+        style={{
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)'
+        }}
+      >
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
-          <h2 
-            className="text-lg font-cairo-bold text-gray-900"
-            style={{ fontSize: verticalScale(18) }}
-          >
-            فلتر
-          </h2>
+        <div
+          className="flex items-center justify-between py-6"
+          style={{
+            borderBottom: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+            paddingLeft: scale(24),
+            paddingRight: scale(24)
+          }}
+        >
+          <div className="flex items-center gap-3">
+            <div
+              className="w-10 h-10 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--theme-primary-alpha)' }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M3 7H21M6 12H18M9 17H15"
+                  stroke="var(--theme-primary)"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+            <h2
+              className="font-bold"
+              style={{
+                fontSize: verticalScale(20),
+                color: 'var(--theme-text-primary)',
+                fontFamily: fonts.IBMPlexSansArabicBold
+              }}
+            >
+              فلتر اليوميات
+            </h2>
+          </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-full transition-all duration-200 hover:scale-105"
+            style={{
+              backgroundColor: 'var(--theme-surface-secondary)',
+              color: 'var(--theme-text-secondary)'
+            }}
           >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <line x1="18" y1="6" x2="6" y2="18"/>
               <line x1="6" y1="6" x2="18" y2="18"/>
             </svg>
@@ -135,36 +173,106 @@ export default function FilterModal({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+        <div className="px-6 py-6 space-y-8 overflow-y-auto max-h-[calc(95vh-200px)]" style={{ paddingLeft: scale(24), paddingRight: scale(24) }}>
           {/* Filter Type Selection */}
-          <div>
-            <label 
-              className="block text-sm font-cairo-medium text-gray-700 mb-3"
-              style={{ fontSize: verticalScale(14) }}
-            >
-              نوع الفلتر
-            </label>
-            <div className="grid grid-cols-1 gap-2">
-              {filterTypes.map((type) => (
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-6">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-primary-alpha)' }}
+              >
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: 'var(--theme-primary)' }}
+                />
+              </div>
+              <label
+                className="font-semibold"
+                style={{
+                  fontSize: verticalScale(16),
+                  color: 'var(--theme-text-primary)',
+                  fontFamily: fonts.IBMPlexSansArabicSemiBold
+                }}
+              >
+                نوع الفلتر
+              </label>
+            </div>
+            <div className="space-y-5">
+              {filterTypes.map((type, index) => (
                 <button
                   key={type.id}
                   onClick={() => handleTypeChange(type.name)}
                   className={`
-                    p-3 rounded-lg border text-right transition-colors
-                    ${selectedType === type.name 
-                      ? 'border-blue-500 bg-blue-50 text-blue-700' 
-                      : 'border-gray-200 bg-gray-50 text-gray-700 hover:bg-gray-100'
+                    w-full rounded-2xl text-right transition-all duration-200 transform hover:scale-[1.02] hover:shadow-lg
+                    ${selectedType === type.name
+                      ? 'shadow-lg ring-2'
+                      : 'hover:shadow-md'
                     }
                   `}
-                  style={{ 
-                    fontSize: verticalScale(13),
-                    fontFamily: fonts.IBMPlexSansArabicMedium
+                  style={{
+                    fontSize: verticalScale(14),
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    backgroundColor: selectedType === type.name
+                      ? 'var(--theme-primary-alpha)'
+                      : 'var(--theme-surface-secondary)',
+                    color: selectedType === type.name
+                      ? 'var(--theme-primary)'
+                      : 'var(--theme-text-primary)',
+                    border: selectedType === type.name
+                      ? '2px solid var(--theme-primary)'
+                      : '1px solid var(--theme-border)',
+                    padding: `${verticalScale(18)}px ${scale(24)}px`,
+                    marginBottom: scale(6)
                   }}
                 >
-                  {type.name}
-                  {loading && type.name === 'بحسب الفرع' && selectedType === type.name && (
-                    <div className="inline-block ml-2 w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  )}
+                  <div
+                    className="flex items-center justify-between"
+                    style={{
+                      minHeight: verticalScale(28),
+                      gap: scale(16)
+                    }}
+                  >
+                    <span
+                      className="flex-1"
+                      style={{
+                        paddingRight: scale(4),
+                        lineHeight: 1.4
+                      }}
+                    >
+                      {type.name}
+                    </span>
+                    <div
+                      className="flex items-center justify-center"
+                      style={{
+                        paddingLeft: scale(4),
+                        minWidth: scale(32)
+                      }}
+                    >
+                      {selectedType === type.name && (
+                        <div
+                          className="rounded-full flex items-center justify-center"
+                          style={{
+                            backgroundColor: 'var(--theme-primary)',
+                            width: scale(24),
+                            height: scale(24)
+                          }}
+                        >
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                            <path d="M20 6L9 17L4 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                        </div>
+                      )}
+                      {loading && type.name === 'بحسب الفرع' && selectedType === type.name && (
+                        <div
+                          className="border-2 border-current border-t-transparent rounded-full animate-spin opacity-70"
+                          style={{
+                            width: scale(24),
+                            height: scale(24)
+                          }}
+                        ></div>
+                      )}
+                    </div>
+                  </div>
                 </button>
               ))}
             </div>
@@ -172,139 +280,318 @@ export default function FilterModal({
 
           {/* Project Name Input */}
           {selectedType.includes('المشروع') && (
-            <div>
-              <label 
-                className="block text-sm font-cairo-medium text-gray-700 mb-2"
-                style={{ fontSize: verticalScale(12) }}
-              >
-                اسم المشروع
-              </label>
-              <Input
-                name="nameProject"
-                placeholder="ادخل اسم المشروع"
-                value={filterData.nameProject || ''}
-                onChange={(text) => setFilterData(prev => ({ ...prev, nameProject: text }))}
-              />
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-success-alpha, rgba(16, 185, 129, 0.1))' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M3 7V17C3 18.1046 3.89543 19 5 19H19C20.1046 19 21 18.1046 21 17V7C21 5.89543 20.1046 5 19 5H5C3.89543 5 3 5.89543 3 7Z" stroke="var(--theme-success, #10b981)" strokeWidth="2"/>
+                    <path d="M8 12L11 15L16 9" stroke="var(--theme-success, #10b981)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
+                </div>
+                <label
+                  className="font-semibold"
+                  style={{
+                    fontSize: verticalScale(15),
+                    color: 'var(--theme-text-primary)',
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold
+                  }}
+                >
+                  اسم المشروع
+                </label>
+              </div>
+              <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
+                <Input
+                  name="nameProject"
+                  placeholder="ادخل اسم المشروع"
+                  value={filterData.nameProject || ''}
+                  onChange={(text) => setFilterData(prev => ({ ...prev, nameProject: text }))}
+                />
+              </div>
             </div>
           )}
 
           {/* User Name Input */}
           {selectedType.includes('المستخدم') && (
-            <div>
-              <label 
-                className="block text-sm font-cairo-medium text-gray-700 mb-2"
-                style={{ fontSize: verticalScale(12) }}
-              >
-                اسم المستخدم
-              </label>
-              <Input
-                name="userName"
-                placeholder="ادخل اسم المستخدم"
-                value={filterData.userName || ''}
-                onChange={(text) => setFilterData(prev => ({ ...prev, userName: text }))}
-              />
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-info-alpha, rgba(59, 130, 246, 0.1))' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21" stroke="var(--theme-info, #3b82f6)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <circle cx="12" cy="7" r="4" stroke="var(--theme-info, #3b82f6)" strokeWidth="2"/>
+                  </svg>
+                </div>
+                <label
+                  className="font-semibold"
+                  style={{
+                    fontSize: verticalScale(15),
+                    color: 'var(--theme-text-primary)',
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold
+                  }}
+                >
+                  اسم المستخدم
+                </label>
+              </div>
+              <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
+                <Input
+                  name="userName"
+                  placeholder="ادخل اسم المستخدم"
+                  value={filterData.userName || ''}
+                  onChange={(text) => setFilterData(prev => ({ ...prev, userName: text }))}
+                />
+              </div>
             </div>
           )}
 
           {/* Branch Selection */}
           {selectedType === 'بحسب الفرع' && (
-            <div>
-              <label 
-                className="block text-sm font-cairo-medium text-gray-700 mb-2"
-                style={{ fontSize: verticalScale(12) }}
-              >
-                الفرع
-              </label>
-              {loading && branchOptions.length === 0 ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                  <span className="mr-2 text-gray-500">جاري تحميل الفروع...</span>
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <div
+                  className="w-6 h-6 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'var(--theme-warning-alpha, rgba(245, 158, 11, 0.1))' }}
+                >
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 10C21 17 12 23 12 23S3 17 3 10C3 7.61305 3.94821 5.32387 5.63604 3.63604C7.32387 1.94821 9.61305 1 12 1C14.3869 1 16.6761 1.94821 18.3639 3.63604C20.0518 5.32387 21 7.61305 21 10Z" stroke="var(--theme-warning, #f59e0b)" strokeWidth="2"/>
+                    <circle cx="12" cy="10" r="3" stroke="var(--theme-warning, #f59e0b)" strokeWidth="2"/>
+                  </svg>
                 </div>
-              ) : branchOptions.length > 0 ? (
-                <Combobox
-                  options={branchOptions}
-                  value={filterData.branch || ''}
-                  onChange={(value) => setFilterData(prev => ({ ...prev, branch: value }))}
-                  placeholder="اختر فرع"
-                />
-              ) : (
-                <div className="text-center py-4 text-gray-500">
-                  لا توجد فروع متاحة
-                </div>
-              )}
+                <label
+                  className="font-semibold"
+                  style={{
+                    fontSize: verticalScale(15),
+                    color: 'var(--theme-text-primary)',
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold
+                  }}
+                >
+                  الفرع
+                </label>
+              </div>
+              <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
+                {loading && branchOptions.length === 0 ? (
+                  <div
+                    className="flex items-center justify-center rounded-2xl"
+                    style={{
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      padding: `${verticalScale(24)}px ${scale(16)}px`
+                    }}
+                  >
+                    <div
+                      className="border-2 border-t-transparent rounded-full animate-spin"
+                      style={{
+                        borderColor: 'var(--theme-primary)',
+                        width: scale(24),
+                        height: scale(24)
+                      }}
+                    ></div>
+                    <span
+                      style={{
+                        color: 'var(--theme-text-secondary)',
+                        fontSize: verticalScale(13),
+                        marginRight: scale(12)
+                      }}
+                    >
+                      جاري تحميل الفروع...
+                    </span>
+                  </div>
+                ) : branchOptions.length > 0 ? (
+                  <Combobox
+                    options={branchOptions}
+                    value={filterData.branch || ''}
+                    onChange={(value) => setFilterData(prev => ({ ...prev, branch: value }))}
+                    placeholder="اختر فرع"
+                  />
+                ) : (
+                  <div
+                    className="text-center rounded-2xl"
+                    style={{
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      color: 'var(--theme-text-secondary)',
+                      fontSize: verticalScale(13),
+                      padding: `${verticalScale(20)}px ${scale(16)}px`
+                    }}
+                  >
+                    لا توجد فروع متاحة
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
           {/* Date Range - Always visible */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
+          <div className="space-y-4">
+            <div className="flex items-center gap-3">
+              <div
+                className="w-6 h-6 rounded-full flex items-center justify-center"
+                style={{ backgroundColor: 'var(--theme-error-alpha, rgba(239, 68, 68, 0.1))' }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="var(--theme-error, #ef4444)" strokeWidth="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6" stroke="var(--theme-error, #ef4444)" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="8" y1="2" x2="8" y2="6" stroke="var(--theme-error, #ef4444)" strokeWidth="2" strokeLinecap="round"/>
+                  <line x1="3" y1="10" x2="21" y2="10" stroke="var(--theme-error, #ef4444)" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </div>
               <label
-                className="block text-sm font-cairo-medium theme-text-secondary mb-2"
+                className="font-semibold"
                 style={{
-                  fontSize: verticalScale(12),
-                  color: 'var(--color-text-secondary)'
+                  fontSize: verticalScale(15),
+                  color: 'var(--theme-text-primary)',
+                  fontFamily: fonts.IBMPlexSansArabicSemiBold
                 }}
               >
-                من تاريخ
+                نطاق التاريخ
               </label>
-              <input
-                type="date"
-                value={dateStart}
-                onChange={(e) => setDateStart(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 theme-input"
-                style={{
-                  backgroundColor: 'var(--color-input-background)',
-                  borderColor: 'var(--color-input-border)',
-                  color: 'var(--color-input-text)',
-                  fontSize: verticalScale(14)
-                }}
-              />
             </div>
-            <div>
-              <label
-                className="block text-sm font-cairo-medium theme-text-secondary mb-2"
-                style={{
-                  fontSize: verticalScale(12),
-                  color: 'var(--color-text-secondary)'
-                }}
-              >
-                إلى تاريخ
-              </label>
-              <input
-                type="date"
-                value={dateEnd}
-                onChange={(e) => setDateEnd(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 theme-input"
-                style={{
-                  backgroundColor: 'var(--color-input-background)',
-                  borderColor: 'var(--color-input-border)',
-                  color: 'var(--color-input-text)',
-                  fontSize: verticalScale(14)
-                }}
-              />
+            <div
+              className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+              style={{
+                paddingRight: scale(36),
+                paddingTop: scale(8),
+                paddingBottom: scale(12),
+                margin: `0 ${scale(8)}px`
+              }}
+            >
+              <div className="space-y-2">
+                <label
+                  className="block font-medium"
+                  style={{
+                    fontSize: verticalScale(12),
+                    color: 'var(--theme-text-secondary)',
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    paddingRight: scale(4)
+                  }}
+                >
+                  من تاريخ
+                </label>
+                <input
+                  type="date"
+                  value={dateStart}
+                  onChange={(e) => setDateStart(e.target.value)}
+                  className="w-full rounded-xl border-2 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
+                  style={{
+                    backgroundColor: 'var(--theme-input-background)',
+                    borderColor: 'var(--theme-border)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: verticalScale(13),
+                    fontFamily: fonts.IBMPlexSansArabicRegular,
+                    padding: `${verticalScale(10)}px ${scale(12)}px`,
+                    maxWidth: '90%'
+                  }}
+                />
+              </div>
+              <div className="space-y-2">
+                <label
+                  className="block font-medium"
+                  style={{
+                    fontSize: verticalScale(12),
+                    color: 'var(--theme-text-secondary)',
+                    fontFamily: fonts.IBMPlexSansArabicMedium,
+                    paddingRight: scale(4)
+                  }}
+                >
+                  إلى تاريخ
+                </label>
+                <input
+                  type="date"
+                  value={dateEnd}
+                  onChange={(e) => setDateEnd(e.target.value)}
+                  className="w-full rounded-xl border-2 transition-all duration-200 focus:scale-[1.02] focus:shadow-lg"
+                  style={{
+                    backgroundColor: 'var(--theme-input-background)',
+                    borderColor: 'var(--theme-border)',
+                    color: 'var(--theme-text-primary)',
+                    fontSize: verticalScale(13),
+                    fontFamily: fonts.IBMPlexSansArabicRegular,
+                    padding: `${verticalScale(10)}px ${scale(12)}px`,
+                    maxWidth: '90%'
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-6 border-t border-gray-100 space-y-3">
-          <ButtonLong
-            text="بحث"
-            onPress={handleApply}
-            loading={loading}
-            styleButton={{
-              backgroundColor: colors.BLUE,
-              borderRadius: scale(12)
+        <div
+          className="py-6"
+          style={{
+            borderTop: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+            paddingLeft: scale(24),
+            paddingRight: scale(24)
+          }}
+        >
+          <div
+            className="flex gap-4 justify-center items-center"
+            style={{
+              padding: `${scale(12)}px ${scale(16)}px`,
+              margin: `${scale(8)}px 0`
             }}
-          />
-          
-          <button
-            onClick={handleClear}
-            className="w-full py-3 text-center text-gray-600 hover:text-gray-800 transition-colors"
-            style={{ fontSize: verticalScale(14) }}
           >
-            مسح الفلتر
-          </button>
+            <button
+              onClick={handleApply}
+              disabled={loading}
+              className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+              style={{
+                fontSize: verticalScale(14),
+                color: '#ffffff',
+                backgroundColor: 'var(--theme-primary)',
+                fontFamily: fonts.IBMPlexSansArabicBold,
+                border: '2px solid var(--theme-primary)',
+                padding: `${verticalScale(12)}px ${scale(16)}px`,
+                maxWidth: '45%',
+                minHeight: verticalScale(48),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+              }}
+            >
+              {loading ? (
+                <div
+                  className="border-2 border-white border-t-transparent rounded-full animate-spin"
+                  style={{ width: scale(16), height: scale(16) }}
+                />
+              ) : (
+                '🔍 تطبيق الفلتر'
+              )}
+            </button>
+
+            <button
+              onClick={handleClear}
+              className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+              style={{
+                fontSize: verticalScale(14),
+                color: 'var(--theme-text-primary)',
+                backgroundColor: 'var(--theme-surface-secondary)',
+                fontFamily: fonts.IBMPlexSansArabicBold,
+                border: '2px solid var(--theme-border)',
+                padding: `${verticalScale(12)}px ${scale(16)}px`,
+                maxWidth: '45%',
+                minHeight: verticalScale(48),
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+              }}
+            >
+              🗑️ مسح الفلاتر
+            </button>
+          </div>
+
+          {/* Decorative bottom element */}
+          <div className="flex justify-center pt-2">
+            <div
+              className="w-12 h-1 rounded-full"
+              style={{ backgroundColor: 'var(--theme-border)' }}
+            />
+          </div>
         </div>
       </div>
     </div>

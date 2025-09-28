@@ -324,10 +324,20 @@ function CovenantPage() {
           backButton={
             <button
               onClick={() => router.back()}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-2 rounded-lg transition-colors"
+              style={{
+                backgroundColor: 'transparent',
+                color: 'var(--color-text-primary)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = 'transparent';
+              }}
               aria-label="رجوع"
             >
-              <ArrowIcon size={24} color={colors.BLACK} />
+              <ArrowIcon size={24} color="var(--color-text-primary)" />
             </button>
           }
         />
@@ -348,9 +358,9 @@ function CovenantPage() {
       {/* Content */}
       <div className="flex-1 px-4 sm:px-6 lg:px-8 pb-6">
         {tabs.map((tab) => (
-          <div key={tab.id} className="mb-6 bg-white rounded-2xl overflow-hidden">
+          <div key={tab.id} className="mb-6 rounded-2xl overflow-hidden" style={{ backgroundColor: 'var(--color-card-background)' }}>
             {/* Tab Header */}
-            <div className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+            <div className="w-full flex items-center justify-between p-4 transition-colors" style={{ backgroundColor: 'var(--color-card-background)' }}>
               <button
                 onClick={() => {
                   if (covenantData[tab.array as keyof CovenantData].length === 0) {
@@ -364,7 +374,7 @@ function CovenantPage() {
                   className="text-base sm:text-lg font-semibold"
                   style={{
                     fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                    color: colors.BLACK
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   {tab.name}
@@ -372,14 +382,15 @@ function CovenantPage() {
               </button>
 
               {loading[getRequestType(tab.array)] ? (
-                <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                <div className="w-5 h-5 border-2 rounded-full animate-spin" style={{ borderColor: 'var(--color-border)', borderTopColor: 'var(--color-primary)' }} />
               ) : (
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     fetchCovenantData(tab.array);
                   }}
-                  className="p-1 hover:bg-gray-200 rounded-full transition-colors"
+                  className="p-1 rounded-full transition-colors"
+                  style={{ color: 'var(--color-text-secondary)' }}
                 >
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -390,11 +401,11 @@ function CovenantPage() {
 
             {/* Tab Content */}
             {activeTab === tab.id && currentData.length > 0 && (
-              <div className="border-t border-gray-100">
+              <div style={{ borderTop: '1px solid var(--color-border)' }}>
                 {currentData.map((item) => (
-                  <div key={item.id} className="p-4 border-b border-gray-50 last:border-b-0">
+                  <div key={item.id} className="p-4 last:border-b-0" style={{ borderBottom: '1px solid var(--color-border)' }}>
                     {/* Request Card */}
-                    <div className="bg-gray-50 rounded-xl overflow-hidden">
+                    <div className="rounded-xl overflow-hidden" style={{ backgroundColor: 'var(--color-background-secondary)' }}>
                       {/* Branch Header */}
                       <div
                         className="p-3 text-center text-white font-semibold"
@@ -412,34 +423,34 @@ function CovenantPage() {
 
                       <div className="p-4">
                         {/* Date */}
-                        <p className="text-center text-gray-600 text-sm mb-4">
+                        <p className="text-center text-sm mb-4" style={{ color: 'var(--color-text-secondary)' }}>
                           {item.Date}
                         </p>
 
                         {/* Request Details */}
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                           <div className="text-center">
-                            <p className="text-gray-600 text-sm">مقدم الطلب</p>
-                            <p className="font-semibold">{item.userName}</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>مقدم الطلب</p>
+                            <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{item.userName}</p>
                           </div>
                           <div className="text-center">
-                            <p className="text-gray-600 text-sm">المبلغ</p>
-                            <p className="font-semibold">{item.Amount}</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>المبلغ</p>
+                            <p className="font-semibold" style={{ color: 'var(--color-text-primary)' }}>{item.Amount}</p>
                           </div>
                         </div>
 
                         {/* Statement */}
                         <div className="mb-4">
-                          <p className="text-gray-600 text-sm">البيان:</p>
-                          <p className="font-medium">{item.Statement}</p>
+                          <p className="text-sm" style={{ color: 'var(--color-text-secondary)' }}>البيان:</p>
+                          <p className="font-medium" style={{ color: 'var(--color-text-primary)' }}>{item.Statement}</p>
                         </div>
 
                         {/* Rejection Details */}
                         {item.RejectionStatus === 'true' && (
-                          <div className="bg-red-50 p-3 rounded-lg mb-4">
-                            <p className="text-sm"><strong>سبب الرفض:</strong> {item.Reasonforrejection}</p>
-                            <p className="text-sm"><strong>القائم بالرفض:</strong> {item.Approvingperson}</p>
-                            <p className="text-sm"><strong>تاريخ الرفض:</strong> {item.Dateofrejection}</p>
+                          <div className="p-3 rounded-lg mb-4" style={{ backgroundColor: 'var(--color-error-background)' }}>
+                            <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}><strong>سبب الرفض:</strong> {item.Reasonforrejection}</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}><strong>القائم بالرفض:</strong> {item.Approvingperson}</p>
+                            <p className="text-sm" style={{ color: 'var(--color-text-primary)' }}><strong>تاريخ الرفض:</strong> {item.Dateofrejection}</p>
                           </div>
                         )}
 

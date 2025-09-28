@@ -176,65 +176,72 @@ export default function BranchDataEditModal({
   if (!isOpen || !branch) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div 
-        className="bg-white rounded-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div
+        className="w-full max-h-[85vh] overflow-hidden shadow-2xl"
         style={{
-          maxWidth: '480px',
-          minWidth: '400px',
+          backgroundColor: 'var(--theme-card-background)',
+          border: '1px solid var(--theme-border)',
+          borderRadius: `${scale(20)}px`,
+          maxWidth: `${scale(480)}px`,
+          minWidth: `${scale(400)}px`,
           fontFamily: fonts.IBMPlexSansArabicSemiBold,
-          transform: 'translateY(0)',
-          margin: 'auto'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
         }}
       >
         {/* Header */}
-        <div 
-          className="border-b relative"
+        <div
+          className="text-center"
           style={{
-            padding: `${verticalScale(16)}px ${verticalScale(20)}px`,
-            borderBottomColor: '#e5e7eb',
-            borderBottomWidth: 1,
-            minHeight: verticalScale(60),
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
+            borderBottom: '1px solid var(--theme-border)',
+            background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+            paddingLeft: scale(24),
+            paddingRight: scale(24),
+            paddingTop: scale(20),
+            paddingBottom: scale(20),
+            marginBottom: scale(16),
+            borderTopLeftRadius: `${scale(20)}px`,
+            borderTopRightRadius: `${scale(20)}px`
           }}
         >
-          {/* Close button in top-left corner */}
+          <div className="flex items-center justify-center gap-3 mb-3">
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))' }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                <path d="M3 7V5C3 3.89543 3.89543 3 5 3H19C20.1046 3 21 3.89543 21 5V7" stroke="var(--theme-primary, #6366f1)" strokeWidth="2"/>
+                <path d="M3 7H21V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V7Z" stroke="var(--theme-primary, #6366f1)" strokeWidth="2"/>
+                <path d="M8 11H16" stroke="var(--theme-primary, #6366f1)" strokeWidth="2" strokeLinecap="round"/>
+                <path d="M8 15H12" stroke="var(--theme-primary, #6366f1)" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </div>
+            <h2
+              className="font-bold"
+              style={{
+                fontSize: `${scale(18 + size)}px`,
+                fontFamily: fonts.IBMPlexSansArabicBold,
+                color: 'var(--theme-text-primary)',
+                lineHeight: 1.4
+              }}
+            >
+              تعديل بيانات الفرع
+            </h2>
+          </div>
           <button
             onClick={onClose}
+            className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
             style={{
-              position: 'absolute',
-              left: verticalScale(16),
-              top: verticalScale(16),
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              color: '#9ca3af',
-              transition: 'color 0.2s ease',
-              zIndex: 10
+              padding: '10px',
+              backgroundColor: 'var(--theme-surface-secondary)',
+              border: '1px solid var(--theme-border)',
+              color: 'var(--theme-text-secondary)'
             }}
-            onMouseOver={(e) => e.currentTarget.style.color = '#6b7280'}
-            onMouseOut={(e) => e.currentTarget.style.color = '#9ca3af'}
           >
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6 6 18M6 6l12 12"/>
             </svg>
           </button>
-
-          {/* Centered title */}
-          <h2 
-            style={{
-              fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: verticalScale(16 + size),
-              color: colors.BORDER,
-              fontWeight: '600',
-              textAlign: 'center',
-              margin: 0
-            }}
-          >
-            تعديل بيانات الفرع
-          </h2>
         </div>
 
         {/* Content */}
