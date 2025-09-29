@@ -345,12 +345,11 @@ export default function ProjectRequestsPage() {
     try {
       const formData = new FormData();
       formData.append('RequestsID', selectedRequest.RequestsID.toString());
-      formData.append('ProjectID', projectId.toString());
       formData.append('Type', editType);
       formData.append('Data', editData);
       formData.append('user', user?.data?.PhoneNumber || user?.data?.userName || '');
 
-      await axiosInstance.post('/brinshCompany/UPDATEdataRequests', formData, {
+      await axiosInstance.put('/brinshCompany/UPDATEdataRequests', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${user?.accessToken}`
@@ -548,89 +547,197 @@ export default function ProjectRequestsPage() {
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-6 text-center">
-              إضافة طلب جديد
-            </h3>
-
-            {/* Request Type */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                نوع الطلب
-              </label>
-              <select
-                value={selectedType}
-                onChange={(e) => setSelectedType(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {REQUEST_TYPES.map((type) => (
-                  <option key={type.key} value={type.name}>
-                    {type.icon} {type.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Request Data */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                تفاصيل الطلب
-              </label>
-              <textarea
-                value={requestData}
-                onChange={(e) => setRequestData(e.target.value)}
-                placeholder="اكتب تفاصيل الطلب هنا..."
-                className="w-full p-3 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={4}
-              />
-            </div>
-
-            {/* Images */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                المرفقات (اختياري)
-              </label>
-              <div className="space-y-3">
-                {/* File Input */}
-                <input
-                  type="file"
-                  multiple
-                  accept="image/*"
-                  onChange={(e) => {
-                    const files = Array.from(e.target.files || []);
-                    setSelectedImages(files);
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                    <path d="M12 5v14m-7-7h14"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
                   }}
-                  className="w-full p-3 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-
-                {/* Selected Images Preview */}
-                {selectedImages.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {selectedImages.map((image, index) => (
-                      <div key={index} className="relative">
-                        <img
-                          src={URL.createObjectURL(image)}
-                          alt={`Preview ${index + 1}`}
-                          className="w-full h-20 object-cover rounded-lg border"
-                        />
-                        <button
-                          onClick={() => {
-                            setSelectedImages(prev => prev.filter((_, i) => i !== index));
-                          }}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
-                        >
-                          ×
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                >
+                  إضافة طلب جديد
+                </h3>
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <div className="space-y-4">
+                {/* Request Type */}
+                <div>
+                  <label
+                    className="block mb-2"
+                    style={{
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    نوع الطلب
+                  </label>
+                  <select
+                    value={selectedType}
+                    onChange={(e) => setSelectedType(e.target.value)}
+                    className="w-full transition-all duration-200 focus:scale-[1.02]"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-regular)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    {REQUEST_TYPES.map((type) => (
+                      <option key={type.key} value={type.name}>
+                        {type.icon} {type.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Request Data */}
+                <div>
+                  <label
+                    className="block mb-2"
+                    style={{
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    تفاصيل الطلب
+                  </label>
+                  <textarea
+                    value={requestData}
+                    onChange={(e) => setRequestData(e.target.value)}
+                    placeholder="اكتب تفاصيل الطلب هنا..."
+                    className="w-full transition-all duration-200 focus:scale-[1.02] resize-none"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-regular)',
+                      color: 'var(--color-text-primary)',
+                      minHeight: '100px'
+                    }}
+                    rows={4}
+                  />
+                </div>
+
+                {/* Images */}
+                <div>
+                  <label
+                    className="block mb-2"
+                    style={{
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    المرفقات (اختياري)
+                  </label>
+                  <div className="space-y-3">
+                    {/* File Input */}
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        setSelectedImages(files);
+                      }}
+                      className="w-full transition-all duration-200 focus:scale-[1.02]"
+                      style={{
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
+                        borderRadius: '12px',
+                        padding: '12px 16px',
+                        fontSize: '14px',
+                        fontFamily: 'var(--font-ibm-arabic-regular)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                    />
+
+                    {/* Selected Images Preview */}
+                    {selectedImages.length > 0 && (
+                      <div className="grid grid-cols-3 gap-2">
+                        {selectedImages.map((image, index) => (
+                          <div key={index} className="relative">
+                            <img
+                              src={URL.createObjectURL(image)}
+                              alt={`Preview ${index + 1}`}
+                              className="w-full h-20 object-cover rounded-lg"
+                              style={{ border: '1px solid var(--color-border)' }}
+                            />
+                            <button
+                              onClick={() => {
+                                setSelectedImages(prev => prev.filter((_, i) => i !== index));
+                              }}
+                              className="absolute -top-2 -right-2 rounded-full w-6 h-6 flex items-center justify-center text-xs transition-all duration-200 hover:scale-110"
+                              style={{
+                                backgroundColor: '#ef4444',
+                                color: 'white'
+                              }}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Buttons */}
+            <div
+              className="flex gap-3"
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
               <button
                 onClick={() => {
                   setShowCreateModal(false);
@@ -638,14 +745,30 @@ export default function ProjectRequestsPage() {
                   setSelectedType('مواد خفيفة');
                   setSelectedImages([]);
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
                 disabled={loading.createRequest}
               >
                 إلغاء
               </button>
               <button
                 onClick={createRequest}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
                 disabled={loading.createRequest}
               >
                 {loading.createRequest ? (
@@ -664,179 +787,417 @@ export default function ProjectRequestsPage() {
 
       {/* Options Modal */}
       {showOptionsModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-600 mb-6 text-center">
-              الاعدادات
-            </h3>
-
-            <div className="space-y-3">
-              {/* Add Note */}
-              <button
-                onClick={() => {
-                  setShowOptionsModal(false);
-                  setShowNoteModal(true);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10,9 9,9 8,9"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">إضافة ملاحظة</span>
-              </button>
-
-              {/* Edit Request */}
-              <button
-                onClick={() => editRequest(selectedRequest)}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">تعديل بيانات الطلب</span>
-              </button>
-
-              {/* Delete Request */}
-              <button
-                onClick={() => deleteRequest(selectedRequest)}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-                disabled={loading[`delete_${selectedRequest?.RequestsID}`]}
-              >
-                {loading[`delete_${selectedRequest?.RequestsID}`] ? (
-                  <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-red-600">
-                    <polyline points="3,6 5,6 21,6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    <line x1="10" y1="11" x2="10" y2="17"/>
-                    <line x1="14" y1="11" x2="14" y2="17"/>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(107, 114, 128, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
                   </svg>
-                )}
-                <span className="font-ibm-arabic-semibold text-red-600">حذف الطلب</span>
-              </button>
-
-              {/* Copy Request */}
-              <button
-                onClick={() => {
-                  copyRequestText(selectedRequest);
-                  setShowOptionsModal(false);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">نسخ الطلبية</span>
-              </button>
-
-              {/* General Chat - مطابق للتطبيق: يظهر فقط في typepage === 'all' */}
-              <button
-                onClick={() => {
-                  // مطابق للتطبيق: navigation.navigate('Chate', { typess: 'طلبات', ProjectID: selectedRequest.ProjectID, nameRoom: 'الطلبات' })
-                  const chatParams = new URLSearchParams({
-                    ProjectID: selectedRequest.ProjectID.toString(),
-                    typess: 'طلبات',
-                    nameRoom: 'الطلبات',
-                    nameProject: selectedRequest.Nameproject || projectName
-                  });
-                  router.push(`/chat?${chatParams.toString()}`);
-                  setShowOptionsModal(false);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-gray-600">
-                  <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">محادثة الطلبات</span>
-              </button>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  الاعدادات
+                </h3>
+              </div>
             </div>
 
-            <button
-              onClick={() => setShowOptionsModal(false)}
-              className="w-full mt-6 bg-gray-200 text-gray-800 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <div className="space-y-3">
+                {/* Add Note */}
+                <button
+                  onClick={() => {
+                    setShowOptionsModal(false);
+                    setShowNoteModal(true);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    إضافة ملاحظة
+                  </span>
+                </button>
+
+                {/* Edit Request */}
+                <button
+                  onClick={() => editRequest(selectedRequest)}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    تعديل بيانات الطلب
+                  </span>
+                </button>
+
+                {/* Delete Request */}
+                <button
+                  onClick={() => deleteRequest(selectedRequest)}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                  disabled={loading[`delete_${selectedRequest?.RequestsID}`]}
+                >
+                  {loading[`delete_${selectedRequest?.RequestsID}`] ? (
+                    <div className="w-5 h-5 border-2 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#ef4444' }}></div>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                      <polyline points="3,6 5,6 21,6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  )}
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: '#ef4444'
+                    }}
+                  >
+                    حذف الطلب
+                  </span>
+                </button>
+
+                {/* Copy Request */}
+                <button
+                  onClick={() => {
+                    copyRequestText(selectedRequest);
+                    setShowOptionsModal(false);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    نسخ الطلبية
+                  </span>
+                </button>
+
+                {/* General Chat */}
+                <button
+                  onClick={() => {
+                    const chatParams = new URLSearchParams({
+                      ProjectID: selectedRequest.ProjectID.toString(),
+                      typess: 'طلبات',
+                      nameRoom: 'الطلبات',
+                      nameProject: selectedRequest.Nameproject || projectName
+                    });
+                    router.push(`/chat?${chatParams.toString()}`);
+                    setShowOptionsModal(false);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    محادثة الطلبات
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Button */}
+            <div
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
             >
-              إغلاق
-            </button>
+              <button
+                onClick={() => setShowOptionsModal(false)}
+                className="w-full text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
+              >
+                إغلاق
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Note Modal */}
       {showNoteModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-6 text-center">
-              إضافة ملاحظة
-            </h3>
-
-            {/* Request Info */}
-            <div className="mb-4 p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                <p className="text-sm font-ibm-arabic-semibold text-gray-700">
-                  {selectedRequest.Type}
-                </p>
-              </div>
-              <p className="text-sm font-ibm-arabic-medium text-gray-800 leading-relaxed">
-                {selectedRequest.Data}
-              </p>
-              <div className="mt-2 pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  بواسطة: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  })} - {new Date(selectedRequest.Date).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                  })}
-                </p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  إضافة ملاحظة
+                </h3>
               </div>
             </div>
 
-            {/* Note Input */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                اكتب ملاحظتك
-              </label>
-              <div className="relative">
-                <textarea
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="أضف ملاحظة حول هذا الطلب..."
-                  className="w-full p-4 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50 focus:bg-white transition-colors"
-                  rows={4}
-                  maxLength={500}
-                />
-                <div className="absolute bottom-3 left-3 text-xs text-gray-400">
-                  {noteText.length}/500
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              {/* Request Info */}
+              <div
+                className="mb-4 p-4 rounded-xl"
+                style={{
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
+                  <p
+                    className="text-sm font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    {selectedRequest.Type}
+                  </p>
+                </div>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  {selectedRequest.Data}
+                </p>
+                <div
+                  className="mt-2 pt-2"
+                  style={{ borderTop: '1px solid var(--color-border)' }}
+                >
+                  <p
+                    className="text-xs"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    بواسطة: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })} - {new Date(selectedRequest.Date).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Note Input */}
+              <div className="mb-6">
+                <label
+                  className="block mb-3"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  اكتب ملاحظتك
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="أضف ملاحظة حول هذا الطلب..."
+                    className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--color-text-primary)',
+                      minHeight: '100px'
+                    }}
+                    rows={4}
+                    maxLength={500}
+                  />
+                  <div
+                    className="absolute bottom-3 left-3 text-xs"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    {noteText.length}/500
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Footer Buttons */}
+            <div
+              className="flex gap-3"
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
               <button
                 onClick={() => {
                   setShowNoteModal(false);
                   setNoteText('');
                   setSelectedRequest(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
                 disabled={loading.sendNote}
               >
                 إلغاء
               </button>
               <button
                 onClick={sendNote}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
                 disabled={loading.sendNote || !noteText.trim()}
               >
                 {loading.sendNote ? (
@@ -861,59 +1222,163 @@ export default function ProjectRequestsPage() {
 
       {/* Edit Request Modal */}
       {showEditModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-6 text-center">
-              تعديل الطلب
-            </h3>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(16, 185, 129, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  تعديل الطلب
+                </h3>
+              </div>
+            </div>
 
-            {/* Current Request Info */}
-            <div className="mb-4 p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                <p className="text-sm font-ibm-arabic-semibold text-gray-700">
-                  الطلب الحالي
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              {/* Current Request Info */}
+              <div
+                className="mb-4 p-4 rounded-xl"
+                style={{
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
+                  <p
+                    className="text-sm font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    الطلب الحالي
+                  </p>
+                </div>
+                <p
+                  className="text-sm"
+                  style={{
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  {selectedRequest.Type}: {selectedRequest.Data}
                 </p>
               </div>
-              <p className="text-sm font-ibm-arabic-medium text-gray-800">
-                {selectedRequest.Type}: {selectedRequest.Data}
-              </p>
+
+              {/* Edit Type */}
+              <div className="mb-6">
+                <label
+                  className="block mb-3"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  نوع الطلب
+                </label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value)}
+                  className="w-full transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  {REQUEST_TYPES.map((type) => (
+                    <option key={type.key} value={type.name}>
+                      {type.icon} {type.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Edit Data */}
+              <div className="mb-6">
+                <label
+                  className="block mb-3"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  تفاصيل الطلب
+                </label>
+                <textarea
+                  value={editData}
+                  onChange={(e) => setEditData(e.target.value)}
+                  placeholder="اكتب تفاصيل الطلب هنا..."
+                  className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)',
+                    minHeight: '100px'
+                  }}
+                  rows={4}
+                />
+              </div>
             </div>
 
-            {/* Edit Type */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                نوع الطلب
-              </label>
-              <select
-                value={editType}
-                onChange={(e) => setEditType(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {REQUEST_TYPES.map((type) => (
-                  <option key={type.key} value={type.name}>
-                    {type.icon} {type.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Edit Data */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                تفاصيل الطلب
-              </label>
-              <textarea
-                value={editData}
-                onChange={(e) => setEditData(e.target.value)}
-                placeholder="اكتب تفاصيل الطلب هنا..."
-                className="w-full p-3 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={4}
-              />
-            </div>
-
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Footer Buttons */}
+            <div
+              className="flex gap-3"
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
               <button
                 onClick={() => {
                   setShowEditModal(false);
@@ -921,14 +1386,30 @@ export default function ProjectRequestsPage() {
                   setEditType('مواد خفيفة');
                   setSelectedRequest(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
                 disabled={loading.updateRequest}
               >
                 إلغاء
               </button>
               <button
                 onClick={updateRequest}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
                 disabled={loading.updateRequest}
               >
                 {loading.updateRequest ? (

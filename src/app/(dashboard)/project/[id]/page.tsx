@@ -246,7 +246,11 @@ const ProjectHeader = ({
               <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
                    style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
                 <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14,2 14,8 20,8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10,9 9,9 8,9"/>
                 </svg>
               </div>
               <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-primary)' }}>طلبات</span>
@@ -273,8 +277,9 @@ const ProjectHeader = ({
             >
               <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
                    style={{ backgroundColor: 'var(--color-success)' + '30' }}>
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-success)" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="var(--color-success)"/>
+                  <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-success)"/>
                 </svg>
               </div>
               <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-success)' }}>مالية</span>
@@ -301,8 +306,12 @@ const ProjectHeader = ({
             >
               <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
                    style={{ backgroundColor: 'var(--color-warning)' + '30' }}>
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" stroke="var(--color-warning)" strokeWidth="2">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 8l6 6m0 0l6-6m-6 6V3" />
+                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--color-warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="var(--color-warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="9" y="12" width="6" height="2" rx="1" fill="var(--color-warning)"/>
+                  <line x1="7" y1="16" x2="17" y2="16" stroke="var(--color-warning)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-warning)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
               <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-warning)' }}>أرشيف</span>
@@ -639,7 +648,7 @@ const ProjectDetailsPage = () => {
           title={project?.Nameproject || 'المشروع'}
           backButton={
             <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الرجوع">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -648,30 +657,41 @@ const ProjectDetailsPage = () => {
             <div className="flex items-center gap-4 sm:gap-6">
               {hasPermission('تعديل بيانات المشروع') && (
                 <button onClick={handleEdit} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تعديل المشروع">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
               )}
               <button onClick={handleArchives} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الأرشيف">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M3 7h18M6 7V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v2M5 7h14v10a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V7z"></path>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="9" y="12" width="6" height="2" rx="1" fill="#000000"/>
+                  <line x1="7" y1="16" x2="17" y2="16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="7" y1="18" x2="14" y2="18" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </button>
               {hasPermission('انشاء عمليات مالية') && (
                 <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="المالية">
-                  <span className="text-green-600 font-bold text-base">$</span>
+                  <svg width="18" height="18" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="#000000"/>
+                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="#000000"/>
+                  </svg>
                 </button>
               )}
               {hasPermission('إنشاء طلبات') && (
                 <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الطلبات">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 00-2 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
                   </svg>
                 </button>
               )}
               <button onClick={handleNotifications} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الإشعارات">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>

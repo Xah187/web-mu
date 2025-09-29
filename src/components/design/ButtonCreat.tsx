@@ -109,7 +109,13 @@ export default function ButtonCreat({
       
       {number > 0 && (
         <div className="relative mr-2">
-          <div className="absolute -top-2 -right-2 bg-red text-white rounded-full w-5 h-5 flex items-center justify-center text-xs">
+          <div
+            className="absolute -top-2 -right-2 rounded-full w-5 h-5 flex items-center justify-center text-xs"
+            style={{
+              backgroundColor: 'var(--color-badge-background)',
+              color: 'var(--color-badge-text)'
+            }}
+          >
             {number}
           </div>
         </div>

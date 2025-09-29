@@ -38,6 +38,10 @@
   --color-input-text: #212121;
   --color-input-placeholder: #9ca3af;
 
+  /* Badge Colors */
+  --color-badge-background: #ef4444;
+  --color-badge-text: #ffffff;
+
   /* Spacing System */
   --spacing-xs: 0.25rem;    /* 4px */
   --spacing-sm: 0.5rem;     /* 8px */
@@ -138,6 +142,10 @@
   --color-input-border: #4a5568;
   --color-input-text: #f1f5f9;
   --color-input-placeholder: #94a3b8;
+
+  /* Badge Colors */
+  --color-badge-background: #ffffff;
+  --color-badge-text: #ef4444;
 
   /* Dark theme shadows - ظلال أكثر عمقاً وجمالاً */
   --shadow-sm: 0 2px 4px 0 rgba(0, 0, 0, 0.4);

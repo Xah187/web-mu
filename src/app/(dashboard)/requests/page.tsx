@@ -83,22 +83,33 @@ const RequestCard = ({
   isClosed?: boolean;
 }) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-3 shadow-sm mb-2">
-      <div className="flex items-start justify-between mb-2">
+    <div
+      className="rounded-xl p-4 mb-3 transition-all duration-200 hover:shadow-lg hover:scale-[1.01]"
+      style={{
+        backgroundColor: 'var(--color-card-background)',
+        border: '1px solid var(--color-border)',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+      }}
+    >
+      <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3 flex-1">
           {loading[`close_${request.RequestsID}`] ? (
-            <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-6 h-6 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#3b82f6' }}></div>
           ) : (
             <button
               onClick={() => onClose(request.RequestsID, type, request)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+              className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center transition-all duration-200 hover:scale-110 ${
                 request.Done === 'true'
-                  ? 'bg-blue-600 border-blue-600'
-                  : 'border-gray-300 hover:border-blue-600'
+                  ? 'bg-blue-600 border-blue-600 shadow-md'
+                  : 'border-gray-300 hover:border-blue-600 hover:bg-blue-50'
               }`}
+              style={{
+                borderColor: request.Done === 'true' ? '#3b82f6' : 'var(--color-border)',
+                backgroundColor: request.Done === 'true' ? '#3b82f6' : 'transparent'
+              }}
             >
               {request.Done === 'true' && (
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3}>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={3}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               )}
@@ -106,7 +117,13 @@ const RequestCard = ({
           )}
 
           <div className="flex-1 min-w-0">
-            <p className="font-ibm-arabic-medium text-gray-900 text-sm truncate">
+            <p
+              className="font-bold text-sm truncate"
+              style={{
+                fontFamily: 'var(--font-ibm-arabic-semibold)',
+                color: 'var(--color-text-primary)'
+              }}
+            >
               {index + 1}- طلب بتاريخ {new Date(request.Date).toLocaleDateString('en-GB', {
                 year: 'numeric',
                 month: '2-digit',
@@ -121,11 +138,15 @@ const RequestCard = ({
           {onChat && (
             <button
               onClick={() => onChat(request)}
-              className="p-1.5 hover:bg-blue-50 rounded-lg transition-colors"
+              className="p-2 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md"
+              style={{
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                border: '1px solid rgba(59, 130, 246, 0.2)'
+              }}
               title="دردشة الطلبية"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-blue-600">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
               </svg>
             </button>
           )}
@@ -133,10 +154,14 @@ const RequestCard = ({
           {/* Settings Button */}
           <button
             onClick={() => onOptions(request)}
-            className="p-1.5 hover:bg-gray-50 rounded-lg transition-colors"
+            className="p-2 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-md"
+            style={{
+              backgroundColor: 'var(--color-surface-secondary)',
+              border: '1px solid var(--color-border)'
+            }}
             title="إعدادات الطلب"
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
               <circle cx="12" cy="12" r="3"/>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
             </svg>
@@ -144,38 +169,82 @@ const RequestCard = ({
         </div>
       </div>
 
-      <div className="mb-2">
-        <p className="font-ibm-arabic-medium text-gray-800 text-sm leading-relaxed">
+      <div className="mb-3">
+        <p
+          className="leading-relaxed"
+          style={{
+            fontFamily: 'var(--font-ibm-arabic-medium)',
+            color: 'var(--color-text-primary)',
+            fontSize: '14px',
+            lineHeight: '1.6'
+          }}
+        >
           {request.Data}
         </p>
       </div>
 
-      <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
-        <span>بواسطة: {request.InsertBy}</span>
-        <span>{new Date(request.Date).toLocaleDateString('en-GB', {
-          year: 'numeric',
-          month: '2-digit',
-          day: '2-digit'
-        })} - {new Date(request.Date).toLocaleTimeString('en-US', {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: false
-        })}</span>
+      <div
+        className="flex items-center justify-between text-xs mb-3 p-2 rounded-lg"
+        style={{
+          backgroundColor: 'var(--color-surface-secondary)',
+          color: 'var(--color-text-secondary)'
+        }}
+      >
+        <span className="flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+            <circle cx="12" cy="7" r="4"/>
+          </svg>
+          بواسطة: {request.InsertBy}
+        </span>
+        <span className="flex items-center gap-1">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12,6 12,12 16,14"/>
+          </svg>
+          {new Date(request.Date).toLocaleDateString('en-GB', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+          })} - {new Date(request.Date).toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          })}
+        </span>
       </div>
 
       {request.Implementedby && (
-        <div className="text-xs text-blue-600 mb-2">
+        <div
+          className="text-xs mb-3 p-2 rounded-lg flex items-center gap-1"
+          style={{
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            color: '#3b82f6'
+          }}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 12l2 2 4-4"/>
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
           نُفذ بواسطة: {request.Implementedby}
         </div>
       )}
 
       {/* Confirm Button for closed requests */}
       {isClosed && onConfirm && request.checkorderout === 'false' && (
-        <div className="mt-2 pt-2 border-t border-gray-100">
+        <div
+          className="mt-3 pt-3"
+          style={{ borderTop: '1px solid var(--color-border)' }}
+        >
           <button
             onClick={() => onConfirm(request)}
             disabled={loading[`confirm_${request.RequestsID}`]}
-            className="w-full bg-green-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-green-700 transition-colors disabled:opacity-50 text-sm"
+            className="w-full py-3 rounded-xl font-bold text-sm transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+            style={{
+              backgroundColor: '#10b981',
+              color: 'white',
+              fontFamily: 'var(--font-ibm-arabic-semibold)'
+            }}
           >
             {loading[`confirm_${request.RequestsID}`] ? 'جاري التأكيد...' : 'تأكيد الوصول'}
           </button>
@@ -184,9 +253,23 @@ const RequestCard = ({
 
       {/* Confirmed Badge */}
       {isClosed && request.checkorderout === 'true' && (
-        <div className="mt-2 pt-2 border-t border-gray-100">
-          <div className="bg-green-100 text-green-800 py-1.5 px-3 rounded-lg text-center font-ibm-arabic-semibold text-xs">
-            ✓ تم تأكيد الوصول
+        <div
+          className="mt-3 pt-3"
+          style={{ borderTop: '1px solid var(--color-border)' }}
+        >
+          <div
+            className="py-3 px-4 rounded-xl text-center font-bold text-sm flex items-center justify-center gap-2"
+            style={{
+              backgroundColor: 'rgba(16, 185, 129, 0.1)',
+              color: '#10b981',
+              fontFamily: 'var(--font-ibm-arabic-semibold)'
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 12l2 2 4-4"/>
+              <circle cx="12" cy="12" r="10"/>
+            </svg>
+            تم تأكيد الوصول
           </div>
         </div>
       )}
@@ -226,44 +309,73 @@ const RequestSection = ({
 }) => {
   // Always show section header - matching mobile app behavior
   return (
-    <div className="mb-4">
+    <div
+      className="mb-6 p-4 rounded-xl transition-all duration-200 hover:shadow-lg"
+      style={{
+        backgroundColor: 'var(--color-card-background)',
+        border: '2px solid var(--color-border)',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+      }}
+    >
       {/* Section Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all"
+        className="w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 hover:scale-[1.01]"
+        style={{
+          backgroundColor: 'var(--color-surface-secondary)',
+          border: '1px solid var(--color-border)'
+        }}
       >
         <div className="flex items-center gap-3">
-          <div className={`px-3 py-1 rounded-full text-sm font-ibm-arabic-semibold ${type.color}`}>
+          <div
+            className={`px-4 py-2 rounded-full text-sm font-bold ${type.color}`}
+            style={{
+              fontFamily: 'var(--font-ibm-arabic-semibold)'
+            }}
+          >
             {type.name}
           </div>
-          <span className="text-sm text-gray-600">
+          <span
+            className="text-sm"
+            style={{
+              color: 'var(--color-text-secondary)',
+              fontFamily: 'var(--font-ibm-arabic-medium)'
+            }}
+          >
             {sectionState.isExpanded ? `${requests.length} طلب` : 'اضغط للعرض'}
           </span>
         </div>
 
         <div className="flex items-center gap-2">
           {sectionState.loading && (
-            <div className="w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+            <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#3b82f6' }}></div>
           )}
           <svg
-            width="16"
-            height="16"
+            width="20"
+            height="20"
             viewBox="0 0 24 24"
             fill="none"
-            stroke="currentColor"
-            className={`transition-transform ${sectionState.isExpanded ? 'rotate-180' : ''}`}
+            stroke="var(--color-text-secondary)"
+            strokeWidth="2"
+            className={`transition-transform duration-200 ${sectionState.isExpanded ? 'rotate-180' : ''}`}
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
           </svg>
         </div>
       </button>
 
       {/* Section Content */}
       {sectionState.isExpanded && (
-        <div className="mt-2">
+        <div
+          className="mt-4 p-3 rounded-xl"
+          style={{
+            backgroundColor: 'var(--color-surface)',
+            border: '1px solid var(--color-border)'
+          }}
+        >
           {requests.length > 0 ? (
             <>
-              <div className="space-y-1">
+              <div className="space-y-3">
                 {requests.map((request, index) => (
                   <RequestCard
                     key={request.RequestsID}
@@ -283,11 +395,17 @@ const RequestSection = ({
 
               {/* Load More Button */}
               {sectionState.hasMore && (
-                <div className="mt-3 text-center">
+                <div className="mt-4 text-center">
                   <button
                     onClick={onLoadMore}
                     disabled={sectionState.loading}
-                    className="bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-ibm-arabic-medium hover:bg-gray-200 transition-colors disabled:opacity-50"
+                    className="px-6 py-3 rounded-xl font-bold transition-all duration-200 hover:scale-105 hover:shadow-md disabled:opacity-50"
+                    style={{
+                      backgroundColor: 'var(--color-surface-secondary)',
+                      color: 'var(--color-text-secondary)',
+                      border: '1px solid var(--color-border)',
+                      fontFamily: 'var(--font-ibm-arabic-medium)'
+                    }}
                   >
                     {sectionState.loading ? 'جاري التحميل...' : 'عرض المزيد'}
                   </button>
@@ -295,8 +413,37 @@ const RequestSection = ({
               )}
             </>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p className="font-ibm-arabic-medium">لا توجد طلبات من هذا النوع</p>
+            <div
+              className="text-center py-8 rounded-lg"
+              style={{
+                backgroundColor: 'var(--color-surface-secondary)',
+                border: '1px dashed var(--color-border)'
+              }}
+            >
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="var(--color-text-secondary)"
+                strokeWidth="1.5"
+                className="mx-auto mb-3 opacity-50"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+              </svg>
+              <p
+                className="font-bold"
+                style={{
+                  fontFamily: 'var(--font-ibm-arabic-medium)',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
+                لا توجد طلبات من هذا النوع
+              </p>
             </div>
           )}
         </div>
@@ -570,11 +717,11 @@ export default function RequestsPage() {
     try {
       const formData = new FormData();
       formData.append('RequestsID', createRequest.id.toString());
-      formData.append('ProjectID', createRequest.projectId.toString());
       formData.append('Type', createRequest.type);
       formData.append('Data', createRequest.data);
+      formData.append('user', user?.data?.PhoneNumber || user?.data?.userName || '');
 
-      await axiosInstance.post('/brinshCompany/UpdateRequests', formData, {
+      await axiosInstance.put('/brinshCompany/UPDATEdataRequests', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           Authorization: `Bearer ${user?.accessToken}`
@@ -792,17 +939,17 @@ export default function RequestsPage() {
     }
   };
 
-  // Open Request Chat - placeholder for future development
+  // Open Request Chat - Navigate to project requests chat
   const openRequestChat = (request: Request) => {
-    // TODO: Implement individual request chat functionality
-    // This will be developed in the future to allow chat for specific requests
-    console.log('Opening chat for request:', request.RequestsID);
+    // Navigate to the project requests chat page
+    const chatParams = new URLSearchParams({
+      ProjectID: request.ProjectID.toString(),
+      typess: 'طلبات',
+      nameRoom: 'الطلبات',
+      nameProject: request.Nameproject || 'المشروع'
+    });
 
-    // For now, show a message that this feature is coming soon
-    Tostget('دردشة الطلبية - قيد التطوير');
-
-    // Future implementation would navigate to:
-    // router.push(`/chat/request/${request.RequestsID}?projectId=${request.ProjectID}&requestType=${request.Type}`);
+    router.push(`/chat?${chatParams.toString()}`);
   };
 
   // Edit Request - matching mobile app exactly
@@ -867,21 +1014,57 @@ export default function RequestsPage() {
     >
       <ContentSection className="p-0">
         {/* Counts */}
-        <div className="px-4 pt-2 pb-1">
-          <div className="flex justify-center gap-6">
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-green-600">
+        <div className="px-4 pt-4 pb-2">
+          <div className="flex justify-center gap-4">
+            <div
+              className="text-center p-4 rounded-xl flex-1 max-w-32 transition-all duration-200 hover:scale-105"
+              style={{
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                border: '1px solid rgba(16, 185, 129, 0.2)'
+              }}
+            >
+              <div
+                className="text-3xl font-bold mb-1"
+                style={{
+                  fontFamily: 'var(--font-ibm-arabic-bold)',
+                  color: '#10b981'
+                }}
+              >
                 {requestCounts.Close}
               </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
+              <div
+                className="text-sm font-bold"
+                style={{
+                  fontFamily: 'var(--font-ibm-arabic-medium)',
+                  color: '#10b981'
+                }}
+              >
                 مفتوحة
               </div>
             </div>
-            <div className="text-center">
-              <div className="text-2xl font-ibm-arabic-bold text-gray-600">
+            <div
+              className="text-center p-4 rounded-xl flex-1 max-w-32 transition-all duration-200 hover:scale-105"
+              style={{
+                backgroundColor: 'var(--color-surface-secondary)',
+                border: '1px solid var(--color-border)'
+              }}
+            >
+              <div
+                className="text-3xl font-bold mb-1"
+                style={{
+                  fontFamily: 'var(--font-ibm-arabic-bold)',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
                 {requestCounts.Open}
               </div>
-              <div className="text-sm font-ibm-arabic-medium text-gray-600">
+              <div
+                className="text-sm font-bold"
+                style={{
+                  fontFamily: 'var(--font-ibm-arabic-medium)',
+                  color: 'var(--color-text-secondary)'
+                }}
+              >
                 مغلقة
               </div>
             </div>
@@ -897,8 +1080,17 @@ export default function RequestsPage() {
               <div className="mb-6 flex justify-center">
                 <button
                   onClick={() => setShowCreateModal(true)}
-                  className="bg-blue-600 text-white px-8 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
+                  className="px-8 py-4 rounded-xl font-bold transition-all duration-200 hover:scale-105 hover:shadow-lg flex items-center gap-3"
+                  style={{
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                  }}
                 >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14m-7-7h14"/>
+                  </svg>
                   اضافة طلب
                 </button>
               </div>
@@ -908,9 +1100,30 @@ export default function RequestsPage() {
 
         {/* Open Requests Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-            الطلبات المفتوحة ({requestCounts.Close})
-          </h2>
+          <div
+            className="text-center mb-6 p-4 rounded-xl"
+            style={{
+              backgroundColor: 'var(--color-surface-secondary)',
+              border: '1px solid var(--color-border)'
+            }}
+          >
+            <h2
+              className="text-xl font-bold flex items-center justify-center gap-3"
+              style={{
+                fontFamily: 'var(--font-ibm-arabic-bold)',
+                color: 'var(--color-text-primary)'
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14,2 14,8 20,8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10,9 9,9 8,9"/>
+              </svg>
+              الطلبات المفتوحة ({requestCounts.Close})
+            </h2>
+          </div>
 
           {REQUEST_TYPES.map((type) => {
             const sectionKey = `${type.key}-open`;
@@ -937,11 +1150,60 @@ export default function RequestsPage() {
           })}
         </div>
 
+        {/* Divider between sections */}
+        <div className="my-8 flex items-center">
+          <div
+            className="flex-1 h-px"
+            style={{ backgroundColor: 'var(--color-border)' }}
+          ></div>
+          <div
+            className="px-4 py-2 rounded-full mx-4"
+            style={{
+              backgroundColor: 'var(--color-surface-secondary)',
+              border: '1px solid var(--color-border)'
+            }}
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--color-text-secondary)"
+              strokeWidth="2"
+            >
+              <circle cx="12" cy="12" r="3"/>
+              <circle cx="12" cy="12" r="1"/>
+            </svg>
+          </div>
+          <div
+            className="flex-1 h-px"
+            style={{ backgroundColor: 'var(--color-border)' }}
+          ></div>
+        </div>
+
         {/* Closed Requests Section */}
         <div className="mb-6">
-          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-            الطلبات المغلقة ({requestCounts.Open})
-          </h2>
+          <div
+            className="text-center mb-6 p-4 rounded-xl"
+            style={{
+              backgroundColor: 'var(--color-surface-secondary)',
+              border: '1px solid var(--color-border)'
+            }}
+          >
+            <h2
+              className="text-xl font-bold flex items-center justify-center gap-3"
+              style={{
+                fontFamily: 'var(--font-ibm-arabic-bold)',
+                color: 'var(--color-text-primary)'
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M9 12l2 2 4-4"/>
+                <circle cx="12" cy="12" r="10"/>
+              </svg>
+              الطلبات المغلقة ({requestCounts.Open})
+            </h2>
+          </div>
 
           {REQUEST_TYPES.map((type) => {
             const sectionKey = `${type.key}-closed`;
@@ -972,56 +1234,164 @@ export default function RequestsPage() {
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-              {createRequest.isEdit ? 'تعديل الطلب' : 'إنشاء طلب جديد'}
-            </h3>
-
-            {/* Request Type Selection */}
-            <div className="mb-4">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2">
-                نوع الطلب
-              </label>
-              <select
-                value={createRequest.type}
-                onChange={(e) => setCreateRequest(prev => ({ ...prev, type: e.target.value }))}
-                className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                {REQUEST_TYPES.map((type) => (
-                  <option key={type.key} value={type.name}>
-                    {type.name}
-                  </option>
-                ))}
-              </select>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: createRequest.isEdit ? 'rgba(16, 185, 129, 0.1)' : 'rgba(59, 130, 246, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={createRequest.isEdit ? "#10b981" : "#3b82f6"} strokeWidth="2">
+                    {createRequest.isEdit ? (
+                      <>
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </>
+                    ) : (
+                      <path d="M12 5v14m-7-7h14"/>
+                    )}
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  {createRequest.isEdit ? 'تعديل الطلب' : 'إنشاء طلب جديد'}
+                </h3>
+              </div>
             </div>
 
-            {/* Request Description */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2">
-                وصف الطلب
-              </label>
-              <textarea
-                value={createRequest.data}
-                onChange={(e) => setCreateRequest(prev => ({ ...prev, data: e.target.value }))}
-                placeholder="اكتب وصف الطلب هنا..."
-                className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-                rows={4}
-              />
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              {/* Request Type Selection */}
+              <div className="mb-4">
+                <label
+                  className="block mb-2"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  نوع الطلب
+                </label>
+                <select
+                  value={createRequest.type}
+                  onChange={(e) => setCreateRequest(prev => ({ ...prev, type: e.target.value }))}
+                  className="w-full transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  {REQUEST_TYPES.map((type) => (
+                    <option key={type.key} value={type.name}>
+                      {type.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Request Description */}
+              <div className="mb-6">
+                <label
+                  className="block mb-2"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  وصف الطلب
+                </label>
+                <textarea
+                  value={createRequest.data}
+                  onChange={(e) => setCreateRequest(prev => ({ ...prev, data: e.target.value }))}
+                  placeholder="اكتب وصف الطلب هنا..."
+                  className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: '12px',
+                    padding: '12px 16px',
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)',
+                    minHeight: '100px'
+                  }}
+                  rows={4}
+                />
+              </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Footer Buttons */}
+            <div
+              className="flex gap-3"
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
               <button
                 onClick={resetCreateRequest}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
                 disabled={loading.create || loading.update}
               >
                 إلغاء
               </button>
               <button
                 onClick={createNewRequest}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: createRequest.isEdit ? '#10b981' : '#3b82f6',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
                 disabled={loading.create || loading.update}
               >
                 {loading.create || loading.update
@@ -1036,177 +1406,416 @@ export default function RequestsPage() {
 
       {/* Options Modal - Matching mobile app OptionCompany exactly */}
       {showOptionsModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-600 mb-6 text-center">
-              الاعدادات
-            </h3>
-
-            <div className="space-y-3">
-              {/* Copy Request - First in children */}
-              <button
-                onClick={() => {
-                  copyRequestText(selectedRequest);
-                  setShowOptionsModal(false);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
-                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">نسخ الطلبية</span>
-              </button>
-
-              {/* General Chat - Only for 'all' type */}
-              {typepage === 'all' && (
-                <button
-                  onClick={() => {
-                    router.push(`/chat?typess=طلبات&ProjectID=${selectedRequest.ProjectID}&nameRoom=الطلبات`);
-                    setShowOptionsModal(false);
-                  }}
-                  className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(107, 114, 128, 0.1)' }}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" strokeWidth="2">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"/>
                   </svg>
-                  <span className="font-ibm-arabic-semibold text-gray-900">محادثة الطلبية</span>
-                </button>
-              )}
-
-              {/* Add Note - title1 */}
-              <button
-                onClick={() => {
-                  setShowOptionsModal(false);
-                  setShowNoteModal(true);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                  <polyline points="14,2 14,8 20,8"/>
-                  <line x1="16" y1="13" x2="8" y2="13"/>
-                  <line x1="16" y1="17" x2="8" y2="17"/>
-                  <polyline points="10,9 9,9 8,9"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">إضافة ملاحظة</span>
-              </button>
-
-              {/* Edit - title2 */}
-              <button
-                onClick={() => editRequest(selectedRequest)}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
-                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                <span className="font-ibm-arabic-semibold text-gray-900">تعديل</span>
-              </button>
-
-              {/* Delete - title3 */}
-              <button
-                onClick={() => {
-                  deleteRequest(selectedRequest);
-                  setShowOptionsModal(false);
-                }}
-                className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-                disabled={loading[`delete_${selectedRequest.RequestsID}`]}
-              >
-                {loading[`delete_${selectedRequest.RequestsID}`] ? (
-                  <div className="w-5 h-5 border-2 border-red-600 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-red-600">
-                    <polyline points="3,6 5,6 21,6"/>
-                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                    <line x1="10" y1="11" x2="10" y2="17"/>
-                    <line x1="14" y1="11" x2="14" y2="17"/>
-                  </svg>
-                )}
-                <span className="font-ibm-arabic-semibold text-red-600">حذف</span>
-              </button>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  الاعدادات
+                </h3>
+              </div>
             </div>
 
-            <button
-              onClick={() => setShowOptionsModal(false)}
-              className="w-full mt-6 bg-gray-200 text-gray-800 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              <div className="space-y-3">
+                {/* Copy Request - First in children */}
+                <button
+                  onClick={() => {
+                    copyRequestText(selectedRequest);
+                    setShowOptionsModal(false);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    نسخ الطلبية
+                  </span>
+                </button>
+
+                {/* General Chat - Only for 'all' type */}
+                {typepage === 'all' && (
+                  <button
+                    onClick={() => {
+                      router.push(`/chat?typess=طلبات&ProjectID=${selectedRequest.ProjectID}&nameRoom=الطلبات`);
+                      setShowOptionsModal(false);
+                    }}
+                    className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)'
+                    }}
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                    </svg>
+                    <span
+                      className="font-bold"
+                      style={{
+                        fontFamily: 'var(--font-ibm-arabic-semibold)',
+                        color: 'var(--color-text-primary)'
+                      }}
+                    >
+                      محادثة الطلبية
+                    </span>
+                  </button>
+                )}
+
+                {/* Add Note - title1 */}
+                <button
+                  onClick={() => {
+                    setShowOptionsModal(false);
+                    setShowNoteModal(true);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    إضافة ملاحظة
+                  </span>
+                </button>
+
+                {/* Edit - title2 */}
+                <button
+                  onClick={() => editRequest(selectedRequest)}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-primary)'
+                    }}
+                  >
+                    تعديل
+                  </span>
+                </button>
+
+                {/* Delete - title3 */}
+                <button
+                  onClick={() => {
+                    deleteRequest(selectedRequest);
+                    setShowOptionsModal(false);
+                  }}
+                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  style={{
+                    backgroundColor: 'var(--color-surface)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                  disabled={loading[`delete_${selectedRequest.RequestsID}`]}
+                >
+                  {loading[`delete_${selectedRequest.RequestsID}`] ? (
+                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: '#ef4444' }}></div>
+                  ) : (
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2">
+                      <polyline points="3,6 5,6 21,6"/>
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <line x1="10" y1="11" x2="10" y2="17"/>
+                      <line x1="14" y1="11" x2="14" y2="17"/>
+                    </svg>
+                  )}
+                  <span
+                    className="font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: '#ef4444'
+                    }}
+                  >
+                    حذف
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* Footer Button */}
+            <div
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
+              <button
+                onClick={() => setShowOptionsModal(false)}
+                className="w-full text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
             >
               إغلاق
-            </button>
+              </button>
+            </div>
           </div>
         </div>
       )}
 
       {/* Note Modal - Matching mobile app CreatNotesRequest */}
       {showNoteModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-6 text-center">
-              إضافة ملاحظة
-            </h3>
-
-            {/* Request Info */}
-            <div className="mb-4 p-4 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-3 h-3 bg-blue-600 rounded-full"></div>
-                <p className="text-sm font-ibm-arabic-semibold text-gray-700">
-                  {selectedRequest.Type}
-                </p>
-              </div>
-              <p className="text-sm font-ibm-arabic-medium text-gray-800 leading-relaxed">
-                {selectedRequest.Data}
-              </p>
-              <div className="mt-2 pt-2 border-t border-gray-200">
-                <p className="text-xs text-gray-500">
-                  بواسطة: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  })} - {new Date(selectedRequest.Date).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false
-                  })}
-                </p>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div
+            className="w-full max-w-md shadow-2xl"
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-border)',
+              borderRadius: '20px',
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header */}
+            <div
+              style={{
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '20px',
+                paddingBottom: '20px',
+                marginBottom: '16px',
+                borderTopLeftRadius: '20px',
+                borderTopRightRadius: '20px'
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-2">
+                <div
+                  className="w-8 h-8 rounded-full flex items-center justify-center"
+                  style={{ backgroundColor: 'rgba(59, 130, 246, 0.1)' }}
+                >
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
+                  </svg>
+                </div>
+                <h3
+                  className="font-bold"
+                  style={{
+                    fontSize: '18px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-primary)',
+                    lineHeight: 1.4
+                  }}
+                >
+                  إضافة ملاحظة
+                </h3>
               </div>
             </div>
 
-            {/* Note Input */}
-            <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-3">
-                اكتب ملاحظتك
-              </label>
-              <div className="relative">
-                <textarea
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder="أضف ملاحظة حول هذا الطلب..."
-                  className="w-full p-4 border border-gray-300 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none bg-gray-50 focus:bg-white transition-colors"
-                  rows={4}
-                  maxLength={500}
-                />
-                <div className="absolute bottom-3 left-3 text-xs text-gray-400">
-                  {noteText.length}/500
+            {/* Content */}
+            <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+              {/* Request Info */}
+              <div
+                className="mb-4 p-4 rounded-xl"
+                style={{
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)'
+                }}
+              >
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: '#3b82f6' }}></div>
+                  <p
+                    className="text-sm font-bold"
+                    style={{
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--color-text-secondary)'
+                    }}
+                  >
+                    {selectedRequest.Type}
+                  </p>
+                </div>
+                <p
+                  className="text-sm leading-relaxed"
+                  style={{
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    color: 'var(--color-text-primary)'
+                  }}
+                >
+                  {selectedRequest.Data}
+                </p>
+                <div
+                  className="mt-2 pt-2"
+                  style={{ borderTop: '1px solid var(--color-border)' }}
+                >
+                  <p
+                    className="text-xs"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    بواسطة: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: '2-digit',
+                      day: '2-digit'
+                    })} - {new Date(selectedRequest.Date).toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    })}
+                  </p>
+                </div>
+              </div>
+
+              {/* Note Input */}
+              <div className="mb-6">
+                <label
+                  className="block mb-3"
+                  style={{
+                    fontSize: '14px',
+                    fontFamily: 'var(--font-ibm-arabic-semibold)',
+                    color: 'var(--color-text-secondary)'
+                  }}
+                >
+                  اكتب ملاحظتك
+                </label>
+                <div className="relative">
+                  <textarea
+                    value={noteText}
+                    onChange={(e) => setNoteText(e.target.value)}
+                    placeholder="أضف ملاحظة حول هذا الطلب..."
+                    className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
+                    style={{
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      borderRadius: '12px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--color-text-primary)',
+                      minHeight: '100px'
+                    }}
+                    rows={4}
+                    maxLength={500}
+                  />
+                  <div
+                    className="absolute bottom-3 left-3 text-xs"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    {noteText.length}/500
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Buttons */}
-            <div className="flex gap-3">
+            {/* Footer Buttons */}
+            <div
+              className="flex gap-3"
+              style={{
+                paddingLeft: '24px',
+                paddingRight: '24px',
+                paddingTop: '16px',
+                paddingBottom: '24px'
+              }}
+            >
               <button
                 onClick={() => {
                   setShowNoteModal(false);
                   setNoteText('');
                   setSelectedRequest(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: 'var(--color-surface-secondary)',
+                  border: '1px solid var(--color-border)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-medium)'
+                }}
                 disabled={loading.sendNote}
               >
                 إلغاء
               </button>
               <button
                 onClick={sendNote}
-                className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#3b82f6',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
                 disabled={loading.sendNote || !noteText.trim()}
               >
                 {loading.sendNote ? (

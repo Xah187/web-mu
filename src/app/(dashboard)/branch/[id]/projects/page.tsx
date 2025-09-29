@@ -643,7 +643,11 @@ const BranchProjectsPage = () => {
               <RequestsPermissionGuard>
                 <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="طلبات الفرع">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14,2 14,8 20,8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10,9 9,9 8,9"/>
                   </svg>
                 </button>
               </RequestsPermissionGuard>
@@ -651,11 +655,9 @@ const BranchProjectsPage = () => {
               {/* Branch Covenant (Finance) in Header */}
               <PermissionBasedVisibility permission="covenant">
                 <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="عهد الفرع">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <rect x="2" y="6" width="20" height="12" rx="2" ry="2" strokeWidth="1.8"/>
-                    <circle cx="16" cy="12" r="2" strokeWidth="1.8"/>
-                    <path d="M6 10h4" strokeWidth="1.8" strokeLinecap="round"/>
-                    <path d="M6 14h3" strokeWidth="1.8" strokeLinecap="round"/>
+                  <svg width="20" height="20" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="currentColor"/>
+                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="currentColor"/>
                   </svg>
                 </button>
               </PermissionBasedVisibility>
@@ -781,7 +783,11 @@ const BranchProjectsPage = () => {
                     title="طلبات الفرع"
                   >
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-blue-600">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10,9 9,9 8,9"/>
                     </svg>
                   </button>
                 </RequestsPermissionGuard>
@@ -790,10 +796,13 @@ const BranchProjectsPage = () => {
                 <PermissionBasedVisibility permission="covenant">
                   <button
                     onClick={handleFinance}
-                    className="px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200 font-ibm-arabic-bold text-green-700"
+                    className="px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200 font-ibm-arabic-bold text-green-700 flex items-center justify-center"
                     title="عهد الفرع"
                   >
-                    $
+                    <svg width="24" height="24" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="#15803d"/>
+                      <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="#15803d"/>
+                    </svg>
                   </button>
                 </PermissionBasedVisibility>
               </div>
