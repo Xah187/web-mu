@@ -635,12 +635,9 @@ export default function CreateFinanceModal({
                   value={financeData.Amount || ''}
                   onChange={(e) => setFinanceData(prev => ({ ...prev, Amount: parseFloat(e.target.value) || 0 }))}
                   placeholder="0"
-                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white focus:border-blue-500 dark:focus:border-blue-400"
                   style={{
                     padding: scale(12),
-                    backgroundColor: 'var(--theme-input-background)',
-                    border: '1px solid var(--theme-border)',
-                    color: 'var(--theme-text-primary)',
                     fontSize: scale(14),
                     fontFamily: fonts.IBMPlexSansArabicRegular,
                     textAlign: 'right'

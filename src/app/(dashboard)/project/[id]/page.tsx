@@ -647,8 +647,8 @@ const ProjectDetailsPage = () => {
         <PageHeader
           title={project?.Nameproject || 'المشروع'}
           backButton={
-            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الرجوع">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000">
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الرجوع">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
@@ -656,32 +656,32 @@ const ProjectDetailsPage = () => {
           actions={
             <div className="flex items-center gap-4 sm:gap-6">
               {hasPermission('تعديل بيانات المشروع') && (
-                <button onClick={handleEdit} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تعديل المشروع">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
+                <button onClick={handleEdit} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="تعديل المشروع">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
               )}
-              <button onClick={handleArchives} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الأرشيف">
+              <button onClick={handleArchives} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الأرشيف">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="#000000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="9" y="12" width="6" height="2" rx="1" fill="#000000"/>
-                  <line x1="7" y1="16" x2="17" y2="16" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="7" y1="18" x2="14" y2="18" stroke="#000000" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="9" y="12" width="6" height="2" rx="1" fill="currentColor"/>
+                  <line x1="7" y1="16" x2="17" y2="16" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="7" y1="18" x2="14" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </button>
               {hasPermission('انشاء عمليات مالية') && (
-                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="المالية">
+                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="المالية">
                   <svg width="18" height="18" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="#000000"/>
-                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="#000000"/>
+                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="currentColor"/>
+                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="currentColor"/>
                   </svg>
                 </button>
               )}
               {hasPermission('إنشاء طلبات') && (
-                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الطلبات">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
+                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الطلبات">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14,2 14,8 20,8"/>
                     <line x1="16" y1="13" x2="8" y2="13"/>
@@ -690,8 +690,8 @@ const ProjectDetailsPage = () => {
                   </svg>
                 </button>
               )}
-              <button onClick={handleNotifications} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الإشعارات">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000">
+              <button onClick={handleNotifications} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الإشعارات">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                   <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                 </svg>

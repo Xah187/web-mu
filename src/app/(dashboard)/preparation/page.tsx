@@ -1694,7 +1694,7 @@ export default function PreparationPage() {
                         text="إسناد دوام إضافي"
                         onpress={() => setCurrentView('overtime')}
                         styleButton={{
-                          backgroundColor: colors.ORANGE,
+                          backgroundColor: colors.BLUE,
                           color: colors.WHITE,
                           padding: scale(16),
                           display: 'flex',
@@ -1711,7 +1711,7 @@ export default function PreparationPage() {
                       text="إضافة صلاحيات الموارد البشرية"
                       onpress={() => setCurrentView('addHR')}
                       styleButton={{
-                        backgroundColor: colors.PREMREY,
+                        backgroundColor: colors.BLUE,
                         color: colors.WHITE,
                         padding: scale(16),
                         display: 'flex',
