@@ -12,6 +12,8 @@ import { scale } from '@/utils/responsiveSize';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import AttachmentDropdown from '@/components/chat/AttachmentDropdown';
 import useWebAttachment from '@/hooks/useWebAttachment';
+import MessageContextMenu from '@/components/chat/MessageContextMenu';
+import MessageInfoModal from '@/components/chat/MessageInfoModal';
 
 
 
@@ -24,6 +26,7 @@ interface ChatMessage {
   userName?: string;
   text?: string;
   message?: string;
+  content?: string;
   timeminet?: string;
   File?: any;
   Reply?: any;
@@ -62,6 +65,10 @@ export default function ChatPage() {
   const [replyToMessage, setReplyToMessage] = useState<ChatMessage | null>(null);
   const [longPressTimer, setLongPressTimer] = useState<NodeJS.Timeout | null>(null);
 
+  // Context Menu functionality - قائمة الخيارات عند الضغط المطول
+  const [contextMenu, setContextMenu] = useState<{ message: ChatMessage; x: number; y: number } | null>(null);
+  const [showMessageInfo, setShowMessageInfo] = useState<ChatMessage | null>(null);
+
   // وظائف الضغط الطويل للرد
   const handleMouseDown = (message: ChatMessage) => {
     const timer = setTimeout(() => {
@@ -91,6 +98,79 @@ export default function ChatPage() {
     setTimeout(() => {
       textareaRef.current?.focus();
     }, 100);
+  };
+
+  // وظائف القائمة السياقية (Context Menu)
+  const handleContextMenu = (e: React.MouseEvent, message: ChatMessage) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setContextMenu({
+      message,
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  const handleCopyMessage = (message: ChatMessage) => {
+    const text = message.message || message.text || message.content || '';
+    if (text) {
+      navigator.clipboard.writeText(text).then(() => {
+        // يمكن إضافة toast notification هنا
+        console.log('تم نسخ الرسالة');
+      });
+    }
+  };
+
+  const handleDeleteMessage = async (message: ChatMessage) => {
+    if (!message.chatID) {
+      // حذف محلي فقط
+      setMessages(prev => prev.filter(m => m.idSendr !== message.idSendr));
+      return;
+    }
+
+    try {
+      const deletePayload = {
+        ProjectID: parseInt(ProjectID),
+        StageID: typess,
+        message: message.message || '',
+        Sender: message.Sender || message.userName || '',
+        chatID: message.chatID,
+        kind: 'delete'
+      };
+
+      // حذف محلياً أولاً
+      setMessages(prev => prev.filter(m => m.chatID !== message.chatID));
+
+      // إرسال طلب الحذف للسيرفر
+      socketService.emit('send_message', deletePayload);
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      setErrorMsg('فشل حذف الرسالة');
+    }
+  };
+
+  const handleResendMessage = async (message: ChatMessage) => {
+    try {
+      const resendPayload = {
+        ...message,
+        kind: 'new',
+        StageID: message.StageID || typess,
+        arrived: false
+      };
+
+      // إذا كان هناك ملف، نحتاج إلى إعادة رفعه
+      if (message.File && Object.keys(message.File).length > 0 && message.File.type !== 'location') {
+        // للملفات، نحتاج إلى منطق خاص لإعادة الرفع
+        console.log('إعادة إرسال ملف - يحتاج إلى تنفيذ خاص');
+        setErrorMsg('إعادة إرسال الملفات غير مدعومة حالياً');
+      } else {
+        // للرسائل النصية والمواقع
+        socketService.emit('send_message', resendPayload);
+      }
+    } catch (error) {
+      console.error('Error resending message:', error);
+      setErrorMsg('فشل إعادة إرسال الرسالة');
+    }
   };
 
   const handleKeyDown: React.KeyboardEventHandler<HTMLTextAreaElement> = (e) => {
@@ -289,9 +369,17 @@ export default function ChatPage() {
       const currentUserName = ((user?.data?.userName as string) || (user as any)?.userName || '') as string;
       const senderName = (msg.userName ?? msg.Sender ?? '') as string;
 
+      // معالجة رسائل الحذف - مثل التطبيق المحمول
+      if (msg.kind === 'delete') {
+        // حذف الرسالة من القائمة بناءً على chatID
+        setMessages(prev => prev.filter(m => m.chatID !== msg.chatID));
+        return;
+      }
+
+      // معالجة الرسائل الجديدة
       // Only add message if it's from another user (not from current user)
       // This prevents duplicate messages when current user sends a message
-      if (senderName?.toLowerCase?.() !== currentUserName?.toLowerCase?.()) {
+      if (msg.kind === 'new' && senderName?.toLowerCase?.() !== currentUserName?.toLowerCase?.()) {
         const n = normalizeMessage(msg);
         addMessageSafely(n);
       }
@@ -645,6 +733,7 @@ export default function ChatPage() {
                 onMouseLeave={handleMouseUp} // إلغاء عند مغادرة المنطقة
                 onTouchStart={() => handleMouseDown(m)} // Touch للهواتف
                 onTouchEnd={handleMouseUp} // Touch end للهواتف
+                onContextMenu={(e) => handleContextMenu(e, m)} // Right click للقائمة السياقية
               >
                 {/* Reply Button - يظهر عند hover */}
                 <button
@@ -924,6 +1013,33 @@ export default function ChatPage() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Context Menu - قائمة الخيارات */}
+      {contextMenu && (
+        <MessageContextMenu
+          message={contextMenu.message}
+          position={{ x: contextMenu.x, y: contextMenu.y }}
+          onClose={() => setContextMenu(null)}
+          onReply={() => {
+            setReplyToMessage(contextMenu.message);
+            setTimeout(() => textareaRef.current?.focus(), 100);
+          }}
+          onInfo={() => setShowMessageInfo(contextMenu.message)}
+          onCopy={() => handleCopyMessage(contextMenu.message)}
+          onDelete={() => handleDeleteMessage(contextMenu.message)}
+          onResend={() => handleResendMessage(contextMenu.message)}
+          currentUserName={((user?.data?.userName as string) || (user as any)?.userName || '') as string}
+          userJob={(user?.data as any)?.job || ''}
+        />
+      )}
+
+      {/* Message Info Modal - نافذة معلومات الرسالة */}
+      {showMessageInfo && (
+        <MessageInfoModal
+          message={showMessageInfo}
+          onClose={() => setShowMessageInfo(null)}
+        />
       )}
     </ResponsiveLayout>
   );
