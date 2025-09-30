@@ -1342,26 +1342,6 @@ export default function PreparationPage() {
     <ResponsiveLayout>
       <PageHeader
         title="نظام التحضير"
-        backButton={
-          <ButtonCreat
-            text="العودة"
-            onpress={() => router.back()}
-            styleButton={{
-              backgroundColor: colors.LIGHTMIST,
-              color: colors.BLUE,
-              padding: `${scale(12)}px ${scale(20)}px`,
-              fontSize: scale(14 + size),
-              fontFamily: fonts.IBMPlexSansArabicMedium,
-              borderRadius: `${scale(8)}px`,
-              boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-              transition: 'all 0.2s ease',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: `${scale(6)}px`
-            }}
-          />
-        }
       />
 
       {/* Camera Modal */}
@@ -1380,7 +1360,7 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(18 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  color: colors.BLACK
+                  color: 'var(--color-text-primary)'
                 }}
               >
                 التقاط صورة التحضير
@@ -1389,7 +1369,7 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(14 + size),
                   fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: colors.GREAY
+                  color: 'var(--color-text-secondary)'
                 }}
               >
                 تأكد من وضوح وجهك في الصورة
@@ -1428,8 +1408,8 @@ export default function PreparationPage() {
                 <div className="relative w-full rounded-lg"
                   style={{
                     height: verticalScale(250),
-                    backgroundColor: colors.GREY,
-                    border: '2px solid #ccc'
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    border: '2px solid var(--color-border)'
                   }}>
                   <video
                     ref={videoRef}
@@ -1441,8 +1421,18 @@ export default function PreparationPage() {
                   />
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
-                    <p className="text-center text-gray-600 mb-2">جاري تشغيل الكاميرا...</p>
-                    <p className="text-xs text-center text-gray-500">يرجى السماح بالوصول للكاميرا</p>
+                    <p
+                      className="text-center mb-2"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      جاري تشغيل الكاميرا...
+                    </p>
+                    <p
+                      className="text-xs text-center"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
+                      يرجى السماح بالوصول للكاميرا
+                    </p>
                   </div>
                 </div>
               ) : isCameraActive ? (
@@ -1466,11 +1456,16 @@ export default function PreparationPage() {
                 <div className="flex flex-col items-center justify-center w-full rounded-lg"
                   style={{
                     height: verticalScale(250),
-                    backgroundColor: colors.GREY,
-                    border: '2px dashed #ccc'
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    border: '2px dashed var(--color-border)'
                   }}>
                   <div className="text-6xl mb-4">📷</div>
-                  <p className="text-center text-gray-600 mb-4">اضغط الزر لتشغيل الكاميرا</p>
+                  <p
+                    className="text-center mb-4"
+                    style={{ color: 'var(--color-text-secondary)' }}
+                  >
+                    اضغط الزر لتشغيل الكاميرا
+                  </p>
                 </div>
               )}
 
@@ -1490,7 +1485,7 @@ export default function PreparationPage() {
                 }}
                 styleButton={{
                   flex: 1,
-                  backgroundColor: colors.GREAY,
+                  backgroundColor: 'var(--color-text-secondary)',
                   color: colors.WHITE,
                   padding: `${scale(12)}px ${scale(16)}px`,
                   fontSize: scale(14 + size),
@@ -1581,8 +1576,8 @@ export default function PreparationPage() {
               onClick={() => setShowImageModal(false)}
               className="absolute top-2 right-2 rounded-full p-2 z-10"
               style={{
-                backgroundColor: colors.WHITE,
-                color: colors.BLACK
+                backgroundColor: 'var(--color-surface)',
+                color: 'var(--color-text-primary)'
               }}
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1607,7 +1602,7 @@ export default function PreparationPage() {
               style={{
                 fontSize: scale(20 + size),
                 fontFamily: fonts.IBMPlexSansArabicBold,
-                color: colors.BLACK
+                color: 'var(--color-text-primary)'
               }}
             >
               خيارات التحضير
@@ -1660,14 +1655,14 @@ export default function PreparationPage() {
             {(hasHRPermissions() || hasManagerPermissions()) && (
               <div
                 className="pt-6"
-                style={{ borderTop: `1px solid ${colors.BORDERCOLOR}` }}
+                style={{ borderTop: '1px solid var(--color-border)' }}
               >
                 <h3
                   className="mb-4"
                   style={{
                     fontSize: scale(18 + size),
                     fontFamily: fonts.IBMPlexSansArabicBold,
-                    color: colors.BLACK
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   خيارات إضافية
@@ -1734,7 +1729,7 @@ export default function PreparationPage() {
               style={{
                 paddingBottom: `${scale(24)}px`,
                 marginBottom: `${scale(24)}px`,
-                borderBottom: `1px solid ${colors.BORDERCOLOR}`
+                borderBottom: '1px solid var(--color-border)'
               }}
             >
               <div
@@ -1748,20 +1743,20 @@ export default function PreparationPage() {
                   style={{
                     fontSize: scale(20 + size),
                     fontFamily: fonts.IBMPlexSansArabicBold,
-                    color: colors.BLACK
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   سجلات التحضير
                 </h2>
                 <button
                   onClick={() => setCurrentView('buttons')}
-                  className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                  className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
                   title="العودة"
                   style={{
-                    backgroundColor: colors.LIGHTMIST,
+                    backgroundColor: 'var(--color-surface-secondary)',
                     padding: `${scale(10)}px`,
                     borderRadius: `${scale(8)}px`,
-                    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                    boxShadow: '0 2px 4px var(--color-card-shadow)',
                     transition: 'all 0.2s ease',
                     minWidth: `${scale(44)}px`,
                     minHeight: `${scale(44)}px`,
@@ -1771,7 +1766,7 @@ export default function PreparationPage() {
                 >
                   <BackArrowIcon
                     size={scale(20)}
-                    color={colors.BLUE}
+                    color="var(--color-primary)"
                   />
                 </button>
               </div>
@@ -1794,7 +1789,7 @@ export default function PreparationPage() {
                       style={{
                         fontSize: scale(12 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
-                        color: colors.GREAY,
+                        color: 'var(--color-text-secondary)',
                         marginBottom: `${scale(6)}px`
                       }}
                     >
@@ -1809,7 +1804,9 @@ export default function PreparationPage() {
                         onChange={handleDateChange}
                         className="rounded-lg"
                         style={{
-                          border: `1px solid ${colors.BORDERCOLOR}`,
+                          border: '1px solid var(--color-border)',
+                          backgroundColor: 'var(--color-surface)',
+                          color: 'var(--color-text-primary)',
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: scale(14 + size),
                           padding: `${scale(10)}px ${scale(16)}px`,
@@ -1828,25 +1825,27 @@ export default function PreparationPage() {
                       setEmployees([]);
                       setShowEmployeeSearch(!showEmployeeSearch);
                     }}
-                    className="bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors shadow-sm hover:shadow-md"
+                    className="rounded-lg transition-colors shadow-sm hover:shadow-md"
                     title="فلترة"
                     style={{
+                      backgroundColor: 'var(--color-surface-secondary)',
                       padding: `${scale(12)}px`,
                       borderRadius: `${scale(8)}px`,
                       height: `${scale(44)}px`, // نفس ارتفاع input التاريخ تقريباً
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
+                      justifyContent: 'center',
+                      border: '1px solid var(--color-border)'
                     }}
                   >
                     <svg
-                      className="text-gray-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
                       style={{
                         width: `${scale(20)}px`,
-                        height: `${scale(20)}px`
+                        height: `${scale(20)}px`,
+                        color: 'var(--color-text-secondary)'
                       }}
                     >
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707v4.586a1 1 0 01-.293.707l-2 2A1 1 0 0111 21v-6.586a1 1 0 00-.293-.707L4.293 7.293A1 1 0 014 6.586V4z" />
@@ -1860,16 +1859,17 @@ export default function PreparationPage() {
                 <div
                   className="rounded-lg min-w-fit"
                   style={{
-                    backgroundColor: colors.GREY,
+                    backgroundColor: 'var(--color-surface-secondary)',
                     padding: `${scale(16)}px ${scale(20)}px`,
-                    borderRadius: `${scale(12)}px`
+                    borderRadius: `${scale(12)}px`,
+                    border: '1px solid var(--color-border)'
                   }}
                 >
                   <div
                     style={{
                       fontSize: scale(12 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      color: colors.GREAY,
+                      color: 'var(--color-text-secondary)',
                       marginBottom: `${scale(6)}px`
                     }}
                   >
@@ -1879,7 +1879,7 @@ export default function PreparationPage() {
                     style={{
                       fontSize: scale(18 + size),
                       fontFamily: fonts.IBMPlexSansArabicBold,
-                      color: colors.BLACK,
+                      color: 'var(--color-text-primary)',
                       lineHeight: 1.2,
                       textAlign: 'center'
                     }}
@@ -1894,7 +1894,10 @@ export default function PreparationPage() {
                 {/* Employee Search */}
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-sm font-ibm-arabic-medium text-gray-700">
+                    <label
+                      className="text-sm font-ibm-arabic-medium"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
                       البحث عن موظف محدد
                     </label>
                     {selectedEmployee && (
@@ -1904,7 +1907,7 @@ export default function PreparationPage() {
                           setSearchQuery('');
                           loadDailyPreparations();
                         }}
-                        className="text-red-600 hover:text-red-800 transition-colors duration-200"
+                        className="transition-colors duration-200"
                         style={{
                           fontSize: `${scale(12 + size)}px`,
                           fontFamily: fonts.IBMPlexSansArabicMedium,
@@ -1912,6 +1915,7 @@ export default function PreparationPage() {
                           borderRadius: `${scale(6)}px`,
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
                           border: '1px solid rgba(239, 68, 68, 0.2)',
+                          color: '#dc2626',
                           marginBottom: `${scale(8)}px` // رفع الزر قليلاً عن القائمة التي تحته
                         }}
                       >
@@ -1937,13 +1941,15 @@ export default function PreparationPage() {
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="ابحث عن المستخدم"
-                        className="flex-1 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        className="flex-1 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                         style={{
                           padding: `${scale(12)}px ${scale(16)}px`,
                           fontSize: `${scale(14 + size)}px`,
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           borderRadius: `${scale(8)}px`,
-                          borderColor: colors.BORDERCOLOR
+                          border: '1px solid var(--color-border)',
+                          backgroundColor: 'var(--color-surface)',
+                          color: 'var(--color-text-primary)'
                         }}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter') {
@@ -1970,12 +1976,13 @@ export default function PreparationPage() {
                   {/* Employee Search Results */}
                   {showEmployeeSearch && employees.length > 0 && (
                     <div
-                      className="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg overflow-y-auto"
+                      className="absolute z-10 rounded-lg shadow-lg overflow-y-auto"
                       style={{
                         marginTop: `${scale(4)}px`,
                         borderRadius: `${scale(12)}px`,
                         maxHeight: `${verticalScale(240)}px`,
-                        borderColor: colors.BORDERCOLOR,
+                        backgroundColor: 'var(--color-surface)',
+                        border: '1px solid var(--color-border)',
                         boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
                         // تموضع ذكي للقائمة
                         width: `${scale(320)}px`, // عرض افتراضي
@@ -1989,10 +1996,11 @@ export default function PreparationPage() {
                         <button
                           key={employee.id}
                           onClick={() => handleEmployeeSelect(employee)}
-                          className="w-full text-right hover:bg-gray-50 active:bg-gray-100 border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                          className="w-full text-right transition-colors duration-200 last:border-b-0"
                           style={{
                             padding: `${scale(16)}px ${scale(20)}px`,
-                            borderBottomColor: colors.BORDERCOLOR,
+                            borderBottom: '1px solid var(--color-border)',
+                            backgroundColor: 'var(--color-surface)',
                             minHeight: `${scale(60)}px`, // حد أدنى للارتفاع لسهولة النقر
                             display: 'flex',
                             flexDirection: 'column',
@@ -2000,29 +2008,36 @@ export default function PreparationPage() {
                             justifyContent: 'center',
                             gap: `${scale(4)}px`
                           }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = 'var(--color-surface)';
+                          }}
                         >
                           <div
-                            className="font-ibm-arabic-medium text-gray-900"
+                            className="font-ibm-arabic-medium"
                             style={{
                               fontSize: `${scale(15 + size)}px`,
                               lineHeight: 1.4,
                               fontFamily: fonts.IBMPlexSansArabicMedium,
                               textAlign: 'right',
                               width: '100%',
-                              wordBreak: 'break-word'
+                              wordBreak: 'break-word',
+                              color: 'var(--color-text-primary)'
                             }}
                           >
                             {employee.userName}
                           </div>
                           <div
-                            className="text-gray-600"
                             style={{
                               fontSize: `${scale(12 + size)}px`,
                               lineHeight: 1.3,
                               fontFamily: fonts.IBMPlexSansArabicRegular,
                               textAlign: 'right',
                               width: '100%',
-                              wordBreak: 'break-word'
+                              wordBreak: 'break-word',
+                              color: 'var(--color-text-secondary)'
                             }}
                           >
                             {employee.job} - {employee.PhoneNumber}
@@ -2036,12 +2051,13 @@ export default function PreparationPage() {
                 {/* Selected Employee Info */}
                 {selectedEmployee && (
                   <div
-                    className="bg-blue-50 border border-blue-200 rounded-lg"
+                    className="rounded-lg"
                     style={{
                       padding: `${scale(20)}px`,
                       marginBottom: `${scale(24)}px`,
                       borderRadius: `${scale(12)}px`,
-                      borderColor: '#dbeafe'
+                      backgroundColor: 'var(--color-surface-secondary)',
+                      border: '1px solid var(--color-border)'
                     }}
                   >
                     <div
@@ -2050,20 +2066,21 @@ export default function PreparationPage() {
                     >
                       <div>
                         <h3
-                          className="font-ibm-arabic-bold text-blue-900"
+                          className="font-ibm-arabic-bold"
                           style={{
                             fontSize: `${scale(18 + size)}px`,
                             marginBottom: `${scale(6)}px`,
-                            lineHeight: 1.4
+                            lineHeight: 1.4,
+                            color: 'var(--color-text-primary)'
                           }}
                         >
                           {selectedEmployee.userName}
                         </h3>
                         <p
-                          className="text-blue-700"
                           style={{
                             fontSize: `${scale(14 + size)}px`,
-                            lineHeight: 1.3
+                            lineHeight: 1.3,
+                            color: 'var(--color-text-secondary)'
                           }}
                         >
                           {selectedEmployee.job} - {selectedEmployee.PhoneNumber}
@@ -2098,12 +2115,15 @@ export default function PreparationPage() {
                           طباعة
                         </button>
                         <div
-                          className="text-blue-600 bg-white rounded-full shadow-sm"
+                          className="rounded-full shadow-sm"
                           style={{
                             padding: `${scale(8)}px ${scale(16)}px`,
                             fontSize: `${scale(12 + size)}px`,
                             borderRadius: `${scale(20)}px`,
-                            fontFamily: fonts.IBMPlexSansArabicMedium
+                            fontFamily: fonts.IBMPlexSansArabicMedium,
+                            backgroundColor: 'var(--color-surface)',
+                            color: 'var(--color-primary)',
+                            border: '1px solid var(--color-border)'
                           }}
                         >
                           {selectedDate.toLocaleDateString('en-CA')}
@@ -2118,8 +2138,8 @@ export default function PreparationPage() {
                 {/* Preparation Records */}
                 {loading ? (
                   <div className="flex flex-col justify-center items-center py-12">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
-                    <p className="text-gray-600">جاري تحميل البيانات...</p>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-4" style={{ borderColor: 'var(--color-primary)' }}></div>
+                    <p style={{ color: 'var(--color-text-secondary)' }}>جاري تحميل البيانات...</p>
                   </div>
                 ) : preparationRecords.length > 0 ? (
                   <div
@@ -2132,19 +2152,23 @@ export default function PreparationPage() {
                     {preparationRecords.map((record, index) => (
                       <div
                         key={record.id || index}
-                        className="bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
+                        className="rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden"
                         style={{
                           marginBottom: `${scale(20)}px`,
                           borderRadius: `${scale(16)}px`,
+                          backgroundColor: 'var(--color-surface)',
+                          border: '1px solid var(--color-border)',
                           boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'
                         }}
                       >
                         {/* Employee Header */}
                         <div
-                          className="bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100"
+                          className="border-b"
                           style={{
                             padding: `${scale(20)}px ${scale(24)}px`,
-                            borderRadius: `${scale(16)}px ${scale(16)}px 0 0`
+                            borderRadius: `${scale(16)}px ${scale(16)}px 0 0`,
+                            backgroundColor: 'var(--color-surface-secondary)',
+                            borderBottomColor: 'var(--color-border)'
                           }}
                         >
                           <div className="flex justify-between items-center">
@@ -2153,21 +2177,25 @@ export default function PreparationPage() {
                               style={{ gap: `${scale(8)}px` }}
                             >
                               <h3
-                                className="font-ibm-arabic-bold text-gray-900"
+                                className="font-ibm-arabic-bold"
                                 style={{
                                   fontSize: `${scale(18 + size)}px`,
                                   lineHeight: 1.4,
-                                  marginBottom: `${scale(4)}px`
+                                  marginBottom: `${scale(4)}px`,
+                                  color: 'var(--color-text-primary)'
                                 }}
                               >
                                 {record.userName}
                               </h3>
                               <p
-                                className="text-gray-600 bg-white rounded-full inline-block"
+                                className="rounded-full inline-block"
                                 style={{
                                   fontSize: `${scale(12 + size)}px`,
                                   padding: `${scale(6)}px ${scale(12)}px`,
-                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+                                  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                  backgroundColor: 'var(--color-surface)',
+                                  color: 'var(--color-text-secondary)',
+                                  border: '1px solid var(--color-border)'
                                 }}
                               >
                                 {record.job || 'موظف'}
@@ -2177,27 +2205,31 @@ export default function PreparationPage() {
                             {/* Working Hours Display */}
                             {record.CheckIntime && record.CheckOUTtime && (
                               <div
-                                className="text-center bg-white rounded-lg shadow-sm border border-blue-100"
+                                className="text-center rounded-lg shadow-sm"
                                 style={{
                                   padding: `${scale(12)}px ${scale(16)}px`,
                                   marginLeft: `${scale(12)}px`,
-                                  marginRight: `${scale(12)}px`
+                                  marginRight: `${scale(12)}px`,
+                                  backgroundColor: 'var(--color-surface)',
+                                  border: '1px solid var(--color-border)'
                                 }}
                               >
                                 <div
-                                  className="text-blue-600 font-medium"
+                                  className="font-medium"
                                   style={{
                                     fontSize: `${scale(10 + size)}px`,
-                                    marginBottom: `${scale(4)}px`
+                                    marginBottom: `${scale(4)}px`,
+                                    color: 'var(--color-primary)'
                                   }}
                                 >
                                   إجمالي ساعات العمل
                                 </div>
                                 <div
-                                  className="font-ibm-arabic-bold text-blue-800"
+                                  className="font-ibm-arabic-bold"
                                   style={{
                                     fontSize: `${scale(14 + size)}px`,
-                                    lineHeight: 1.3
+                                    lineHeight: 1.3,
+                                    color: 'var(--color-text-primary)'
                                   }}
                                 >
                                   {(() => {
@@ -2218,19 +2250,22 @@ export default function PreparationPage() {
                               style={{ marginLeft: `${scale(16)}px` }}
                             >
                               <div
-                                className="text-gray-500"
                                 style={{
                                   fontSize: `${scale(11 + size)}px`,
-                                  marginBottom: `${scale(6)}px`
+                                  marginBottom: `${scale(6)}px`,
+                                  color: 'var(--color-text-secondary)'
                                 }}
                               >
                                 التاريخ
                               </div>
                               <div
-                                className="font-medium text-gray-700 bg-white rounded-lg shadow-sm"
+                                className="font-medium rounded-lg shadow-sm"
                                 style={{
                                   fontSize: `${scale(12 + size)}px`,
-                                  padding: `${scale(8)}px ${scale(12)}px`
+                                  padding: `${scale(8)}px ${scale(12)}px`,
+                                  backgroundColor: 'var(--color-surface)',
+                                  color: 'var(--color-text-primary)',
+                                  border: '1px solid var(--color-border)'
                                 }}
                               >
                                 {formatDate(record.Dateday)}
@@ -2255,11 +2290,12 @@ export default function PreparationPage() {
                               style={{ gap: `${scale(16)}px` }}
                             >
                               <div
-                                className="flex items-center border-b border-gray-100"
+                                className="flex items-center border-b"
                                 style={{
                                   gap: `${scale(12)}px`,
                                   paddingBottom: `${scale(12)}px`,
-                                  marginBottom: `${scale(16)}px`
+                                  marginBottom: `${scale(16)}px`,
+                                  borderBottomColor: 'var(--color-border)'
                                 }}
                               >
                                 <div
@@ -2270,10 +2306,11 @@ export default function PreparationPage() {
                                   }}
                                 ></div>
                                 <h4
-                                  className="font-ibm-arabic-bold text-gray-900"
+                                  className="font-ibm-arabic-bold"
                                   style={{
                                     fontSize: `${scale(16 + size)}px`,
-                                    lineHeight: 1.4
+                                    lineHeight: 1.4,
+                                    color: 'var(--color-text-primary)'
                                   }}
                                 >
                                   تحضير الدخول
@@ -2286,10 +2323,12 @@ export default function PreparationPage() {
                                   style={{ gap: `${scale(16)}px` }}
                                 >
                                   <div
-                                    className="bg-green-50 border border-green-200 rounded-lg"
+                                    className="rounded-lg"
                                     style={{
                                       padding: `${scale(16)}px`,
-                                      borderRadius: `${scale(12)}px`
+                                      borderRadius: `${scale(12)}px`,
+                                      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                      border: '1px solid rgba(34, 197, 94, 0.3)'
                                     }}
                                   >
                                     <div
@@ -2297,10 +2336,11 @@ export default function PreparationPage() {
                                       style={{ gap: `${scale(12)}px` }}
                                     >
                                       <div
-                                        className="bg-green-100 rounded-lg"
+                                        className="rounded-lg"
                                         style={{
                                           padding: `${scale(8)}px`,
-                                          borderRadius: `${scale(8)}px`
+                                          borderRadius: `${scale(8)}px`,
+                                          backgroundColor: 'rgba(34, 197, 94, 0.2)'
                                         }}
                                       >
                                         <svg
@@ -2318,19 +2358,21 @@ export default function PreparationPage() {
                                       </div>
                                       <div>
                                         <div
-                                          className="text-green-600 font-medium"
+                                          className="font-medium"
                                           style={{
                                             fontSize: `${scale(12 + size)}px`,
-                                            marginBottom: `${scale(4)}px`
+                                            marginBottom: `${scale(4)}px`,
+                                            color: '#059669'
                                           }}
                                         >
                                           وقت الدخول
                                         </div>
                                         <div
-                                          className="font-ibm-arabic-bold text-green-800"
+                                          className="font-ibm-arabic-bold"
                                           style={{
                                             fontSize: `${scale(16 + size)}px`,
-                                            lineHeight: 1.3
+                                            lineHeight: 1.3,
+                                            color: '#065f46'
                                           }}
                                         >
                                           {formatTime(record.CheckIntime)}
@@ -2346,11 +2388,12 @@ export default function PreparationPage() {
                                       }}
                                     >
                                       <div
-                                        className="text-gray-600 flex items-center"
+                                        className="flex items-center"
                                         style={{
                                           fontSize: `${scale(12 + size)}px`,
                                           marginBottom: `${scale(12)}px`,
-                                          gap: `${scale(8)}px`
+                                          gap: `${scale(8)}px`,
+                                          color: 'var(--color-text-secondary)'
                                         }}
                                       >
                                         <svg
@@ -2414,7 +2457,13 @@ export default function PreparationPage() {
                                         </div>
                                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                                           <div className="bg-white bg-opacity-90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
-                                            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg
+                                              className="w-6 h-6"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                              style={{ color: 'var(--color-text-primary)' }}
+                                            >
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
@@ -2425,11 +2474,28 @@ export default function PreparationPage() {
                                   )}
                                 </div>
                               ) : (
-                                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
-                                  <svg className="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div
+                                  className="rounded-lg p-4 text-center"
+                                  style={{
+                                    backgroundColor: 'var(--color-surface-secondary)',
+                                    border: '1px solid var(--color-border)'
+                                  }}
+                                >
+                                  <svg
+                                    className="w-8 h-8 mx-auto mb-2"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                  >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
-                                  <div className="text-sm text-gray-500">لم يتم التحضير بعد</div>
+                                  <div
+                                    className="text-sm"
+                                    style={{ color: 'var(--color-text-secondary)' }}
+                                  >
+                                    لم يتم التحضير بعد
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -2440,11 +2506,12 @@ export default function PreparationPage() {
                               style={{ gap: `${scale(16)}px` }}
                             >
                               <div
-                                className="flex items-center border-b border-gray-100"
+                                className="flex items-center border-b"
                                 style={{
                                   gap: `${scale(12)}px`,
                                   paddingBottom: `${scale(12)}px`,
-                                  marginBottom: `${scale(16)}px`
+                                  marginBottom: `${scale(16)}px`,
+                                  borderBottomColor: 'var(--color-border)'
                                 }}
                               >
                                 <div
@@ -2455,10 +2522,11 @@ export default function PreparationPage() {
                                   }}
                                 ></div>
                                 <h4
-                                  className="font-ibm-arabic-bold text-gray-900"
+                                  className="font-ibm-arabic-bold"
                                   style={{
                                     fontSize: `${scale(16 + size)}px`,
-                                    lineHeight: 1.4
+                                    lineHeight: 1.4,
+                                    color: 'var(--color-text-primary)'
                                   }}
                                 >
                                   تحضير الخروج
@@ -2471,10 +2539,12 @@ export default function PreparationPage() {
                                   style={{ gap: `${scale(16)}px` }}
                                 >
                                   <div
-                                    className="bg-red-50 border border-red-200 rounded-lg"
+                                    className="rounded-lg"
                                     style={{
                                       padding: `${scale(16)}px`,
-                                      borderRadius: `${scale(12)}px`
+                                      borderRadius: `${scale(12)}px`,
+                                      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                                      border: '1px solid rgba(239, 68, 68, 0.3)'
                                     }}
                                   >
                                     <div
@@ -2482,10 +2552,11 @@ export default function PreparationPage() {
                                       style={{ gap: `${scale(12)}px` }}
                                     >
                                       <div
-                                        className="bg-red-100 rounded-lg"
+                                        className="rounded-lg"
                                         style={{
                                           padding: `${scale(8)}px`,
-                                          borderRadius: `${scale(8)}px`
+                                          borderRadius: `${scale(8)}px`,
+                                          backgroundColor: 'rgba(239, 68, 68, 0.2)'
                                         }}
                                       >
                                         <svg
@@ -2503,19 +2574,21 @@ export default function PreparationPage() {
                                       </div>
                                       <div>
                                         <div
-                                          className="text-red-600 font-medium"
+                                          className="font-medium"
                                           style={{
                                             fontSize: `${scale(12 + size)}px`,
-                                            marginBottom: `${scale(4)}px`
+                                            marginBottom: `${scale(4)}px`,
+                                            color: '#dc2626'
                                           }}
                                         >
                                           وقت الخروج
                                         </div>
                                         <div
-                                          className="font-ibm-arabic-bold text-red-800"
+                                          className="font-ibm-arabic-bold"
                                           style={{
                                             fontSize: `${scale(16 + size)}px`,
-                                            lineHeight: 1.3
+                                            lineHeight: 1.3,
+                                            color: '#991b1b'
                                           }}
                                         >
                                           {formatTime(record.CheckOUTtime)}
@@ -2531,11 +2604,12 @@ export default function PreparationPage() {
                                       }}
                                     >
                                       <div
-                                        className="text-gray-600 flex items-center"
+                                        className="flex items-center"
                                         style={{
                                           fontSize: `${scale(12 + size)}px`,
                                           marginBottom: `${scale(12)}px`,
-                                          gap: `${scale(8)}px`
+                                          gap: `${scale(8)}px`,
+                                          color: 'var(--color-text-secondary)'
                                         }}
                                       >
                                         <svg
@@ -2599,7 +2673,13 @@ export default function PreparationPage() {
                                         </div>
                                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
                                           <div className="bg-white bg-opacity-90 p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-75 group-hover:scale-100">
-                                            <svg className="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg
+                                              className="w-6 h-6"
+                                              fill="none"
+                                              stroke="currentColor"
+                                              viewBox="0 0 24 24"
+                                              style={{ color: 'var(--color-text-primary)' }}
+                                            >
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                             </svg>
@@ -2611,29 +2691,32 @@ export default function PreparationPage() {
                                 </div>
                               ) : (
                                 <div
-                                  className="bg-gray-50 border border-gray-200 rounded-lg text-center"
+                                  className="rounded-lg text-center"
                                   style={{
                                     padding: `${scale(16)}px`,
-                                    borderRadius: `${scale(12)}px`
+                                    borderRadius: `${scale(12)}px`,
+                                    backgroundColor: 'var(--color-surface-secondary)',
+                                    border: '1px solid var(--color-border)'
                                   }}
                                 >
                                   <svg
-                                    className="text-gray-400 mx-auto"
+                                    className="mx-auto"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
                                     style={{
                                       width: `${scale(32)}px`,
                                       height: `${scale(32)}px`,
-                                      marginBottom: `${scale(8)}px`
+                                      marginBottom: `${scale(8)}px`,
+                                      color: 'var(--color-text-secondary)'
                                     }}
                                   >
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                                   </svg>
                                   <div
-                                    className="text-gray-500"
                                     style={{
-                                      fontSize: `${scale(12 + size)}px`
+                                      fontSize: `${scale(12 + size)}px`,
+                                      color: 'var(--color-text-secondary)'
                                     }}
                                   >
                                     لم يتم الانصراف بعد
@@ -2657,18 +2740,22 @@ export default function PreparationPage() {
                       >
                         {hrLoadingMore ? (
                           <div
-                            className="flex items-center text-gray-600 bg-gray-50 rounded-full"
+                            className="flex items-center rounded-full"
                             style={{
                               gap: `${scale(12)}px`,
                               padding: `${scale(12)}px ${scale(24)}px`,
-                              borderRadius: `${scale(24)}px`
+                              borderRadius: `${scale(24)}px`,
+                              backgroundColor: 'var(--color-surface-secondary)',
+                              color: 'var(--color-text-secondary)',
+                              border: '1px solid var(--color-border)'
                             }}
                           >
                             <div
-                              className="animate-spin rounded-full border-b-2 border-blue-600"
+                              className="animate-spin rounded-full border-b-2"
                               style={{
                                 width: `${scale(20)}px`,
-                                height: `${scale(20)}px`
+                                height: `${scale(20)}px`,
+                                borderColor: 'var(--color-primary)'
                               }}
                             ></div>
                             <span
@@ -2692,15 +2779,20 @@ export default function PreparationPage() {
                           </button>
                         ) : (
                           <div
-                            className="bg-gray-50 rounded-full"
+                            className="rounded-full"
                             style={{
                               padding: `${scale(12)}px ${scale(24)}px`,
-                              borderRadius: `${scale(24)}px`
+                              borderRadius: `${scale(24)}px`,
+                              backgroundColor: 'var(--color-surface-secondary)',
+                              border: '1px solid var(--color-border)'
                             }}
                           >
                             <span
-                              className="text-gray-500 font-medium"
-                              style={{ fontSize: `${scale(12 + size)}px` }}
+                              className="font-medium"
+                              style={{
+                                fontSize: `${scale(12 + size)}px`,
+                                color: 'var(--color-text-secondary)'
+                              }}
                             >
                               تم عرض جميع السجلات
                             </span>
@@ -2712,13 +2804,33 @@ export default function PreparationPage() {
                   </div>
                 ) : (
                   <div className="text-center py-16">
-                    <div className="bg-gray-50 rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6">
-                      <svg className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <div
+                      className="rounded-full w-24 h-24 flex items-center justify-center mx-auto mb-6"
+                      style={{
+                        backgroundColor: 'var(--color-surface-secondary)',
+                        border: '1px solid var(--color-border)'
+                      }}
+                    >
+                      <svg
+                        className="h-12 w-12"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        style={{ color: 'var(--color-text-secondary)' }}
+                      >
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">لا توجد سجلات تحضير</h3>
-                    <p className="text-gray-500 max-w-sm mx-auto">
+                    <h3
+                      className="text-lg font-ibm-arabic-bold mb-2"
+                      style={{ color: 'var(--color-text-primary)' }}
+                    >
+                      لا توجد سجلات تحضير
+                    </h3>
+                    <p
+                      className="max-w-sm mx-auto"
+                      style={{ color: 'var(--color-text-secondary)' }}
+                    >
                       {selectedEmployee
                         ? `لا توجد سجلات تحضير للموظف ${selectedEmployee.userName} في التاريخ المحدد`
                         : 'لا توجد سجلات تحضير للتاريخ المحدد'
@@ -2730,14 +2842,21 @@ export default function PreparationPage() {
                           setSelectedEmployee(null);
                           setShowEmployeeSearch(false);
                         }}
-                        className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200"
+                        className="font-medium transition-colors duration-200"
                         style={{
                           fontSize: `${scale(13 + size)}px`,
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           padding: `${scale(8)}px ${scale(16)}px`,
                           borderRadius: `${scale(6)}px`,
                           backgroundColor: 'rgba(37, 99, 235, 0.1)',
-                          border: '1px solid rgba(37, 99, 235, 0.2)'
+                          border: '1px solid rgba(37, 99, 235, 0.2)',
+                          color: 'var(--color-primary)'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
                         }}
                       >
                         عرض جميع السجلات
@@ -2757,20 +2876,20 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(20 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  color: colors.BLACK
+                  color: 'var(--color-text-primary)'
                 }}
               >
                 إسناد دوام إضافي
               </h2>
               <button
                 onClick={() => setCurrentView('buttons')}
-                className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
                 title="العودة"
                 style={{
-                  backgroundColor: colors.LIGHTMIST,
+                  backgroundColor: 'var(--color-surface-secondary)',
                   padding: `${scale(10)}px`,
                   borderRadius: `${scale(8)}px`,
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  boxShadow: '0 2px 4px var(--color-card-shadow)',
                   transition: 'all 0.2s ease',
                   minWidth: `${scale(44)}px`,
                   minHeight: `${scale(44)}px`,
@@ -2780,7 +2899,7 @@ export default function PreparationPage() {
               >
                 <BackArrowIcon
                   size={scale(20)}
-                  color={colors.BLUE}
+                  color="var(--color-primary)"
                 />
               </button>
             </div>
@@ -2792,7 +2911,7 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(16 + size),
                   fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: colors.BLACK
+                  color: 'var(--color-text-primary)'
                 }}
               >
                 البحث عن موظف
@@ -2824,22 +2943,24 @@ export default function PreparationPage() {
                     fontFamily: fonts.IBMPlexSansArabicMedium,
                     padding: scale(12),
                     borderRadius: scale(8),
-                    border: `1px solid ${colors.BORDERCOLOR}`,
-                    backgroundColor: colors.WHITE
+                    border: '1px solid var(--color-border)',
+                    backgroundColor: 'var(--color-surface)',
+                    color: 'var(--color-text-primary)'
                   }}
                 />
 
                 {/* Search Results Dropdown */}
                 {showEmployeeSearch && employeeSearchResults.length > 0 && (
                   <div
-                    className="absolute z-10 bg-white border border-gray-300 rounded-lg shadow-lg overflow-y-auto"
+                    className="absolute z-10 rounded-lg shadow-lg overflow-y-auto"
                     style={{
                       ...dropdownStyle,
                       marginTop: scale(4),
                       borderRadius: scale(12),
                       maxHeight: scale(240),
-                      borderColor: 'rgba(27, 78, 209, 0.1)',
-                      boxShadow: 'rgba(0, 0, 0, 0.1) 0px 10px 25px -5px, rgba(0, 0, 0, 0.04) 0px 10px 10px -5px',
+                      backgroundColor: 'var(--color-surface)',
+                      border: '1px solid var(--color-border)',
+                      boxShadow: 'var(--color-card-shadow) 0px 10px 25px -5px',
                       width: scale(320),
                       maxWidth: 'calc(100vw - 40px)',
                       minWidth: scale(280)
@@ -2854,23 +2975,21 @@ export default function PreparationPage() {
                           setShowEmployeeSearch(false);
                           setEmployeeSearchResults([]);
                         }}
-                        className="w-full text-right hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors duration-200"
+                        className="w-full text-right hover:opacity-80 last:border-b-0 transition-colors duration-200"
                         style={{
                           padding: scale(12) + 'px ' + scale(16) + 'px',
-                          borderBottomColor: 'rgba(27, 78, 209, 0.1)',
-                          borderWidth: '0.2px',
-                          borderColor: colors.BORDERCOLOR,
                           borderRadius: scale(5),
                           marginBottom: scale(2),
-                          backgroundColor: colors.WHITE
+                          backgroundColor: 'var(--color-surface)',
+                          borderBottom: '1px solid var(--color-border)'
                         }}
                       >
                         <div
                           style={{
                             fontSize: scale(14 + size),
                             fontFamily: fonts.IBMPlexSansArabicMedium,
-                            color: colors.BLACK,
-                            textAlign: 'right'
+                            textAlign: 'right',
+                            color: 'var(--color-text-primary)'
                           }}
                         >
                           {employee.userName}
@@ -2884,17 +3003,19 @@ export default function PreparationPage() {
               {/* Selected Employee Display */}
               {selectedOvertimeEmployee && (
                 <div
-                  className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg"
+                  className="mt-4 p-4 rounded-lg"
                   style={{
                     borderRadius: scale(8),
-                    padding: scale(16)
+                    padding: scale(16),
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    border: '1px solid rgba(37, 99, 235, 0.3)'
                   }}
                 >
                   <div
                     style={{
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      color: colors.BLUE,
+                      color: 'var(--color-primary)',
                       marginBottom: scale(4)
                     }}
                   >
@@ -2906,14 +3027,21 @@ export default function PreparationPage() {
                       setSearchQuery('');
                       setSelectedOvertimeDates([]);
                     }}
-                    className="text-red-600 hover:text-red-800 transition-colors duration-200 mt-2"
+                    className="transition-colors duration-200 mt-2"
                     style={{
                       fontSize: scale(12 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       padding: scale(6) + 'px ' + scale(12) + 'px',
                       borderRadius: scale(6),
                       backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                      border: '1px solid rgba(239, 68, 68, 0.2)'
+                      border: '1px solid rgba(239, 68, 68, 0.2)',
+                      color: '#dc2626'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.color = '#991b1b';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.color = '#dc2626';
                     }}
                   >
                     إلغاء الاختيار
@@ -2930,20 +3058,26 @@ export default function PreparationPage() {
                   style={{
                     fontSize: scale(16 + size),
                     fontFamily: fonts.IBMPlexSansArabicMedium,
-                    color: colors.BLACK
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   اختيار التواريخ للدوام الإضافي
                 </h3>
 
                 {/* Current Overtime Display */}
-                <div className="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                <div
+                  className="mb-4 p-4 rounded-lg"
+                  style={{
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    border: '1px solid var(--color-border)'
+                  }}
+                >
                   <h4
                     className="mb-2"
                     style={{
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      color: colors.BLACK
+                      color: 'var(--color-text-primary)'
                     }}
                   >
                     الدوام الإضافي الحالي:
@@ -2952,7 +3086,7 @@ export default function PreparationPage() {
                     style={{
                       fontSize: scale(12 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      color: colors.GREAY
+                      color: 'var(--color-text-secondary)'
                     }}
                   >
                     {selectedOvertimeEmployee?.Datedayovertime && selectedOvertimeEmployee.Datedayovertime.length > 0 ? (
@@ -2960,10 +3094,12 @@ export default function PreparationPage() {
                         {selectedOvertimeEmployee.Datedayovertime.map((date: string, index: number) => (
                           <span
                             key={index}
-                            className="bg-green-100 text-green-800 px-2 py-1 rounded"
+                            className="px-2 py-1 rounded"
                             style={{
                               fontSize: scale(11 + size),
-                              fontFamily: fonts.IBMPlexSansArabicMedium
+                              fontFamily: fonts.IBMPlexSansArabicMedium,
+                              backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                              color: '#166534'
                             }}
                           >
                             {date}
@@ -2981,7 +3117,7 @@ export default function PreparationPage() {
                   style={{
                     fontSize: scale(14 + size),
                     fontFamily: fonts.IBMPlexSansArabicMedium,
-                    color: colors.BLACK
+                    color: 'var(--color-text-primary)'
                   }}
                 >
                   إضافة تواريخ جديدة:
@@ -2992,13 +3128,15 @@ export default function PreparationPage() {
                     id="overtime-date-picker"
                     name="overtime-date-picker"
                     type="date"
-                    className="w-full p-3 border border-gray-300 rounded-lg"
+                    className="w-full p-3 rounded-lg"
                     style={{
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       padding: scale(12),
                       borderRadius: scale(8),
-                      border: `1px solid ${colors.BORDERCOLOR}`
+                      border: '1px solid var(--color-border)',
+                      backgroundColor: 'var(--color-surface)',
+                      color: 'var(--color-text-primary)'
                     }}
                     onChange={(e) => {
                       const selectedDate = e.target.value;
@@ -3017,7 +3155,7 @@ export default function PreparationPage() {
                       style={{
                         fontSize: scale(14 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
-                        color: colors.BLACK
+                        color: 'var(--color-text-primary)'
                       }}
                     >
                       التواريخ المختارة:
@@ -3026,10 +3164,12 @@ export default function PreparationPage() {
                       {selectedOvertimeDates.map((date, index) => (
                         <div
                           key={index}
-                          className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full"
+                          className="flex items-center px-3 py-1 rounded-full"
                           style={{
                             fontSize: scale(12 + size),
-                            fontFamily: fonts.IBMPlexSansArabicMedium
+                            fontFamily: fonts.IBMPlexSansArabicMedium,
+                            backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                            color: '#1e40af'
                           }}
                         >
                           {date}
@@ -3037,7 +3177,14 @@ export default function PreparationPage() {
                             onClick={() => {
                               setSelectedOvertimeDates(selectedOvertimeDates.filter((_, i) => i !== index));
                             }}
-                            className="ml-2 text-red-600 hover:text-red-800"
+                            className="ml-2 transition-colors duration-200"
+                            style={{ color: '#dc2626' }}
+                            onMouseEnter={(e) => {
+                              e.currentTarget.style.color = '#991b1b';
+                            }}
+                            onMouseLeave={(e) => {
+                              e.currentTarget.style.color = '#dc2626';
+                            }}
                           >
                             ×
                           </button>
@@ -3092,20 +3239,20 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(20 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  color: colors.BLACK
+                  color: 'var(--color-text-primary)'
                 }}
               >
                 إضافة صلاحيات الموارد البشرية
               </h2>
               <button
                 onClick={() => setCurrentView('buttons')}
-                className="flex items-center justify-center hover:bg-gray-100 transition-colors duration-200"
+                className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
                 title="العودة"
                 style={{
-                  backgroundColor: colors.LIGHTMIST,
+                  backgroundColor: 'var(--color-surface-secondary)',
                   padding: `${scale(10)}px`,
                   borderRadius: `${scale(8)}px`,
-                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                  boxShadow: '0 2px 4px var(--color-card-shadow)',
                   transition: 'all 0.2s ease',
                   minWidth: `${scale(44)}px`,
                   minHeight: `${scale(44)}px`,
@@ -3115,7 +3262,7 @@ export default function PreparationPage() {
               >
                 <BackArrowIcon
                   size={scale(20)}
-                  color={colors.BLUE}
+                  color="var(--color-primary)"
                 />
               </button>
             </div>

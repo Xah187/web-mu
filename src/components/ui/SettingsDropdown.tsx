@@ -11,6 +11,8 @@ import { AdminGuard, PermissionBasedVisibility } from '@/components/auth/Permiss
 import { Tostget } from '@/components/ui/Toast';
 import { toggleFinanceOperations, refreshUserData } from '@/lib/api/company/ApiCompany';
 import { useTheme } from '@/hooks/useTheme';
+import LogoutModal from '@/components/ui/LogoutModal';
+import DeleteAccountModal from '@/components/ui/DeleteAccountModal';
 
 interface SettingsDropdownProps {
   className?: string;
@@ -48,54 +50,7 @@ function DropdownItem({ title, onPress, color, className = '', hasBorder = false
   );
 }
 
-// Delete Account Confirmation Modal
-function DeleteAccountModal({ visible, onClose, onConfirm }: { visible: boolean; onClose: () => void; onConfirm: () => void }) {
-  if (!visible) return null;
 
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="theme-card rounded-xl w-full max-w-sm" style={{ backgroundColor: 'var(--color-card-background)', border: '1px solid var(--color-card-border)' }}>
-        <div className="p-6 text-center">
-          <div className="mb-4">
-            <svg className="mx-auto h-12 w-12 text-red" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v3m0 0v9a2 2 0 002 2h8a2 2 0 002-2V9m0 0V6a2 2 0 00-2-2H8a2 2 0 00-2 2v3m0 0h8m0 0V9" />
-            </svg>
-          </div>
-          <h3 className="font-cairo-bold text-lg mb-2 theme-text-primary" style={{ color: 'var(--color-text-primary)' }}>
-            حذف حسابك
-          </h3>
-          <p className="font-cairo mb-6 theme-text-secondary" style={{ color: 'var(--color-text-secondary)' }}>
-            هل أنت متأكد من رغبتك في حذف حسابك؟ هذا الإجراء لا يمكن التراجع عنه.
-          </p>
-
-          <div className="flex gap-3">
-            <button
-              onClick={onConfirm}
-              className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors"
-              style={{
-                backgroundColor: colors.RED,
-                color: 'white'
-              }}
-            >
-              حذف الحساب
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors theme-button-secondary"
-              style={{
-                backgroundColor: 'var(--color-surface-secondary)',
-                color: 'var(--color-text-primary)',
-                border: '1px solid var(--color-border)'
-              }}
-            >
-              إلغاء
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function SettingsDropdown({ className = '', showLabel = false }: SettingsDropdownProps) {
   const router = useRouter();
@@ -269,50 +224,19 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
     <>
       {/* Delete Account Modal */}
       <DeleteAccountModal
-        visible={showDeleteConfirm}
+        isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
         onConfirm={handleDeleteAccount}
+        isLoading={false}
       />
 
       {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-sm">
-            <div className="p-6 text-center">
-              <div className="mb-4">
-                <svg className="mx-auto h-12 w-12 text-red" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l4 4m-4-4v12" />
-                </svg>
-              </div>
-              <h3 className="font-cairo-bold text-black text-lg mb-2">
-                تأكيد تسجيل الخروج
-              </h3>
-              <p className="font-cairo text-gray-600 mb-6">
-                هل أنت متأكد من رغبتك في تسجيل الخروج؟
-              </p>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={handleLogout}
-                  className="flex-1 py-3 px-4 rounded-lg font-cairo font-medium transition-colors"
-                  style={{
-                    backgroundColor: colors.RED,
-                    color: 'white'
-                  }}
-                >
-                  تسجيل الخروج
-                </button>
-                <button
-                  onClick={() => setShowLogoutConfirm(false)}
-                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-cairo font-medium hover:bg-gray-200 transition-colors"
-                >
-                  إلغاء
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <LogoutModal
+        isOpen={showLogoutConfirm}
+        onClose={() => setShowLogoutConfirm(false)}
+        onConfirm={handleLogout}
+        isLoading={false}
+      />
 
       {/* Settings Dropdown */}
       <div className={`relative ${className}`} ref={dropdownRef}>

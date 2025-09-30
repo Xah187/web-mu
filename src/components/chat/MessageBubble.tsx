@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { fonts } from '@/constants/fonts';
-import { colors } from '@/constants/colors';
 import { scale } from '@/utils/responsiveSize';
 
 interface MessageBubbleProps {
@@ -173,7 +172,7 @@ export default function MessageBubble({
           fontFamily: fonts.IBMPlexSansArabicRegular,
           fontSize: `${scale(14 + size)}px`,
           lineHeight: 1.6,
-          color: colors.BLACK,
+          color: 'var(--color-text-primary)',
           margin: 0,
           wordWrap: 'break-word'
         }}>
@@ -206,15 +205,16 @@ export default function MessageBubble({
               href={`https://www.google.com/maps?q=${message.File.latitude},${message.File.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-600 hover:underline text-sm"
+              className="hover:underline text-sm"
+              style={{ color: 'var(--color-primary)' }}
             >
               📍 عرض الموقع على الخريطة
             </a>
           ) : (
-            <div className="text-xs text-gray-700 flex items-center gap-2">
+            <div className="text-xs flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
               <span>📎</span>
               <span>{message.File?.name || 'ملف مرفق'}</span>
-              <span className="text-gray-400">{message.File?.type ? `(${message.File.type})` : ''}</span>
+              <span style={{ color: 'var(--color-text-tertiary)' }}>{message.File?.type ? `(${message.File.type})` : ''}</span>
             </div>
           )}
         </div>

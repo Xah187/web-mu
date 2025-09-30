@@ -279,8 +279,16 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-        <span className="mr-3 text-gray-600">جاري تحميل المستخدمين...</span>
+        <div
+          className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
+          style={{ borderColor: 'var(--color-primary)' }}
+        ></div>
+        <span
+          className="mr-3"
+          style={{ color: 'var(--color-text-secondary)' }}
+        >
+          جاري تحميل المستخدمين...
+        </span>
       </div>
     );
   }
@@ -292,7 +300,7 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           style={{
             fontSize: scale(14 + size),
             fontFamily: fonts.IBMPlexSansArabicMedium,
-            color: colors.GREAY,
+            color: 'var(--color-text-secondary)',
             lineHeight: 1.5,
             marginBottom: '24px'
           }}
@@ -302,22 +310,66 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
 
         {/* Statistics - same as mobile app with debugging info */}
         <div className="mt-4 grid grid-cols-3 gap-6">
-          <div className="bg-blue-50 p-4 rounded-lg text-center">
-            <p className="text-2xl font-bold text-blue-600">
+          <div
+            className="p-4 rounded-lg text-center"
+            style={{
+              backgroundColor: 'rgba(37, 99, 235, 0.1)',
+              border: '1px solid rgba(37, 99, 235, 0.3)'
+            }}
+          >
+            <p
+              className="text-2xl font-bold"
+              style={{ color: '#2563eb' }}
+            >
               {showEmployeesOnly ? allUsers.filter(u => u.job !== 'Admin' && u.jobdiscrption === 'موظف').length : allUsers.filter(u => u.job !== 'Admin').length}
             </p>
-            <p className="text-sm text-blue-600">
+            <p
+              className="text-sm"
+              style={{ color: '#2563eb' }}
+            >
               {showEmployeesOnly ? 'الموظفين' : 'إجمالي المستخدمين'}
             </p>
 
           </div>
-          <div className="bg-green-50 p-4 rounded-lg text-center">
-            <p className="text-2xl font-bold text-green-600">{hrUsers.length}</p>
-            <p className="text-sm text-green-600">لديهم صلاحيات حالياً</p>
+          <div
+            className="p-4 rounded-lg text-center"
+            style={{
+              backgroundColor: 'rgba(34, 197, 94, 0.1)',
+              border: '1px solid rgba(34, 197, 94, 0.3)'
+            }}
+          >
+            <p
+              className="text-2xl font-bold"
+              style={{ color: '#16a34a' }}
+            >
+              {hrUsers.length}
+            </p>
+            <p
+              className="text-sm"
+              style={{ color: '#16a34a' }}
+            >
+              لديهم صلاحيات حالياً
+            </p>
           </div>
-          <div className="bg-orange-50 p-4 rounded-lg text-center">
-            <p className="text-2xl font-bold text-orange-600">{selectedUsers.length}</p>
-            <p className="text-sm text-orange-600">مختارون للتحديث</p>
+          <div
+            className="p-4 rounded-lg text-center"
+            style={{
+              backgroundColor: 'rgba(249, 115, 22, 0.1)',
+              border: '1px solid rgba(249, 115, 22, 0.3)'
+            }}
+          >
+            <p
+              className="text-2xl font-bold"
+              style={{ color: '#ea580c' }}
+            >
+              {selectedUsers.length}
+            </p>
+            <p
+              className="text-sm"
+              style={{ color: '#ea580c' }}
+            >
+              مختارون للتحديث
+            </p>
           </div>
         </div>
 
@@ -337,8 +389,13 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           placeholder="البحث عن مستخدم..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          style={{ fontSize: scale(14 + size) }}
+          className="w-full p-4 rounded-lg focus:outline-none focus:ring-2"
+          style={{
+            fontSize: scale(14 + size),
+            border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-surface)',
+            color: 'var(--color-text-primary)'
+          }}
         />
       </div>
 
@@ -353,7 +410,10 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
             onChange={(e) => setShowEmployeesOnly(e.target.checked)}
             className="ml-2"
           />
-          <span style={{ fontSize: scale(12 + size), color: colors.GREAY }}>
+          <span style={{
+            fontSize: scale(12 + size),
+            color: 'var(--color-text-secondary)'
+          }}>
             عرض الموظفين فقط
           </span>
         </label>
@@ -365,8 +425,16 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
       {/* Loading State */}
       {loading && (
         <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
-          <p className="text-gray-600" style={{ fontSize: scale(14 + size) }}>
+          <div
+            className="animate-spin rounded-full h-8 w-8 border-b-2 mx-auto mb-2"
+            style={{ borderColor: 'var(--color-primary)' }}
+          ></div>
+          <p
+            style={{
+              fontSize: scale(14 + size),
+              color: 'var(--color-text-secondary)'
+            }}
+          >
             {loadingProgress || 'جاري تحميل المستخدمين...'}
           </p>
         </div>
@@ -374,7 +442,15 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
 
       {/* Users List */}
       {!loading && (
-        <div className="space-y-2 mb-8 border border-gray-200 rounded-lg" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+        <div
+          className="space-y-2 mb-8 rounded-lg"
+          style={{
+            maxHeight: '400px',
+            overflowY: 'auto',
+            border: '1px solid var(--color-border)',
+            backgroundColor: 'var(--color-surface)'
+          }}
+        >
         {allUsers
           .filter(user => user.job !== 'Admin') // نفس فلترة التطبيق المحمول
           .filter(user => !showEmployeesOnly || user.jobdiscrption === 'موظف')
@@ -386,12 +462,20 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           )
           .length === 0 ? (
             <div className="text-center py-8">
-              <div className="text-gray-400 mb-2">
-                <svg className="w-16 h-16 mx-auto" fill="currentColor" viewBox="0 0 20 20">
+              <div className="mb-2">
+                <svg
+                  className="w-16 h-16 mx-auto"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                  style={{ color: 'var(--color-text-secondary)' }}
+                >
                   <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
-              <p className="text-gray-500" style={{ fontSize: scale(14 + size) }}>
+              <p style={{
+                fontSize: scale(14 + size),
+                color: 'var(--color-text-secondary)'
+              }}>
                 {searchQuery ? 'لا توجد نتائج للبحث' : showEmployeesOnly ? 'لا يوجد موظفين' : 'لا يوجد مستخدمين'}
               </p>
             </div>
@@ -412,18 +496,36 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
                 return (
                   <div
                     key={user.id}
-                    className={`p-4 border-b border-gray-200 cursor-pointer transition-colors hover:bg-gray-50 ${
-                      isSelected ? 'bg-blue-50' : ''
-                    }`}
+                    className="p-4 cursor-pointer transition-colors"
+                    style={{
+                      borderBottom: '1px solid var(--color-border)',
+                      backgroundColor: isSelected ? 'rgba(37, 99, 235, 0.1)' : 'transparent'
+                    }}
                     onClick={() => handleUserToggle(user.id)}
+                    onMouseEnter={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isSelected) {
+                        e.currentTarget.style.backgroundColor = 'transparent';
+                      }
+                    }}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         {/* User Avatar - same as mobile app */}
-                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center ml-4">
+                        <div
+                          className="w-12 h-12 rounded-full flex items-center justify-center ml-4"
+                          style={{ backgroundColor: 'var(--color-surface-secondary)' }}
+                        >
                           <span
-                            className="text-gray-600 font-semibold"
-                            style={{ fontSize: scale(14 + size) }}
+                            className="font-semibold"
+                            style={{
+                              fontSize: scale(14 + size),
+                              color: 'var(--color-text-secondary)'
+                            }}
                           >
                             {user.FirstName?.charAt(0)}{user.LastName?.charAt(0)}
                           </span>
@@ -433,25 +535,32 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <p
-                              className="font-semibold text-gray-900"
+                              className="font-semibold"
                               style={{
                                 fontSize: scale(14 + size),
-                                fontFamily: fonts.IBMPlexSansArabicSemiBold
+                                fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                                color: 'var(--color-text-primary)'
                               }}
                             >
                               {user.userName}
                             </p>
                             {isCurrentHR && (
-                              <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded whitespace-nowrap">
+                              <span
+                                className="text-xs px-2 py-1 rounded whitespace-nowrap"
+                                style={{
+                                  backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                                  color: '#166534'
+                                }}
+                              >
                                 صلاحية حالية
                               </span>
                             )}
                           </div>
                           <p
-                            className="text-gray-600"
                             style={{
                               fontSize: scale(12 + size),
-                              fontFamily: fonts.IBMPlexSansArabicRegular
+                              fontFamily: fonts.IBMPlexSansArabicRegular,
+                              color: 'var(--color-text-secondary)'
                             }}
                           >
                             {user.job}
@@ -462,11 +571,11 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
                       {/* Checkbox - moved to the right side */}
                       <div className="mr-4">
                         <div
-                          className={`w-5 h-5 border-2 rounded flex items-center justify-center ${
-                            isSelected
-                              ? 'bg-blue-500 border-blue-500'
-                              : 'border-gray-300'
-                          }`}
+                          className="w-5 h-5 border-2 rounded flex items-center justify-center"
+                          style={{
+                            backgroundColor: isSelected ? '#3b82f6' : 'transparent',
+                            borderColor: isSelected ? '#3b82f6' : 'var(--color-border)'
+                          }}
                         >
                           {isSelected && (
                             <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -493,7 +602,7 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           onpress={handleSave}
           disabled={submitting || !hasChanges}
           styleButton={{
-            backgroundColor: hasChanges ? colors.BLUE : colors.GREAY,
+            backgroundColor: hasChanges ? 'var(--color-primary)' : 'var(--color-text-secondary)',
             color: colors.WHITE,
             padding: `${scale(14)}px ${scale(28)}px`,
             fontSize: scale(14 + size),
@@ -504,21 +613,22 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
             flex: 1
           }}
         />
-        
+
         <ButtonCreat
           text="إعادة تعيين"
           onpress={() => setSelectedUsers([...hrUsers])}
           disabled={submitting || !hasChanges}
           styleButton={{
-            backgroundColor: colors.HOME,
-            color: colors.BLACK,
+            backgroundColor: 'var(--color-surface-secondary)',
+            color: 'var(--color-text-primary)',
             padding: `${scale(12)}px ${scale(24)}px`,
             fontSize: scale(14 + size),
             fontFamily: fonts.IBMPlexSansArabicMedium,
             borderRadius: `${scale(8)}px`,
             opacity: hasChanges ? 1 : 0.6,
             cursor: hasChanges ? 'pointer' : 'not-allowed',
-            flex: 1
+            flex: 1,
+            border: '1px solid var(--color-border)'
           }}
         />
       </div>
