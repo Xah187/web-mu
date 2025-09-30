@@ -373,7 +373,9 @@ export default function ChatPage() {
         xhr.send(file);
       });
 
-      // Insert chat record referencing File.name
+      // Insert chat record referencing File.name (matching mobile app structure)
+      // نضيف uri بمسار وهمي لأن الملف تم رفعه مباشرة للسيرفر
+      // التطبيق المحمول سيتحقق من File.uri، ولن يجده، ثم سيحمل الملف من URLFIL/${name}
       const payload: any = {
         idSendr: buildIdSendr(),
         ProjectID: parseInt(ProjectID),
@@ -382,7 +384,12 @@ export default function ChatPage() {
         Sender: user?.data?.userName || user?.userName || 'مستخدم',
         message: '',
         timeminet: new Date().toISOString(),
-        File: { name: nameFile, type: file.type || 'application/octet-stream' },
+        File: {
+          name: nameFile,
+          type: file.type || 'application/octet-stream',
+          size: file.size,
+          uri: `/web-upload/${nameFile}` // مسار وهمي - التطبيق المحمول سيحمل الملف من السيرفر
+        },
         Reply: {},
         arrived: false,
         kind: 'new',

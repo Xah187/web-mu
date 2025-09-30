@@ -391,7 +391,7 @@ export default function ApprovalsPage() {
     }
   };
 
-  // File upload handler - now accepts object from MessageInput
+  // File upload handler - مطابق لآلية الدردشة (رفع الملف أولاً ثم إرسال اسم الملف)
   const handleFileUpload = async (input: any) => {
     try {
       // تطبيع الإدخال: حدث input أو كائن ملف
@@ -439,25 +439,53 @@ export default function ApprovalsPage() {
         return;
       }
 
-      // تحديد النوع: صورة / فيديو / ملف
-      const isImage = String(fileData?.type || '').startsWith('image/');
-      const isVideo = String(fileData?.type || '').startsWith('video/');
+      // رفع الملف إلى Google Cloud Storage (مطابق للتطبيق المحمول)
+      // 1. تحويل blob URL إلى File object
+      const response = await fetch(fileData.uri);
+      const blob = await response.blob();
+      const file = new File([blob], fileData.name, { type: fileData.type });
 
+      // 2. الحصول على اسم ملف فريد وtoken من السيرفر
+      const init = await axiosInstance.get('/Chate/initializeUpload', {
+        params: { fileName: file.name, fileType: file.type }
+      });
+      const { token, nameFile } = init.data || {};
+      const uploadUrl = `https://storage.googleapis.com/upload/storage/v1/b/demo_backendmoshrif_bucket-1/o?uploadType=media&name=${nameFile}`;
+
+      // 3. رفع الملف إلى Google Cloud Storage
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', uploadUrl, true);
+        xhr.responseType = 'json';
+        const contentType = file.type || 'application/octet-stream';
+        xhr.setRequestHeader('Content-Type', contentType);
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            resolve();
+          } else {
+            reject(new Error('Upload failed'));
+          }
+        };
+        xhr.onerror = () => reject(new Error('Network error during upload'));
+        xhr.send(file);
+      });
+
+      // 4. إرسال البيانات إلى قاعدة البيانات مع اسم الملف الفريد
       const senderName = user?.data?.userName || 'مستخدم';
-      const messagePayload: any = {
+      const payload: any = {
         idSendr: buildIdSendr(),
         ProjectID: approvalsProjectId,
         StageID: 'اعتمادات',
-        Sender: senderName,
         userName: senderName,
+        Sender: senderName,
         message: '',
         timeminet: new Date().toISOString(),
         File: {
-          uri: fileData?.uri,
-          name: fileData?.name,
-          type: isImage ? fileData.type : isVideo ? fileData.type : (fileData?.type || 'application/octet-stream'),
-          size: fileData?.size,
-          uriImage: fileData?.uriImage || undefined,
+          name: nameFile,  // استخدام اسم الملف الفريد من السيرفر
+          type: file.type || 'application/octet-stream',
+          size: file.size
         },
         Reply: replyToMessage ? {
           Data: replyToMessage.message || replyToMessage.content || '',
@@ -469,10 +497,12 @@ export default function ApprovalsPage() {
         kind: 'new',
       };
 
-      // Optimistic UI ثم إرسال عبر السوكيت
-      setMessages(prev => [...prev, messagePayload]);
+      const inserted = await axiosInstance.post('/Chate/insertdatafile', payload);
+      const chatID = inserted.data?.chatID;
+
+      // 5. عرض الرسالة في الواجهة
+      setMessages(prev => [...prev, { ...payload, chatID, Date: new Date().toISOString() }]);
       setReplyToMessage(null);
-      socketService.emit('send_message', messagePayload);
 
     } catch (e) {
       console.error('handleFileUpload error:', e);

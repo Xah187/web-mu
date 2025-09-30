@@ -3,6 +3,7 @@
 import React from 'react';
 import { fonts } from '@/constants/fonts';
 import { scale } from '@/utils/responsiveSize';
+import { URLFIL } from '@/lib/api/axios';
 
 interface MessageBubbleProps {
   message: any;
@@ -181,44 +182,90 @@ export default function MessageBubble({
       </div>
 
       {/* File Display */}
-      {message.File && Object.keys(message.File).length > 0 && (
-        <div className="mb-2">
-          {String(message.File?.type || '').startsWith('image/') && (message.File?.uri || message.File?.url) ? (
-            <img
-              src={(message.File.uri || message.File.url) as string}
-              alt={message.File?.name || 'image'}
-              className="rounded-lg max-w-full max-h-64 cursor-zoom-in"
-              onClick={() => {
-                // معاينة سريعة عبر نافذة جديدة مؤقتاً
-                const src = (message.File.uri || message.File.url) as string;
-                if (src) window.open(src, '_blank');
-              }}
-            />
-          ) : String(message.File?.type || '').startsWith('video/') && (message.File?.uri || message.File?.url) ? (
-            <video
-              src={(message.File.uri || message.File.url) as string}
-              controls
-              className="rounded-lg max-w-full max-h-64"
-            />
-          ) : message.File?.type === 'location' && message.File?.latitude && message.File?.longitude ? (
-            <a
-              href={`https://www.google.com/maps?q=${message.File.latitude},${message.File.longitude}`}
-              target="_blank"
-              rel="noreferrer"
-              className="hover:underline text-sm"
-              style={{ color: 'var(--color-primary)' }}
-            >
-              📍 عرض الموقع على الخريطة
-            </a>
-          ) : (
-            <div className="text-xs flex items-center gap-2" style={{ color: 'var(--color-text-secondary)' }}>
-              <span>📎</span>
-              <span>{message.File?.name || 'ملف مرفق'}</span>
-              <span style={{ color: 'var(--color-text-tertiary)' }}>{message.File?.type ? `(${message.File.type})` : ''}</span>
-            </div>
-          )}
-        </div>
-      )}
+      {message.File && Object.keys(message.File).length > 0 && (() => {
+        // Helper function to get the correct file URL (matching mobile app logic)
+        const getFileUrl = () => {
+          const uri = message.File.uri || message.File.url;
+          const name = message.File.name;
+          const arrived = message.arrived;
+
+          // If message hasn't arrived yet (still uploading), use local URI if it's a valid blob/data/http URL
+          if (!arrived && uri && (uri.startsWith('blob:') || uri.startsWith('data:') || uri.startsWith('http'))) {
+            return uri;
+          }
+
+          // If message has arrived (uploaded to server), use URLFIL with filename
+          if (arrived && name) {
+            return `${URLFIL}/${name}`;
+          }
+
+          // If uri is a valid blob/data/http URL, use it directly
+          if (uri && (uri.startsWith('blob:') || uri.startsWith('data:') || uri.startsWith('http'))) {
+            return uri;
+          }
+
+          // Final fallback: use URLFIL with name if available
+          if (name) {
+            return `${URLFIL}/${name}`;
+          }
+
+          return uri || '';
+        };
+
+        const fileUrl = getFileUrl();
+
+        return (
+          <div className="mb-2">
+            {String(message.File?.type || '').startsWith('image/') && fileUrl ? (
+              <img
+                src={fileUrl}
+                alt={message.File?.name || 'image'}
+                className="rounded-lg max-w-full max-h-64 cursor-zoom-in"
+                onClick={() => {
+                  if (fileUrl) window.open(fileUrl, '_blank');
+                }}
+              />
+            ) : String(message.File?.type || '').startsWith('video/') && fileUrl ? (
+              <video
+                src={fileUrl}
+                controls
+                className="rounded-lg max-w-full max-h-64"
+              />
+            ) : message.File?.type === 'location' && message.File?.latitude && message.File?.longitude ? (
+              <a
+                href={`https://www.google.com/maps?q=${message.File.latitude},${message.File.longitude}`}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:underline text-sm"
+                style={{ color: 'var(--color-primary)' }}
+              >
+                📍 عرض الموقع على الخريطة
+              </a>
+            ) : (
+              <a
+                href={`${URLFIL}/${message.File?.name}`}
+                target="_blank"
+                rel="noreferrer"
+                download={message.File?.name}
+                className="text-xs flex items-center gap-2 hover:underline cursor-pointer p-2 rounded-lg transition-colors"
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  backgroundColor: 'var(--color-surface-secondary)'
+                }}
+                onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
+                onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
+              >
+                <span>📎</span>
+                <span>{message.File?.name || 'ملف مرفق'}</span>
+                <span style={{ color: 'var(--color-text-tertiary)' }}>{message.File?.type ? `(${message.File.type})` : ''}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+                </svg>
+              </a>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Action Buttons for Approval Messages */}
       {showActionButtons && message.type === 'request' && message.status === 'pending' && !mine && (
