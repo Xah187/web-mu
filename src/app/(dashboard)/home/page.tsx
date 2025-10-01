@@ -28,6 +28,7 @@ import ResponsiveLayout, {
   Card
 } from '@/components/layout/ResponsiveLayout';
 import SettingsDropdown from '@/components/ui/SettingsDropdown';
+import useDataHome from '@/hooks/useDataHome';
 
 
 export default function HomePage() {
@@ -47,6 +48,9 @@ export default function HomePage() {
 
   // Branch operations hook
   const { updateBranchData, loading: branchOperationLoading } = useBranchOperations();
+
+  // DataHome hook for saving branch data
+  const { saveBranchData } = useDataHome();
 
   // Local state
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -194,7 +198,31 @@ export default function HomePage() {
   };
 
   // Handle branch navigation - go to branch projects
-  const handleBranchPress = (branch: any) => {
+  const handleBranchPress = async (branch: any) => {
+    // Save branch data to DataHome BEFORE navigation (matching mobile app)
+    // Mobile app: Src/Screens/HomeAdmin.tsx passes Email & PhoneNumber in route.params (line 486-492)
+    // Web: We save to localStorage before navigation
+    console.log('=== Saving Branch Data Before Navigation ===');
+    console.log('Branch:', branch);
+    console.log('NameSub:', branch.NameSub);
+    console.log('Email:', branch.Email);
+    console.log('PhoneNumber:', branch.PhoneNumber);
+
+    try {
+      await saveBranchData({
+        IDCompanyBransh: branch.id,
+        nameBransh: branch.NameSub,
+        Email: branch.Email,
+        PhoneNumber: branch.PhoneNumber
+      });
+      console.log('✅ Branch data saved before navigation');
+    } catch (error) {
+      console.error('❌ Error saving branch data:', error);
+    }
+
+    console.log('==========================================');
+
+    // Navigate to branch projects page
     router.push(`/branch/${branch.id}/projects?name=${encodeURIComponent(branch.NameSub)}`);
   };
 

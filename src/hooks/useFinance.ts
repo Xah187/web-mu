@@ -281,7 +281,10 @@ export default function useFinance(): UseFinanceReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
+      console.log('=== Adding Revenue (عهد) ===');
+      console.log('Data:', data);
+
       const formData = new FormData();
       Object.keys(data).forEach(key => {
         if (data[key] !== undefined && data[key] !== null) {
@@ -292,19 +295,25 @@ export default function useFinance(): UseFinanceReturn {
           }
         }
       });
-      
-      await axiosInstance.post('/brinshCompany/RevenueInsert', formData, {
-        headers: { 
+
+      console.log('FormData keys:', Array.from(formData.keys()));
+
+      // FIXED: Changed from RevenueInsert to RevenuesInsert (with 's')
+      // Matching mobile app: Src/functions/companyBransh/ApisAllCompanybransh.tsx line 1523
+      await axiosInstance.post('/brinshCompany/RevenuesInsert', formData, {
+        headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'multipart/form-data'
         },
       });
-      
-      Tostget('تم إضافة الإيراد بنجاح');
+
+      console.log('✅ Revenue added successfully');
+      Tostget('تم إضافة العهد بنجاح');
     } catch (e: any) {
-      console.error('Error adding revenue:', e);
-      setError('خطأ في إضافة الإيراد');
-      Tostget('خطأ في إضافة الإيراد');
+      console.error('❌ Error adding revenue:', e);
+      console.error('Response:', e.response?.data);
+      setError('خطأ في إضافة العهد');
+      Tostget(e.response?.data?.message || 'خطأ في إضافة العهد');
     } finally {
       setLoading(false);
     }
@@ -315,7 +324,10 @@ export default function useFinance(): UseFinanceReturn {
     try {
       setLoading(true);
       setError(null);
-      
+
+      console.log('=== Adding Return (مرتجعات) ===');
+      console.log('Data:', data);
+
       const formData = new FormData();
       Object.keys(data).forEach(key => {
         if (data[key] !== undefined && data[key] !== null) {
@@ -326,19 +338,25 @@ export default function useFinance(): UseFinanceReturn {
           }
         }
       });
-      
-      await axiosInstance.post('/brinshCompany/ReturnInsert', formData, {
-        headers: { 
+
+      console.log('FormData keys:', Array.from(formData.keys()));
+
+      // FIXED: Changed from ReturnInsert to ReturnsInsert (with 's')
+      // Matching mobile app: Src/functions/companyBransh/ApisAllCompanybransh.tsx line 1656
+      await axiosInstance.post('/brinshCompany/ReturnsInsert', formData, {
+        headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'multipart/form-data'
         },
       });
-      
+
+      console.log('✅ Return added successfully');
       Tostget('تم إضافة المرتجع بنجاح');
     } catch (e: any) {
-      console.error('Error adding return:', e);
+      console.error('❌ Error adding return:', e);
+      console.error('Response:', e.response?.data);
       setError('خطأ في إضافة المرتجع');
-      Tostget('خطأ في إضافة المرتجع');
+      Tostget(e.response?.data?.message || 'خطأ في إضافة المرتجع');
     } finally {
       setLoading(false);
     }

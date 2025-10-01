@@ -15,6 +15,7 @@ import useValidityUser from '@/hooks/useValidityUser';
 import { EmployeeOnly, PermissionBasedVisibility, RequestsPermissionGuard } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import useDataHome from '@/hooks/useDataHome';
 
 
 
@@ -308,6 +309,7 @@ const BranchProjectsPage = () => {
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation, hasPermission } = useValidityUser();
+  const { saveBranchData } = useDataHome();
 
   const {
     projects,
@@ -348,10 +350,49 @@ const BranchProjectsPage = () => {
   // Check permissions
   const canShowEmployee = hasPermission('تعديل بيانات الفرغ') || hasPermission('إنشاء المشروع') || hasPermission('إشعارات المالية') || hasPermission('انشاء عمليات مالية') || hasPermission('إنشاء طلبات');
 
-  // Load projects on mount
+  // Load projects on mount and save branch data
   useEffect(() => {
     if (branchId && user?.accessToken) {
       fetchProjects(branchId);
+
+      // Save branch data to DataHome when entering branch page
+      // Matching mobile app: Src/Screens/HomSub.tsx uses route.params
+      // In web, we get branchName from URL params
+      const saveBranchDataOnMount = async () => {
+        try {
+          // Fetch branch data to get Email and PhoneNumber
+          const response = await axiosInstance.post('/company/brinsh/bring', {
+            IDCompany: user?.data?.IDCompany,
+            type: 'cache'
+          }, {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user?.accessToken}`
+            }
+          });
+
+          if (response.data?.data) {
+            const branch = response.data.data.find((b: any) => b.id === branchId);
+            if (branch) {
+              console.log('=== Saving Branch Data on Mount ===');
+              console.log('Branch:', branch);
+
+              await saveBranchData({
+                IDCompanyBransh: branch.id,
+                nameBransh: branch.NameSub,
+                Email: branch.Email,
+                PhoneNumber: branch.PhoneNumber
+              });
+              console.log('✅ Branch data saved');
+              console.log('===================================');
+            }
+          }
+        } catch (error) {
+          console.error('Error saving branch data on mount:', error);
+        }
+      };
+
+      saveBranchDataOnMount();
     }
   }, [branchId, user?.accessToken]);
 
@@ -389,6 +430,23 @@ const BranchProjectsPage = () => {
         if (branch) {
           setBranchData(branch);
           setShowEditBranchModal(true);
+
+          // Save branch data to localStorage (matching mobile app's AsyncStorage)
+          // Matches: Src/functions/companyBransh/HomSubFunction.tsx (lines 85-99)
+          console.log('=== Saving Branch Data to DataHome ===');
+          console.log('Branch data:', branch);
+          console.log('NameSub:', branch.NameSub);
+          console.log('Email:', branch.Email);
+          console.log('PhoneNumber:', branch.PhoneNumber);
+
+          await saveBranchData({
+            IDCompanyBransh: branch.id,
+            nameBransh: branch.NameSub,
+            Email: branch.Email,
+            PhoneNumber: branch.PhoneNumber
+          });
+          console.log('✅ Branch data saved to DataHome');
+          console.log('======================================');
         }
       }
     } catch (error) {

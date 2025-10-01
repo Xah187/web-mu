@@ -3,6 +3,7 @@ import { useAppSelector, useAppDispatch } from '@/store';
 import { updateCompanyInfo } from '@/store/slices/userSlice';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
+import useDataHome from './useDataHome';
 
 
 export interface CompanyData {
@@ -41,6 +42,7 @@ export interface HomeData {
 export const useCompanyData = () => {
   const { user } = useAppSelector((state: any) => state.user);
   const dispatch = useAppDispatch();
+  const { saveCompanyData } = useDataHome();
   const [companyData, setCompanyData] = useState<CompanyData | null>(null);
   const [homeData, setHomeData] = useState<HomeData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -111,6 +113,26 @@ export const useCompanyData = () => {
         // Mobile app does NOT filter branches - it shows all branches from the API response
         // Only Admin/Branch Manager permissions affect UI buttons, not branch visibility
         setHomeData(response.data);
+
+        // Save company data to localStorage (matching mobile app's AsyncStorage)
+        // Matches: Src/functions/companyBransh/HomAdminFunction.tsx (lines 52-61)
+        console.log('=== Saving Company Data to DataHome ===');
+        console.log('Response data:', response.data);
+        console.log('nameCompany:', response.data.nameCompany);
+        console.log('Country:', response.data.Country);
+        console.log('Cost:', response.data.Cost);
+
+        if (response.data.nameCompany) {
+          await saveCompanyData({
+            nameCompany: response.data.nameCompany,
+            Country: response.data.Country || 'السعودية',
+            Cost: response.data.Cost || response.data.Covenantnumber || 0
+          });
+          console.log('✅ Company data saved to DataHome');
+        } else {
+          console.warn('⚠️ No nameCompany in response, data not saved');
+        }
+        console.log('=======================================');
       }
     } catch (error) {
       console.error('Error fetching home data:', error);

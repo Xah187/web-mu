@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
+import useDataHome from './useDataHome';
 
 export interface Stage {
   StageCustID: number;
@@ -64,8 +65,9 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasMoreStages, setHasMoreStages] = useState(true);
-  
+
   const { user } = useSelector((state: any) => state.user || {});
+  const { saveProjectData } = useDataHome();
 
   const fetchProjectDetails = useCallback(async (projectId: number) => {
     if (!user?.accessToken) {
@@ -88,9 +90,15 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
 
       // في التطبيق الأصلي، البيانات في result.data.data
       const projectData = response.data?.data || response.data;
-      
+
       if (projectData) {
         setProject(projectData);
+
+        // Save project data to localStorage (matching mobile app's AsyncStorage)
+        // Matches: Src/functions/companyBransh/PageHomeProjectFunction.tsx (lines 48-57)
+        if (projectData.Nameproject) {
+          await saveProjectData(projectData.Nameproject);
+        }
       }
     } catch (error: any) {
       console.error('خطأ في جلب تفاصيل المشروع:', error);

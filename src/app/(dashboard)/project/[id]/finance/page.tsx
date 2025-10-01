@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import useFinance, { FinanceItem, Totaltofixt, truncateNumber, convertArabicToEnglish, formatDateEnglish } from '@/hooks/useFinance';
 import useValidityUser from '@/hooks/useValidityUser';
+import useProjectDetails from '@/hooks/useProjectDetails';
 import { scale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
 
@@ -380,6 +381,7 @@ export default function FinancePage() {
   const projectId = parseInt(params.id as string);
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { project, loading: projectLoading, fetchProjectDetails } = useProjectDetails();
 
   const {
     expenses,
@@ -406,6 +408,13 @@ export default function FinancePage() {
   const [showViewModal, setShowViewModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<FinanceItem | null>(null);
   const [editingItem, setEditingItem] = useState<FinanceItem | null>(null);
+
+  // Load project details
+  useEffect(() => {
+    if (projectId && user?.accessToken) {
+      fetchProjectDetails(projectId);
+    }
+  }, [projectId, user?.accessToken]);
 
   // Load initial data
   useEffect(() => {
@@ -738,6 +747,12 @@ export default function FinancePage() {
         onEdit={handleItemEdit}
         onDelete={handleItemDelete}
         loading={loading}
+        projectData={{
+          name: project?.Nameproject || totals?.Nameproject || 'اسم المشروع',
+          branchName: (project as any)?.NameSub || (project as any)?.NameBranch || 'اسم الفرع',
+          branchEmail: (project as any)?.Email || user?.data?.Email || '',
+          branchPhone: (project as any)?.PhoneNumber || user?.data?.PhoneNumber || ''
+        }}
       />
 
       {/* TODO: Add Filter and Share modals */}

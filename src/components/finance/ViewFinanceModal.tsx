@@ -5,6 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FinanceItem, Totaltofixt } from '@/hooks/useFinance';
 import { scale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
+import { generateInvoicePDF } from '@/utils/invoiceGenerator';
+import { useSelector } from 'react-redux';
 
 interface ViewFinanceModalProps {
   isOpen: boolean;
@@ -13,6 +15,12 @@ interface ViewFinanceModalProps {
   onEdit: (item: FinanceItem) => void;
   onDelete: (item: FinanceItem) => void;
   loading?: boolean;
+  projectData?: {
+    name: string;
+    branchName?: string;
+    branchEmail?: string;
+    branchPhone?: string;
+  };
 }
 
 const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
@@ -21,9 +29,14 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
   item,
   onEdit,
   onDelete,
-  loading = false
+  loading = false,
+  projectData
 }) => {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [generatingInvoice, setGeneratingInvoice] = useState(false);
+
+  // Get user data from Redux (web uses state.user not state.userReducer)
+  const user = useSelector((state: any) => state.user?.user);
 
   if (!item) return null;
 
@@ -36,6 +49,56 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
     if (confirm('هل أنت متأكد من حذف هذه العملية؟')) {
       onDelete(item);
       onClose();
+    }
+  };
+
+  const handleGenerateInvoice = async () => {
+    try {
+      setGeneratingInvoice(true);
+
+      // Determine operation type
+      const type = item.Expenseid ? 'BringExpense' : item.RevenueId ? 'BringRevenue' : 'BringReturns';
+
+      // Get data from localStorage (matching mobile app's AsyncStorage approach)
+      let dataHome: any = {};
+      if (typeof window !== 'undefined') {
+        const storedData = localStorage.getItem('DataHome');
+        if (storedData) {
+          try {
+            dataHome = JSON.parse(storedData);
+          } catch (e) {
+            console.error('Error parsing DataHome:', e);
+          }
+        }
+      }
+
+      // Debug logs
+      console.log('=== Invoice Generation Debug ===');
+      console.log('DataHome from localStorage:', dataHome);
+      console.log('User data:', user?.data);
+      console.log('Project data:', projectData);
+      console.log('Item data:', item);
+
+      // Prepare company data - EXACTLY matching mobile app structure
+      // Mobile app uses: dataHome?.nameCompany, dataHome?.nameBransh, dataHome?.nameProject, etc.
+      const companyData = {
+        nameCompany: dataHome?.nameCompany || user?.data?.CompanyName || 'اسم الشركة',
+        nameBransh: dataHome?.nameBransh || projectData?.branchName || 'اسم الفرع',
+        nameProject: dataHome?.nameProject || projectData?.name || 'اسم المشروع',
+        Email: dataHome?.Email || projectData?.branchEmail || user?.data?.Email || '',
+        PhoneNumber: dataHome?.PhoneNumber || projectData?.branchPhone || user?.data?.PhoneNumber || '',
+        Country: dataHome?.Country || 'السعودية'
+      };
+
+      console.log('Final company data for invoice:', companyData);
+      console.log('================================');
+
+      await generateInvoicePDF(item, type, companyData);
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      alert('حدث خطأ أثناء إنشاء الفاتورة');
+    } finally {
+      setGeneratingInvoice(false);
     }
   };
 
@@ -101,9 +164,9 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
             transition={{ type: "spring", duration: 0.3 }}
             className="relative w-full max-w-lg max-h-[90vh] overflow-hidden shadow-2xl"
             style={{
-              backgroundColor: 'var(--theme-card-background)',
+              backgroundColor: 'var(--color-card-background)',
               borderRadius: scale(20),
-              border: '2px solid var(--theme-border)',
+              border: '2px solid var(--color-border)',
               boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)'
             }}
             onClick={(e) => e.stopPropagation()}
@@ -112,8 +175,8 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
             <div
               className="flex items-center justify-between"
               style={{
-                borderBottom: '1px solid var(--theme-border)',
-                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                borderBottom: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
                 padding: scale(20),
                 borderTopLeftRadius: scale(20),
                 borderTopRightRadius: scale(20)
@@ -126,22 +189,20 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     width: scale(40),
                     height: scale(40),
                     borderRadius: '50%',
-                    backgroundColor: operationColor === 'red' ? '#fef2f2' :
-                                   operationColor === 'blue' ? '#eff6ff' : '#f0fdf4',
-                    border: `2px solid ${operationColor === 'red' ? '#fecaca' :
-                                        operationColor === 'blue' ? '#bfdbfe' : '#bbf7d0'}`
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    border: `2px solid var(--color-border)`
                   }}
                 >
                   {operationType === 'مصروفات' ? (
-                    <svg width={scale(20)} height={scale(20)} fill="#dc2626" viewBox="0 0 20 20">
+                    <svg width={scale(20)} height={scale(20)} fill="var(--color-error)" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                     </svg>
                   ) : operationType === 'عهد' ? (
-                    <svg width={scale(20)} height={scale(20)} fill="#2563eb" viewBox="0 0 20 20">
+                    <svg width={scale(20)} height={scale(20)} fill="var(--color-primary)" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                     </svg>
                   ) : (
-                    <svg width={scale(20)} height={scale(20)} fill="#16a34a" viewBox="0 0 20 20">
+                    <svg width={scale(20)} height={scale(20)} fill="var(--color-success)" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z" clipRule="evenodd" />
                     </svg>
                   )}
@@ -150,7 +211,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                   <h2
                     style={{
                       fontSize: scale(18),
-                      color: 'var(--theme-text-primary)',
+                      color: 'var(--color-text-primary)',
                       fontFamily: fonts.IBMPlexSansArabicBold,
                       margin: 0
                     }}
@@ -160,7 +221,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                   <p
                     style={{
                       fontSize: scale(12),
-                      color: 'var(--theme-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       margin: 0,
                       marginTop: scale(4)
@@ -181,7 +242,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                   cursor: 'pointer'
                 }}
               >
-                <svg width={scale(20)} height={scale(20)} fill="none" stroke="var(--theme-text-secondary)" viewBox="0 0 24 24">
+                <svg width={scale(20)} height={scale(20)} fill="none" stroke="var(--color-text-secondary)" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -192,7 +253,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
               className="flex-1 overflow-y-auto"
               style={{
                 padding: scale(20),
-                backgroundColor: 'var(--theme-card-background)'
+                backgroundColor: 'var(--color-card-background)'
               }}
             >
               {/* Amount Card */}
@@ -201,9 +262,8 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 style={{
                   padding: scale(20),
                   borderRadius: scale(16),
-                  border: '2px solid var(--theme-border)',
-                  backgroundColor: operationColor === 'red' ? '#fef2f2' :
-                                 operationColor === 'blue' ? '#eff6ff' : '#f0fdf4',
+                  border: '2px solid var(--color-border)',
+                  backgroundColor: 'var(--color-surface-secondary)',
                   marginBottom: scale(20),
                   boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
                 }}
@@ -211,7 +271,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 <p
                   style={{
                     fontSize: scale(12),
-                    color: 'var(--theme-text-secondary)',
+                    color: 'var(--color-text-secondary)',
                     fontFamily: fonts.IBMPlexSansArabicMedium,
                     margin: 0,
                     marginBottom: scale(8)
@@ -222,8 +282,8 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 <p
                   style={{
                     fontSize: scale(24),
-                    color: operationColor === 'red' ? '#dc2626' :
-                           operationColor === 'blue' ? '#2563eb' : '#16a34a',
+                    color: operationColor === 'red' ? 'var(--color-error)' :
+                           operationColor === 'blue' ? 'var(--color-primary)' : 'var(--color-success)',
                     fontFamily: fonts.IBMPlexSansArabicBold,
                     margin: 0,
                     textAlign: 'center'
@@ -238,10 +298,10 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 {/* Description */}
                 <div
                   style={{
-                    backgroundColor: 'var(--theme-surface-secondary)',
+                    backgroundColor: 'var(--color-surface-secondary)',
                     padding: scale(16),
                     borderRadius: scale(12),
-                    border: '2px solid var(--theme-border)',
+                    border: '2px solid var(--color-border)',
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                   }}
                 >
@@ -249,7 +309,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     style={{
                       display: 'block',
                       fontSize: scale(12),
-                      color: 'var(--theme-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       marginBottom: scale(8)
                     }}
@@ -259,7 +319,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                   <p
                     style={{
                       fontSize: scale(14),
-                      color: 'var(--theme-text-primary)',
+                      color: 'var(--color-text-primary)',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       margin: 0,
                       lineHeight: 1.5
@@ -273,10 +333,10 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 {item.Bank && (
                   <div
                     style={{
-                      backgroundColor: 'var(--theme-surface-secondary)',
+                      backgroundColor: 'var(--color-surface-secondary)',
                       padding: scale(16),
                       borderRadius: scale(12),
-                      border: '2px solid var(--theme-border)',
+                      border: '2px solid var(--color-border)',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                     }}
                   >
@@ -284,7 +344,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                       style={{
                         display: 'block',
                         fontSize: scale(12),
-                        color: 'var(--theme-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         marginBottom: scale(8)
                       }}
@@ -294,7 +354,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     <p
                       style={{
                         fontSize: scale(14),
-                        color: 'var(--theme-text-primary)',
+                        color: 'var(--color-text-primary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         margin: 0
                       }}
@@ -308,10 +368,10 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 {item.ClassificationName && (
                   <div
                     style={{
-                      backgroundColor: 'var(--theme-surface-secondary)',
+                      backgroundColor: 'var(--color-surface-secondary)',
                       padding: scale(16),
                       borderRadius: scale(12),
-                      border: '2px solid var(--theme-border)',
+                      border: '2px solid var(--color-border)',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                     }}
                   >
@@ -319,7 +379,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                       style={{
                         display: 'block',
                         fontSize: scale(12),
-                        color: 'var(--theme-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         marginBottom: scale(8)
                       }}
@@ -329,7 +389,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     <p
                       style={{
                         fontSize: scale(14),
-                        color: 'var(--theme-text-primary)',
+                        color: 'var(--color-text-primary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         margin: 0
                       }}
@@ -343,10 +403,10 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                 {item.InvoiceNo && (
                   <div
                     style={{
-                      backgroundColor: 'var(--theme-surface-secondary)',
+                      backgroundColor: 'var(--color-surface-secondary)',
                       padding: scale(16),
                       borderRadius: scale(12),
-                      border: '2px solid var(--theme-border)',
+                      border: '2px solid var(--color-border)',
                       boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                     }}
                   >
@@ -354,7 +414,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                       style={{
                         display: 'block',
                         fontSize: scale(12),
-                        color: 'var(--theme-text-secondary)',
+                        color: 'var(--color-text-secondary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         marginBottom: scale(8)
                       }}
@@ -364,7 +424,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     <p
                       style={{
                         fontSize: scale(14),
-                        color: 'var(--theme-text-primary)',
+                        color: 'var(--color-text-primary)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         margin: 0
                       }}
@@ -382,7 +442,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                     style={{
                       display: 'block',
                       fontSize: scale(12),
-                      color: 'var(--theme-text-secondary)',
+                      color: 'var(--color-text-secondary)',
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       marginBottom: scale(12),
                       textAlign: 'center'
@@ -408,8 +468,8 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                           height: images.length === 1 ? scale(200) : scale(120),
                           borderRadius: scale(12),
                           overflow: 'hidden',
-                          border: '2px solid var(--theme-border)',
-                          backgroundColor: 'var(--theme-surface-secondary)',
+                          border: '2px solid var(--color-border)',
+                          backgroundColor: 'var(--color-surface-secondary)',
                           cursor: 'pointer',
                           boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
                         }}
@@ -448,8 +508,8 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
             <div
               className="flex gap-4 justify-center items-center relative"
               style={{
-                borderTop: '1px solid var(--theme-border)',
-                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                borderTop: '1px solid var(--color-border)',
+                background: 'linear-gradient(135deg, var(--color-card-background) 0%, var(--color-surface-secondary) 100%)',
                 paddingLeft: scale(24),
                 paddingRight: scale(24),
                 paddingTop: scale(16),
@@ -460,13 +520,15 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
               }}
             >
               <button
+                onClick={handleGenerateInvoice}
+                disabled={generatingInvoice || loading}
                 className="text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
                 style={{
                   fontSize: scale(14),
-                  color: 'var(--theme-text-primary)',
-                  backgroundColor: 'var(--theme-surface-secondary)',
+                  color: 'var(--color-text-primary)',
+                  backgroundColor: 'var(--color-surface-secondary)',
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  border: '2px solid var(--theme-border)',
+                  border: '2px solid var(--color-border)',
                   padding: `${scale(12)}px ${scale(16)}px`,
                   flex: '1',
                   minHeight: scale(48),
@@ -477,9 +539,16 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
                   gap: scale(8)
                 }}
               >
-                <svg width={scale(16)} height={scale(16)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
+                {generatingInvoice ? (
+                  <svg className="animate-spin" width={scale(16)} height={scale(16)} fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg width={scale(16)} height={scale(16)} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                )}
                 إصدار فاتورة
               </button>
 
@@ -561,7 +630,7 @@ const ViewFinanceModal: React.FC<ViewFinanceModalProps> = ({
               >
                 <div
                   className="w-12 h-1 rounded-full"
-                  style={{ backgroundColor: 'var(--theme-border)' }}
+                  style={{ backgroundColor: 'var(--color-border)' }}
                 />
               </div>
             </div>
