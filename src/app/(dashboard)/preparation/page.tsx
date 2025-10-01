@@ -116,7 +116,8 @@ export default function PreparationPage() {
   };
 
   const hasManagerPermissions = () => {
-    const managerJobs = ["مدير عام", "مدير تنفيذي", "Admin"];
+    // Same as mobile app: ["مدير عام","مدير تنفيذي","موارد بشرية","Admin"]
+    const managerJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
     return managerJobs.includes(user?.data?.job || '') || isAdmin;
   };
 

@@ -1,19 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { colors } from '@/constants/colors';
 import { verticalScale } from '@/utils/responsiveSize';
-import { useAppSelector, useAppDispatch } from '@/store';
-import { clearUser, setUser } from '@/store/slices/userSlice';
-import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
-import { Tostget } from '@/components/ui/Toast';
+import { useAppSelector } from '@/store';
 import Image from 'next/image';
-import { AdminGuard, EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import { EmployeeOnly } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid } from '@/components/layout/ResponsiveLayout';
-import { toggleFinanceOperations, refreshUserData } from '@/lib/api/company/ApiCompany';
-import LogoutModal from '@/components/ui/LogoutModal';
-import DeleteAccountModal from '@/components/ui/DeleteAccountModal';
+
 
 interface SettingItemProps {
   title: string;
@@ -142,130 +137,15 @@ function UserProfileModal({ visible, onClose, user }: { visible: boolean; onClos
 
 export default function ManagementPage() {
   const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { user, size, language: _language } = useAppSelector(state => state.user);
-  const jobBasedPermissions = useJobBasedPermissions();
-  const { isAdmin, isEmployee: _isEmployee } = jobBasedPermissions;
-  // Stage templates access - Allow all Admin in company 1 OR specific phone numbers
-  const admin = ['502464530', '567256943'];
-  const showTemplet = (user?.data?.job === 'Admin' && Number(user?.data?.IDCompany) === 1) ||
-                     admin.includes(user?.data?.PhoneNumber || '');
+  const { user, size } = useAppSelector(state => state.user);
 
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const [financeDisabled, setFinanceDisabled] = useState(false);
-
-  // تهيئة حالة العمليات المالية من بيانات المستخدم
-  useEffect(() => {
-    if (user?.data?.DisabledFinance) {
-      setFinanceDisabled(user.data.DisabledFinance === 'true');
-    }
-  }, [user?.data?.DisabledFinance]);
-
-  // تحديث بيانات المستخدم تلقائياً للحصول على أحدث البيانات
-  useEffect(() => {
-    const refreshUserInfo = async () => {
-      if (user?.accessToken && user?.data?.IDCompany && isAdmin) {
-        try {
-          const refreshedData = await refreshUserData(user.data.IDCompany, user.accessToken);
-
-          if (refreshedData?.data?.DisabledFinance !== undefined) {
-            // تحديث بيانات المستخدم في Redux فقط إذا كانت القيمة مختلفة
-            if (user.data?.DisabledFinance !== refreshedData.data.DisabledFinance) {
-              const updatedUser = {
-                ...user,
-                data: {
-                  ...user.data,
-                  DisabledFinance: refreshedData.data.DisabledFinance
-                }
-              };
-              dispatch(setUser(updatedUser));
-
-              // تحديث الحالة المحلية
-              setFinanceDisabled(refreshedData.data.DisabledFinance === 'true');
-            }
-          }
-        } catch (error) {
-          console.error('Error refreshing user data:', error);
-          // لا نعرض رسالة خطأ للمستخدم لأن هذا تحديث خلفي
-        }
-      }
-    };
-
-    // تحديث فوري عند تحميل الصفحة
-    refreshUserInfo();
-
-    // تحديث دوري كل 30 ثانية للتأكد من مزامنة البيانات
-    const interval = setInterval(refreshUserInfo, 30000);
-
-    // تنظيف الـ interval عند إلغاء تحميل المكون
-    return () => clearInterval(interval);
-  }, [user?.accessToken, user?.data?.IDCompany, isAdmin, dispatch, user?.data?.DisabledFinance]);
 
   // إظهار/إخفاء قسم البروفايل داخل المحتوى (نُبقي الزر في الهيدر فعال)
   const showInlineProfile = false;
 
-  // Admin phone numbers (from mobile app)
-  const adminPhoneNumbers = ['502464530', '567256943'];
-  const isSystemAdmin = adminPhoneNumbers.includes(user?.data?.PhoneNumber || '');
 
-  // Preparation button - Show for all users like mobile app (check permissions on click)
-  // In mobile app, the button is always visible and permission check happens on press
-
-  const handleLogout = async () => {
-    try {
-      // Close modal first
-      setShowLogoutConfirm(false);
-
-      // Clear user data
-      dispatch(clearUser());
-      localStorage.removeItem('user');
-      localStorage.removeItem('token');
-      localStorage.removeItem('accessToken');
-
-      Tostget('تم تسجيل الخروج بنجاح');
-      router.replace('/');
-    } catch (error) {
-      console.error('Logout error:', error);
-      Tostget('حدث خطأ أثناء تسجيل الخروج');
-      setShowLogoutConfirm(false); // Close modal on error too
-    }
-  };
-
-  const handleDeleteAccount = async () => {
-    try {
-      // Close modal first
-      setShowDeleteConfirm(false);
-
-      // TODO: Implement delete account API call
-      Tostget('سيتم حذف الحساب قريباً');
-    } catch (error) {
-      console.error('Delete account error:', error);
-      Tostget('حدث خطأ أثناء حذف الحساب');
-      setShowDeleteConfirm(false); // Close modal on error too
-    }
-  };
-
-  const handleLanguageChange = () => {
-    router.push('/settings/language');
-  };
-
-  const _handlePendingOperations = () => {
-    router.push('/settings/pending-operations');
-  };
-
-  const handleFontSize = () => {
-    router.push('/settings/font-size');
-  };
-
-  const handleAbout = () => {
-    router.push('/settings/about');
-  };
-
-  const handleContact = () => {
-    router.push('/settings/contact');
-  };
 
   const handleConsultations = () => {
     router.push('/settings/consultations');
@@ -289,44 +169,7 @@ export default function ManagementPage() {
     router.push('/preparation');
   };
 
-  const handleFinanceToggle = async () => {
-    if (!isAdmin) {
-      Tostget('ليس في نطاق صلاحياتك');
-      return;
-    }
 
-    if (!user?.data?.IDCompany || !user?.accessToken) {
-      Tostget('بيانات المستخدم غير مكتملة');
-      return;
-    }
-
-    try {
-      const data = await toggleFinanceOperations(
-        user.data.IDCompany,
-        user.accessToken
-      );
-
-      // تحديث الحالة المحلية بناءً على الاستجابة من الخادم
-      const newFinanceDisabled = data.DisabledFinance === 'true';
-      setFinanceDisabled(newFinanceDisabled);
-
-      // تحديث بيانات المستخدم في Redux
-      const updatedUser = {
-        ...user,
-        data: {
-          ...user.data,
-          DisabledFinance: data.DisabledFinance
-        }
-      };
-      dispatch(setUser(updatedUser));
-
-      // عرض رسالة النجاح
-      Tostget(data.success || 'تمت العملية بنجاح');
-    } catch (error: any) {
-      console.error('Finance toggle error:', error);
-      Tostget(error.message || 'خطأ في الشبكة');
-    }
-  };
 
   return (
     <>
@@ -335,22 +178,6 @@ export default function ManagementPage() {
         visible={showUserProfile}
         onClose={() => setShowUserProfile(false)}
         user={user?.data}
-      />
-
-      {/* Delete Account Modal */}
-      <DeleteAccountModal
-        isOpen={showDeleteConfirm}
-        onClose={() => setShowDeleteConfirm(false)}
-        onConfirm={handleDeleteAccount}
-        isLoading={false}
-      />
-
-      {/* Logout Confirmation Modal */}
-      <LogoutModal
-        isOpen={showLogoutConfirm}
-        onClose={() => setShowLogoutConfirm(false)}
-        onConfirm={handleLogout}
-        isLoading={false}
       />
 
       <ResponsiveLayout header={<PageHeader title="الإدارة" actions={<button onClick={() => setShowUserProfile(true)} className="w-9 h-9 rounded-full overflow-hidden bg-peach flex items-center justify-center" aria-label="الملف الشخصي"><Image src="/images/figma/male.png" alt="User" width={36} height={36} className="rounded-full" /></button>} />}>
@@ -412,24 +239,6 @@ export default function ManagementPage() {
         {/* Management Grid - Only management items */}
         <div className="px-4">
           <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
-            {/* Stage templates access - exactly like mobile app */}
-            {showTemplet && (
-              <SettingItem
-                title="نماذج المراحل"
-                onPress={() => router.push('/templet')}
-                icon={
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" stroke={colors.BLUE} strokeWidth="2" />
-                    <path d="M9 9h6v6H9z" stroke={colors.BLUE} strokeWidth="2" fill={colors.BLUE} fillOpacity="0.1" />
-                    <path d="M9 3v18" stroke={colors.BLUE} strokeWidth="1" />
-                    <path d="M15 3v18" stroke={colors.BLUE} strokeWidth="1" />
-                    <path d="M3 9h18" stroke={colors.BLUE} strokeWidth="1" />
-                    <path d="M3 15h18" stroke={colors.BLUE} strokeWidth="1" />
-                  </svg>
-                }
-              />
-            )}
-
             {/* Employee-only features */}
             <EmployeeOnly>
               <SettingItem
@@ -488,16 +297,7 @@ export default function ManagementPage() {
           </ResponsiveGrid>
         </div>
 
-        {/* System Admin Features */}
-        {isSystemAdmin && (
-          <div className="px-4 mt-4">
-            <SettingItem
-              title="طلبات الاشتراك"
-              onPress={() => Tostget('صفحة طلبات الاشتراك قريباً')}
-              width="100%"
-            />
-          </div>
-        )}
+
         </ContentSection>
       </ResponsiveLayout>
     </>

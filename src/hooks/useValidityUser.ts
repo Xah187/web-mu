@@ -63,22 +63,46 @@ export default function useValidityUser() {
         if (users?.data?.job === 'Admin') {
           return resolve(true);
         }
-        
+
         // If user's JOB (not boss status) is branch manager and permission is not 'Admin', allow access
         // This ensures permissions are based on actual job role, not branch-specific status
         if (users?.data?.job === 'مدير الفرع' && kind !== 'Admin') {
           return resolve(true);
         }
-        
+
         // If the boss status (from API) indicates branch manager and permission is not 'Admin'
         // But this should only be a secondary check, not primary
         if (boss === 'مدير الفرع' && kind !== 'Admin') {
           return resolve(true);
         }
-        
+
+        // Special logic for covenant permission - matching mobile app
+        if (kind === 'covenant') {
+          const jobDescription = users?.data?.jobdiscrption || '';
+          const job = users?.data?.job || '';
+
+          // Check if user has Acceptingcovenant in Validity (like mobile app)
+          if (Array.isArray(Validity)) {
+            const hasCovenantAccess = Validity.some((validityItem: any) =>
+              validityItem?.Acceptingcovenant === true
+            );
+            if (hasCovenantAccess) {
+              return resolve(true);
+            }
+          }
+
+          // Check if user is requests manager with covenant access (like mobile app logic)
+          if (jobDescription === 'مسئول طلبيات' ||
+              jobDescription.includes('طلبيات') ||
+              job === 'مسئول طلبيات' ||
+              job.includes('طلبيات')) {
+            return resolve(true);
+          }
+        }
+
         // Check if permission exists in Validity array
-        return Array.isArray(Validity) 
-          ? resolve(Validity.includes(kind)) 
+        return Array.isArray(Validity)
+          ? resolve(Validity.includes(kind))
           : resolve(false);
       } catch (error) {
         console.error('Permission validation error:', error);

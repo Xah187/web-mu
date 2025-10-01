@@ -408,7 +408,7 @@ export default function HomePage() {
               />
             </AdminGuard>
 
-            {/* Covenant - show if user has covenant permission */}
+            {/* Covenant - show for users with covenant permission (Admin, Branch Manager, Finance with Acceptingcovenant, مسئول طلبيات) */}
             <PermissionBasedVisibility permission="covenant">
               <ButtonCreat
                 text="العهد"
