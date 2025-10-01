@@ -528,8 +528,9 @@ const ProjectDetailsPage = () => {
   };
 
   const handleStartProject = async () => {
-    // Check if user has permission to start project (using validation function like in mobile app)
-    const hasPermission = await Uservalidation('تعديل بيانات المشروع', projectId);
+    // Check if user has permission to start project - matching mobile app exactly (PageHomeProject.tsx line 294)
+    // Mobile app uses: if (await Uservalidation('مدير الفرع', idProject))
+    const hasPermission = await Uservalidation('مدير الفرع', projectId);
     if (!hasPermission) {
       return;
     }

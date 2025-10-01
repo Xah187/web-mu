@@ -59,8 +59,11 @@ export default function useValidityUser() {
   const KnowValidity = (kind: PermissionType, users = user): Promise<boolean> => {
     return new Promise(async (resolve, reject) => {
       try {
-        // Apply mobile app logic exactly: only job === 'Admin' is admin
-        if (users?.data?.job === 'Admin') {
+        // Apply mobile app logic: مالية is treated as Admin (HomeAdmin.tsx line 119)
+        const effectiveJob = users?.data?.job === 'مالية' ? 'Admin' : users?.data?.job;
+
+        // Admin (including مالية) has all permissions
+        if (effectiveJob === 'Admin') {
           return resolve(true);
         }
 
@@ -117,17 +120,20 @@ export default function useValidityUser() {
    */
   const hasPermission = (kind: PermissionType): boolean => {
     try {
-      // Apply mobile app logic exactly: only job === 'Admin' is admin
-      if (user?.data?.job === 'Admin') {
+      // Apply mobile app logic: مالية is treated as Admin (HomeAdmin.tsx line 119)
+      const effectiveJob = user?.data?.job === 'مالية' ? 'Admin' : user?.data?.job;
+
+      // Admin (including مالية) has all permissions
+      if (effectiveJob === 'Admin') {
         return true;
       }
-      
+
       // If user's JOB (not boss status) is branch manager and permission is not 'Admin', return true
       // This ensures permissions are based on actual job role
       if (user?.data?.job === 'مدير الفرع' && kind !== 'Admin') {
         return true;
       }
-      
+
       // If the boss status indicates branch manager and permission is not 'Admin'
       // But this should only be a secondary check
       if (boss === 'مدير الفرع' && kind !== 'Admin') {

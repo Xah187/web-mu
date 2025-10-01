@@ -55,6 +55,8 @@ export type PermissionType =
   | 'رفع ملف'
   | 'covenant'
   | 'التحضير'
+  | 'تعديل تاريخ المشروع'
+  | 'مدير الفرع' // Used for checking branch manager role (like mobile app)
   | 'Admin'; // Special permission type
 
 // Boss Types

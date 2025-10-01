@@ -7,6 +7,8 @@ import useDelays, { Delay } from '@/hooks/useDelays';
 import { formatDateEnglish } from '@/hooks/useFinance';
 import { scale } from '@/utils/responsiveSize';
 import axiosInstance from '@/lib/api/axios';
+import useValidityUser from '@/hooks/useValidityUser';
+import { Tostget } from '@/components/ui/Toast';
 
 const Header = ({ onBack }: { onBack: () => void }) => (
   <div className="bg-white border-b border-gray-200 p-4">
@@ -48,6 +50,7 @@ export default function StageDelaysPage() {
   const stageId = parseInt(params.stageId as string);
 
   const { user } = useSelector((state: any) => state.user || {});
+  const { Uservalidation } = useValidityUser();
   const { delays, loading, fetchDelays, addDelay, updateDelay } = useDelays();
 
   const [showForm, setShowForm] = useState(false);
@@ -83,7 +86,17 @@ export default function StageDelaysPage() {
   }, [projectId, stageId, user?.accessToken, fetchDelays]);
 
   const onSubmit = async () => {
-    if (!form.type.trim() || !form.note.trim()) return;
+    if (!form.type.trim() || !form.note.trim()) {
+      Tostget('يرجى ملء جميع الحقول');
+      return;
+    }
+
+    // Check permission before adding/editing delay - matching mobile app (Delays.tsx)
+    const hasPermission = await Uservalidation('إضافة تأخيرات', projectId);
+    if (!hasPermission) {
+      return;
+    }
+
     if (editing) {
       await updateDelay(editing.StageNoteID, form.type.trim(), form.note.trim(), parseInt(form.countdayDelay || '0'));
       setEditing(null);
