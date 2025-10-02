@@ -2,14 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { colors } from '@/constants/colors';
-import { fonts } from '@/constants/fonts';
 import { useAppSelector } from '@/store';
 import ButtonCreat from '@/components/design/ButtonCreat';
 import { useCompanyData } from '@/hooks/useCompanyData';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import useValidityUser from '@/hooks/useValidityUser';
-import PermissionGuard, { AdminGuard, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
+import { AdminGuard } from '@/components/auth/PermissionGuard';
 
 import BranchCard from '@/components/design/BranchCard';
 import { Tostget } from '@/components/ui/Toast';
@@ -41,7 +39,7 @@ export default function HomePage() {
 
   // Permission system (existing)
   // Job-based permission system (consistent everywhere - recommended)
-  const { isAdmin, isBranchManager } = useJobBasedPermissions();
+  const { isAdmin, isEmployee } = useJobBasedPermissions();
 
   // Validity-based permission system for specific operations
   const { Uservalidation } = useValidityUser();
@@ -236,13 +234,14 @@ export default function HomePage() {
   };
 
   // Handle branch edit - open edit modal
-  const handleBranchEdit = (branch: any) => {
-    if (isAdmin || isBranchManager) {
+  // Matching mobile app: HomSub.tsx line 258 - uses Uservalidation('تعديل بيانات الفرغ', 0)
+  const handleBranchEdit = async (branch: any) => {
+    const hasPermission = await Uservalidation('تعديل بيانات الفرغ', 0);
+    if (hasPermission) {
       setSelectedBranch(branch);
       setEditModalOpen(true);
-    } else {
-      Tostget('ليس لديك صلاحية لتعديل بيانات الفرع');
     }
+    // Error message is handled by Uservalidation
   };
 
   // Handle save branch changes
@@ -408,15 +407,17 @@ export default function HomePage() {
               />
             </AdminGuard>
 
-            {/* Covenant - show for users with covenant permission (Admin, Branch Manager, Finance with Acceptingcovenant, مسئول طلبيات) */}
-            <PermissionBasedVisibility permission="covenant">
+            {/* Covenant - show ONLY for Admin (matching mobile app exactly: HomeAdmin.tsx line 439) */}
+            {/* Mobile app: {job === 'Admin' && <ButtonCreat text="العهد" />} */}
+            {/* Note: مالية is treated as Admin (job = 'مالية' ? 'Admin' : job) */}
+            <AdminGuard>
               <ButtonCreat
                 text="العهد"
                 number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
                 onpress={handleCovenant}
                 className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
               />
-            </PermissionBasedVisibility>
+            </AdminGuard>
           </div>
         </Card>
       </ContentSection>
@@ -452,7 +453,7 @@ export default function HomePage() {
                 onSettingsPress={() => handleBranchSettings(branch)}
                 onEditPress={() => handleBranchEdit(branch)}
                 showSettings={isAdmin}
-                showEdit={isAdmin || isBranchManager}
+                showEdit={isEmployee} // Matching mobile app: BoxSubCompne.tsx line 51 - only employees see edit button
               />
             ))}
           </div>

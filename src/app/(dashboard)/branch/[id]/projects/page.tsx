@@ -347,8 +347,9 @@ const BranchProjectsPage = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Check permissions
-  const canShowEmployee = hasPermission('تعديل بيانات الفرغ') || hasPermission('إنشاء المشروع') || hasPermission('إشعارات المالية') || hasPermission('انشاء عمليات مالية') || hasPermission('إنشاء طلبات');
+  // Check permissions - matching mobile app: HomSub.tsx line 320-321
+  // Settings button shows ONLY for employees (jobdiscrption === 'موظف')
+  const canShowEmployee = user?.data?.jobdiscrption === 'موظف';
 
   // Load projects on mount and save branch data
   useEffect(() => {
@@ -483,8 +484,14 @@ const BranchProjectsPage = () => {
     router.push(`/covenant?branchId=${branchId}`);
   };
 
-  const handleCreateProject = () => {
-    router.push(`/project/create?branchId=${branchId}`);
+  // Matching mobile app: HomSub.tsx line 474-479
+  // Check permission before navigating to create project page
+  const handleCreateProject = async () => {
+    const hasPermission = await Uservalidation('إنشاء المشروع', 0);
+    if (hasPermission) {
+      router.push(`/project/create?branchId=${branchId}`);
+    }
+    // Error message is handled by Uservalidation
   };
 
   const handleProjectPress = (project: Project) => {

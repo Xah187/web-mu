@@ -724,10 +724,11 @@ const ProjectDetailsPage = () => {
         </div>
       )}
 
-      {/* Action Buttons - Show for employees only like mobile app */}
+      {/* Action Buttons - Show for employees only like mobile app (PageHomeProject.tsx line 338) */}
       <EmployeeOnly>
-        <PermissionBasedVisibility permission="إضافة مرحلة رئيسية">
-          <div className="flex justify-between items-center p-4">
+        <div className="flex justify-between items-center p-4">
+          {/* Create Task Button */}
+          <PermissionBasedVisibility permission="إضافة مرحلة رئيسية">
             <button
               onClick={handleAddStage}
               className="text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
@@ -735,6 +736,7 @@ const ProjectDetailsPage = () => {
             >
               إنشاء مهمة
             </button>
+          </PermissionBasedVisibility>
 
           <div className="flex items-center space-x-4 space-x-reverse">
             <button
@@ -745,6 +747,7 @@ const ProjectDetailsPage = () => {
               تقييم الجودة
             </button>
 
+            {/* Settings button */}
             <div className="relative">
               <button
                 onClick={() => setShowSettingsModal((v)=>!v)}
@@ -827,7 +830,6 @@ const ProjectDetailsPage = () => {
             </div>
           </div>
         </div>
-        </PermissionBasedVisibility>
       </EmployeeOnly>
 
       {/* Stages Grid */}
