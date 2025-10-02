@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "منصة مشرف",
+  title: "مشرف - نظام إدارة المشاريع",
   description: "منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني",
   keywords: "مشرف, إدارة المشاريع, تواصل الفرق, نظام إدارة, مقاولات, إشراف فني, إدارة مالية",
   authors: [{ name: "Moshrif Team" }],
@@ -23,46 +23,12 @@ export const metadata: Metadata = {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
       { url: '/favicon.png', type: 'image/png', sizes: '32x32' },
-      { url: '/logo-new.png', type: 'image/png', sizes: '512x512' },
     ],
     apple: [
-      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+      { url: '/favicon.png', sizes: '180x180', type: 'image/png' },
     ],
   },
   manifest: '/manifest.json',
-  openGraph: {
-    type: 'website',
-    locale: 'ar_SA',
-    url: 'https://mushrf.co',
-    siteName: 'منصة مشرف',
-    title: 'منصة مشرف',
-    description: 'منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني',
-    images: [
-      {
-        url: '/logo-new.png',
-        width: 1200,
-        height: 630,
-        alt: 'منصة مشرف',
-      },
-    ],
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: 'منصة مشرف',
-    description: 'منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني',
-    images: ['/logo-new.png'],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      'max-video-preview': -1,
-      'max-image-preview': 'large',
-      'max-snippet': -1,
-    },
-  },
 };
 
 export const viewport: Viewport = {
@@ -85,50 +51,6 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#2117fb" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="canonical" href="https://mushrf.co" />
-
-        {/* Structured Data for Google */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'WebApplication',
-              name: 'منصة مشرف',
-              alternateName: 'Moshrif Platform',
-              url: 'https://mushrf.co',
-              logo: 'https://mushrf.co/logo-new.png',
-              description: 'منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني',
-              applicationCategory: 'BusinessApplication',
-              operatingSystem: 'Web',
-              offers: {
-                '@type': 'Offer',
-                price: '0',
-                priceCurrency: 'SAR',
-              },
-              aggregateRating: {
-                '@type': 'AggregateRating',
-                ratingValue: '4.8',
-                ratingCount: '100',
-              },
-            }),
-          }}
-        />
-
-        {/* Organization Schema */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'Organization',
-              name: 'منصة مشرف',
-              url: 'https://mushrf.co',
-              logo: 'https://mushrf.co/logo-new.png',
-              sameAs: [],
-            }),
-          }}
-        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

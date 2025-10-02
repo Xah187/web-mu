@@ -1,5 +1,5 @@
 {
-  "name": "منصة مشرف",
+  "name": "منصة مشرف - نظام إدارة المشاريع",
   "short_name": "مشرف",
   "description": "منصة مشرف - الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة بالمقاولات والإشراف الفني والمالي للمباني",
   "start_url": "/",
@@ -15,16 +15,10 @@
       "purpose": "any maskable"
     },
     {
-      "src": "/logo-new.png",
+      "src": "/favicon.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/apple-touch-icon.png",
-      "sizes": "180x180",
-      "type": "image/png",
-      "purpose": "apple touch icon"
     }
   ],
   "categories": ["business", "productivity", "utilities"],
