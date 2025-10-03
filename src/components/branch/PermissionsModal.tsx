@@ -78,9 +78,18 @@ export default function PermissionsModal({
         if (userData && userData.Validity) {
           try {
             const validity = JSON.parse(userData.Validity);
-            const userPermissions = validity.flatMap((v: any) => v.Validity || []);
+
+            // Extract global permissions (idBrinsh === 0) - matching mobile app logic
+            let userPermissions: string[] = [];
+            if (Array.isArray(validity)) {
+              const globalEntry = validity.find((v: any) => parseInt(v.idBrinsh) === 0);
+              if (globalEntry?.Validity && Array.isArray(globalEntry.Validity)) {
+                userPermissions = globalEntry.Validity;
+              }
+            }
+
             setSelectedPermissions(userPermissions);
-            
+
             // تحديد الصلاحيات المتاحة (غير المحددة)
             const available = AVAILABLE_PERMISSIONS.filter(
               permission => !userPermissions.includes(permission)
@@ -147,6 +156,19 @@ export default function PermissionsModal({
 
       if (response.data?.success === 'تمت العملية بنجاح') {
         Tostget('تم تحديث الصلاحيات بنجاح');
+
+        // If updating current user's permissions, refresh them in Redux
+        if (member.PhoneNumber === user?.data?.PhoneNumber) {
+          // Reload permissions for current user
+          try {
+            const { fetchUserPermissions } = await import('@/functions/permissions/fetchPermissions');
+            await fetchUserPermissions(user.accessToken, user);
+            console.log('✅ Current user permissions refreshed after update');
+          } catch (error) {
+            console.error('Failed to refresh current user permissions:', error);
+          }
+        }
+
         onSuccess();
         onClose();
       } else {

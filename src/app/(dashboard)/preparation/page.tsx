@@ -109,17 +109,71 @@ export default function PreparationPage() {
 
 
 
-  // Check permissions using existing hooks
+  // State for HR permissions from API
+  const [hasHRAccess, setHasHRAccess] = useState(false);
+  const [permissionsLoaded, setPermissionsLoaded] = useState(false);
+
+  // Check permissions using existing hooks + API check (matching mobile app)
   const hasHRPermissions = () => {
     const hrJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
-    return hrJobs.includes(user?.data?.job || '') || isAdmin || isBranchManager;
+    const hasJobPermission = hrJobs.includes(user?.data?.job || '') || isAdmin || isBranchManager;
+    return hasJobPermission || hasHRAccess;
   };
 
   const hasManagerPermissions = () => {
-    // Same as mobile app: ["مدير عام","مدير تنفيذي","موارد بشرية","Admin"]
+    // IMPORTANT: Only check job, NOT API result (matching mobile app line 209)
+    // Users with HR access from API cannot give HR permissions to others
     const managerJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
     return managerJobs.includes(user?.data?.job || '') || isAdmin;
   };
+
+  // Check HR permissions from API (matching mobile app openViliteduser)
+  useEffect(() => {
+    const checkHRPermissions = async () => {
+      try {
+        // First check if user has job-based permissions
+        const hrJobs = ["مدير عام", "مدير تنفيذي", "موارد بشرية", "Admin"];
+        const hasJobPermission = hrJobs.includes(user?.data?.job || '') || isAdmin || isBranchManager;
+
+        if (hasJobPermission) {
+          setHasHRAccess(true);
+          setPermissionsLoaded(true);
+          return;
+        }
+
+        // If no job permission, check API (like mobile app)
+        let token: string | null = null;
+        if (typeof window !== 'undefined') {
+          const storedUser = localStorage.getItem('user');
+          try {
+            const parsed = storedUser ? JSON.parse(storedUser) : null;
+            token = parsed?.accessToken || null;
+          } catch {}
+          if (!token) token = localStorage.getItem('token');
+        }
+
+        const response = await fetch('/api/hr/check-access', {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+          },
+          credentials: 'include',
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setHasHRAccess(data.hasAccess || false);
+          // Note: hasManagerAccess is NOT set from API - only from job
+        }
+      } catch (error) {
+        console.error('Error checking HR permissions:', error);
+      } finally {
+        setPermissionsLoaded(true);
+      }
+    };
+
+    checkHRPermissions();
+  }, [user, isAdmin, isBranchManager]);
 
   // Load initial data
   useEffect(() => {

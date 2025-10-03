@@ -78,16 +78,16 @@ export const fetchUserPermissions = async (_accessToken: string, userData: any) 
             }
           }
 
-          // Extract permissions from Validity structure
+          // Extract permissions from Validity structure (matching mobile app logic)
           let finalPermissions = [];
           if (Array.isArray(validity)) {
-            // Find the branch entry for current company
-            const branchEntry = validity.find(item =>
-              parseInt(item.idBrinsh) === parseInt(userData.data?.IDCompany || 0)
+            // First, try to find global permissions (idBrinsh === 0) - like mobile app
+            const globalEntry = validity.find(item =>
+              parseInt(item.idBrinsh) === 0
             );
 
-            if (branchEntry?.Validity && Array.isArray(branchEntry.Validity)) {
-              finalPermissions = branchEntry.Validity;
+            if (globalEntry?.Validity && Array.isArray(globalEntry.Validity)) {
+              finalPermissions = globalEntry.Validity;
             } else {
               // Fallback: collect all Validity arrays from all branches
               finalPermissions = validity
