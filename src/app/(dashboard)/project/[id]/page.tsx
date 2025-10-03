@@ -4,6 +4,8 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { scale } from '@/utils/responsiveSize';
+import { fonts } from '@/constants/fonts';
+import { colors } from '@/constants/colors';
 import useValidityUser from '@/hooks/useValidityUser';
 import useProjectDetails, { Stage, ProjectDetails } from '@/hooks/useProjectDetails';
 import axiosInstance from '@/lib/api/axios';
@@ -145,13 +147,13 @@ const ProjectHeader = ({
           <div className="theme-card rounded-xl shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
             <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border shadow-sm overflow-hidden"
                  style={{
-                   borderColor: 'var(--color-success)',
-                   backgroundColor: 'var(--color-success)' + '20'
+                   borderColor: 'var(--color-primary)',
+                   backgroundColor: 'var(--color-primary)' + '20'
                  }}>
               <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
                  style={{
                    fontSize: scale(10),
-                   color: 'var(--color-success)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 التكلفة اليومية
               </p>
@@ -159,7 +161,7 @@ const ProjectHeader = ({
                  style={{
                    fontSize: scale(12),
                    fontFeatureSettings: '"tnum"',
-                   color: 'var(--color-success)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 {formatCurrency(project.ConstCompany || 0)}
                 <span className="text-xs mr-1">ر.س</span>
@@ -177,7 +179,7 @@ const ProjectHeader = ({
               <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
                  style={{
                    fontSize: scale(10),
-                   color: 'var(--color-primary)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 عدد الأيام
               </p>
@@ -185,7 +187,7 @@ const ProjectHeader = ({
                  style={{
                    fontSize: scale(12),
                    fontFeatureSettings: '"tnum"',
-                   color: 'var(--color-primary)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 {project.DaysUntiltoday || 0}
               </p>
@@ -196,13 +198,13 @@ const ProjectHeader = ({
           <div className="theme-card rounded-xl shadow-sm p-2 sm:p-3 lg:p-4 overflow-hidden">
             <div className="rounded-lg p-2 sm:p-3 lg:p-4 text-center border shadow-sm overflow-hidden"
                  style={{
-                   borderColor: 'var(--color-warning)',
-                   backgroundColor: 'var(--color-warning)' + '20'
+                   borderColor: 'var(--color-primary)',
+                   backgroundColor: 'var(--color-primary)' + '20'
                  }}>
               <p className="font-ibm-arabic-medium mb-1 sm:mb-2"
                  style={{
                    fontSize: scale(10),
-                   color: 'var(--color-warning)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 إجمالي التكلفة
               </p>
@@ -210,7 +212,7 @@ const ProjectHeader = ({
                  style={{
                    fontSize: scale(12),
                    fontFeatureSettings: '"tnum"',
-                   color: 'var(--color-warning)'
+                   color: 'var(--color-text-primary)'
                  }}>
                 {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
                 {String(project.TotalcosttothCompany).length > 8 && '..'}
@@ -253,7 +255,7 @@ const ProjectHeader = ({
                   <polyline points="10,9 9,9 8,9"/>
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-primary)' }}>طلبات</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>طلبات</span>
             </button>
           </div>
 
@@ -263,26 +265,26 @@ const ProjectHeader = ({
               onClick={onFinance}
               className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
               style={{
-                borderColor: 'var(--color-success)',
-                backgroundColor: 'var(--color-success)' + '20'
+                borderColor: 'var(--color-primary)',
+                backgroundColor: 'var(--color-primary)' + '20'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-success)' + '30';
-                e.currentTarget.style.borderColor = 'var(--color-success)';
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-success)' + '20';
-                e.currentTarget.style.borderColor = 'var(--color-success)';
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
               }}
             >
               <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
-                   style={{ backgroundColor: 'var(--color-success)' + '30' }}>
+                   style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
                 <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="var(--color-success)"/>
-                  <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-success)"/>
+                  <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="var(--color-primary)"/>
+                  <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-primary)"/>
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-success)' }}>مالية</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>مالية</span>
             </button>
           </div>
 
@@ -292,29 +294,29 @@ const ProjectHeader = ({
               onClick={onArchives}
               className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
               style={{
-                borderColor: 'var(--color-warning)',
-                backgroundColor: 'var(--color-warning)' + '20'
+                borderColor: 'var(--color-primary)',
+                backgroundColor: 'var(--color-primary)' + '20'
               }}
               onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-warning)' + '30';
-                e.currentTarget.style.borderColor = 'var(--color-warning)';
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
               }}
               onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-warning)' + '20';
-                e.currentTarget.style.borderColor = 'var(--color-warning)';
+                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
+                e.currentTarget.style.borderColor = 'var(--color-primary)';
               }}
             >
               <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
-                   style={{ backgroundColor: 'var(--color-warning)' + '30' }}>
+                   style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
                 <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--color-warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="var(--color-warning)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="9" y="12" width="6" height="2" rx="1" fill="var(--color-warning)"/>
-                  <line x1="7" y1="16" x2="17" y2="16" stroke="var(--color-warning)" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-warning)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <rect x="9" y="12" width="6" height="2" rx="1" fill="var(--color-primary)"/>
+                  <line x1="7" y1="16" x2="17" y2="16" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                  <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-warning)' }}>أرشيف</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>أرشيف</span>
             </button>
           </div>
         </div>
@@ -339,14 +341,11 @@ const StageCard = ({
 
   return (
     <div className="group relative h-full bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
-      {/* Subtle top cover */}
-      <div className="absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-blue-50/70 to-transparent pointer-events-none" />
-
       <div className="relative p-5 pt-6 flex flex-col items-center">
         {/* Title centered above progress */}
-        <div className="w-full mb-3 text-center px-2">
+        <div className="w-full mb-3 text-center">
           <h3
-            className="font-ibm-arabic-bold text-gray-900 text-base"
+            className="font-ibm-arabic-bold text-gray-900 text-base px-2"
             style={{
               fontSize: scale(14),
               display: '-webkit-box',
@@ -361,13 +360,24 @@ const StageCard = ({
           >
             {stage.StageName}
           </h3>
-          <span
-            className={`inline-block mt-2 px-3 py-1 rounded-full text-xs font-ibm-arabic-medium ${
-              isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-            }`}
-          >
-            {isCompleted ? 'تم إنجاز' : 'غير منجز'}
-          </span>
+          <div className="flex justify-center mt-2 px-3">
+            <span
+              className={`inline-block rounded-full font-ibm-arabic-medium whitespace-nowrap ${
+                isCompleted ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
+              }`}
+              style={{
+                fontSize: '9px',
+                lineHeight: '1.4',
+                padding: '2px 8px',
+                maxWidth: 'calc(100% - 8px)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {isCompleted ? 'تم إنجاز' : 'غير منجز'}
+            </span>
+          </div>
         </div>
 
         {/* Circular Progress */}
@@ -432,7 +442,7 @@ const ProjectDetailsPage = () => {
 
   const projectId = parseInt(params.id as string);
 
-  const { user } = useSelector((state: any) => state.user || {});
+  const { user, size } = useSelector((state: any) => state.user || {});
   const { Uservalidation, hasPermission } = useValidityUser();
 
   const {
@@ -846,18 +856,18 @@ const ProjectDetailsPage = () => {
                    borderColor: 'var(--color-primary)',
                    backgroundColor: 'var(--color-primary)' + '20'
                  }}>
-              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-primary)' }}>إجمالي المراحل</div>
-              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-primary)' }}>{stages?.length || 0}</div>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>إجمالي المراحل</div>
+              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-text-primary)' }}>{stages?.length || 0}</div>
             </div>
 
             {/* Open/Completed Card */}
             <div className="p-3 rounded-xl border shadow-sm text-center overflow-hidden"
                  style={{
-                   borderColor: 'var(--color-success)',
-                   backgroundColor: 'var(--color-success)' + '20'
+                   borderColor: 'var(--color-primary)',
+                   backgroundColor: 'var(--color-primary)' + '20'
                  }}>
-              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-success)' }}>المفتوحة / المكتملة</div>
-              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-success)' }}>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>المفتوحة / المكتملة</div>
+              <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
               </div>
             </div>
@@ -865,15 +875,15 @@ const ProjectDetailsPage = () => {
 
           {/* Sort Control - Matching Page Design */}
           <div className="flex items-center gap-3 justify-center">
-            <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-warning)' }}>ترتيب:</label>
+            <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-text-primary)' }}>ترتيب:</label>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as any)}
               className="rounded-lg px-3 py-1 text-sm font-ibm-arabic-medium focus:outline-none focus:ring-2 focus:border-transparent"
               style={{
-                border: '1px solid var(--color-warning)',
+                border: '1px solid var(--color-primary)',
                 backgroundColor: 'var(--color-card-background)',
-                color: 'var(--color-warning)'
+                color: 'var(--color-text-primary)'
               }}
             >
               <option value="default">الافتراضي</option>
@@ -1342,30 +1352,184 @@ const ProjectDetailsPage = () => {
         onSaved={async () => { /* no-op */ }}
       />
 
-      {/* Delete Stage Modal */}
+      {/* Delete Stage Modal - Enhanced Design */}
       {showDeleteModal && selectedStage && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">حذف المرحلة</h3>
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 sm:p-6"
+          style={{ zIndex: 1050 }}
+        >
+          <div
+            className="w-full shadow-2xl relative animate-in fade-in zoom-in duration-200"
+            style={{
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: `${scale(20)}px`,
+              maxWidth: `${scale(450)}px`,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Header with Icon */}
+            <div
+              className="text-center"
+              style={{
+                borderBottom: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: scale(24),
+                paddingRight: scale(24),
+                paddingTop: scale(24),
+                paddingBottom: scale(20),
+                borderTopLeftRadius: `${scale(20)}px`,
+                borderTopRightRadius: `${scale(20)}px`
+              }}
+            >
+              <div className="flex items-center justify-center gap-3 mb-3">
+                {/* Warning Icon */}
+                <div
+                  className="w-12 h-12 rounded-full flex items-center justify-center"
+                  style={{
+                    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                    border: '2px solid rgba(239, 68, 68, 0.2)'
+                  }}
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 9V13" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round"/>
+                    <path d="M12 17H12.01" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round"/>
+                    <circle cx="12" cy="12" r="10" stroke="#ef4444" strokeWidth="2"/>
+                  </svg>
+                </div>
+              </div>
+              <h3
+                className="font-bold"
+                style={{
+                  fontSize: `${scale(20 + size)}px`,
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  lineHeight: 1.4,
+                  color: 'var(--theme-text-primary)'
+                }}
+              >
+                حذف المرحلة الرئيسية
+              </h3>
+            </div>
 
-            <p className="text-gray-600 mb-6">
-              هل أنت متأكد من حذف المرحلة "{selectedStage.StageName}"؟ هذا الإجراء لا يمكن التراجع عنه.
-            </p>
+            {/* Content */}
+            <div style={{
+              paddingLeft: scale(24),
+              paddingRight: scale(24),
+              paddingTop: scale(20),
+              paddingBottom: scale(20)
+            }}>
+              {/* Stage Name Badge */}
+              <div
+                className="mb-4 p-3 rounded-xl text-center"
+                style={{
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  border: '1px solid var(--theme-border)'
+                }}
+              >
+                <p
+                  className="font-semibold"
+                  style={{
+                    fontSize: `${scale(16 + size)}px`,
+                    fontFamily: fonts.IBMPlexSansArabicBold,
+                    color: 'var(--theme-text-primary)',
+                    wordBreak: 'break-word'
+                  }}
+                >
+                  {selectedStage.StageName}
+                </p>
+              </div>
 
-            <div className="flex space-x-3 space-x-reverse">
+              {/* Warning Message */}
+              <p
+                className="text-center"
+                style={{
+                  fontSize: `${scale(14 + size)}px`,
+                  fontFamily: fonts.IBMPlexSansArabicMedium,
+                  lineHeight: 1.6,
+                  color: 'var(--theme-text-secondary)'
+                }}
+              >
+                هل أنت متأكد من حذف هذه المرحلة؟
+                <br />
+                <span style={{ color: '#ef4444', fontFamily: fonts.IBMPlexSansArabicBold }}>
+                  هذا الإجراء لا يمكن التراجع عنه
+                </span>
+              </p>
+            </div>
+
+            {/* Action Buttons */}
+            <div
+              className="flex gap-3 justify-center items-center"
+              style={{
+                borderTop: '1px solid var(--theme-border)',
+                background: 'linear-gradient(135deg, var(--theme-card-background) 0%, var(--theme-surface-secondary) 100%)',
+                paddingLeft: scale(24),
+                paddingRight: scale(24),
+                paddingTop: scale(20),
+                paddingBottom: scale(20),
+                borderBottomLeftRadius: `${scale(20)}px`,
+                borderBottomRightRadius: `${scale(20)}px`
+              }}
+            >
+              {/* Delete Button */}
               <button
                 onClick={confirmDeleteStage}
                 disabled={loading}
-                className="flex-1 bg-red-600 text-white py-2 rounded-lg font-ibm-arabic-semibold hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  fontSize: scale(15),
+                  color: '#ffffff',
+                  backgroundColor: '#ef4444',
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  border: '2px solid #ef4444',
+                  padding: `${scale(14)}px ${scale(20)}px`,
+                  minHeight: scale(50),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: scale(8),
+                  boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                }}
               >
-                {loading ? 'جاري الحذف...' : 'حذف'}
+                {loading ? (
+                  <>
+                    <div
+                      className="border-2 border-white border-t-transparent rounded-full animate-spin"
+                      style={{ width: scale(18), height: scale(18) }}
+                    />
+                    <span>جاري الحذف...</span>
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    <span>حذف المرحلة</span>
+                  </>
+                )}
               </button>
+
+              {/* Cancel Button */}
               <button
                 onClick={() => {
                   setShowDeleteModal(false);
                   setSelectedStage(null);
                 }}
-                className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                disabled={loading}
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+                style={{
+                  fontSize: scale(15),
+                  color: 'var(--theme-text-primary)',
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  border: '2px solid var(--theme-border)',
+                  padding: `${scale(14)}px ${scale(20)}px`,
+                  minHeight: scale(50),
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+                }}
               >
                 إلغاء
               </button>
