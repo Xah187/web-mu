@@ -324,14 +324,6 @@ export default function LoginPage() {
           padding: `0 ${scale(16)}px`
         }}
       >
-        {/* Back Arrow */}
-        <button
-          onClick={() => router.back()}
-          className="mb-4 p-2 hover:bg-white/50 rounded-lg transition-colors"
-        >
-          <ArrowIcon size={24} color={colors.BLACK} />
-        </button>
-
         {/* Logo Section - مع مسافة كبيرة */}
         <div className="text-center" style={{ marginBottom: '60px' }}>
           <div className="flex items-center justify-center gap-1" style={{ marginBottom: '60px' }}>
