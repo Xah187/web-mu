@@ -514,6 +514,7 @@ export default function HomePage() {
         branch={selectedBranch}
         onSave={handleSaveBranch}
         loading={branchOperationLoading}
+        onRefresh={fetchCompanyData}
       />
 
       <UserProfileModal

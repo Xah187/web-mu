@@ -41,8 +41,10 @@ export async function POST(request: NextRequest) {
     const token = authHeader.substring(7);
     console.log('Token extracted, length:', token.length);
 
-    // Make request to backend API
-    const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'https://backend.moshrif.app';
+    // Make request to backend API - matching mobile app exactly
+    // NOTE: Mobile app uses http://35.247.12.97:8080 directly
+    // But web must use https://mushrf.net (which proxies to it)
+    const backendUrl = 'https://mushrf.net/api';
     const apiUrl = `${backendUrl}/company/brinsh/deleteBranch?IDBrach=${branchId}`;
     console.log('Making request to:', apiUrl);
 
@@ -55,9 +57,21 @@ export async function POST(request: NextRequest) {
     });
 
     console.log('Backend response status:', response.status);
+    console.log('Backend response headers:', Object.fromEntries(response.headers.entries()));
 
-    const data = await response.json();
-    console.log('Backend response data:', data);
+    let data;
+    try {
+      const responseText = await response.text();
+      console.log('Backend response text:', responseText);
+      data = JSON.parse(responseText);
+      console.log('Backend response data:', data);
+    } catch (parseError) {
+      console.error('Failed to parse response:', parseError);
+      return NextResponse.json(
+        { success: 'خطأ في استجابة الخادم' },
+        { status: 500 }
+      );
+    }
 
     if (response.ok) {
       console.log('Branch deletion request successful');
@@ -72,10 +86,12 @@ export async function POST(request: NextRequest) {
         { status: response.status }
       );
     }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error initiating branch deletion:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
     return NextResponse.json(
-      { success: 'خطأ في الخادم' },
+      { success: error.message || 'خطأ في الخادم' },
       { status: 500 }
     );
   }

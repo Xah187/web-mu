@@ -126,39 +126,36 @@ export default function useBranchOperations() {
     setLoading(true);
 
     try {
-      console.log('Making API request to /api/branches/delete-request');
-      const response = await axiosInstance.post(
-        '/api/branches/delete-request',
-        { branchId },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${user.accessToken}`
-          }
-        }
-      );
+      console.log('Making fetch request to /api/branches/delete-request');
 
-      console.log('API response:', response);
+      const response = await fetch('/api/branches/delete-request', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${user.accessToken}`
+        },
+        body: JSON.stringify({ branchId })
+      });
 
-      if (response.status === 200) {
+      console.log('Fetch response status:', response.status);
+      const data = await response.json();
+      console.log('Fetch response data:', data);
+
+      if (response.ok) {
         console.log('Branch deletion request successful');
-        Tostget(response.data?.success || 'تم إرسال رمز التحقق إلى هاتفك', 'success');
+        Tostget(data?.success || 'تم إرسال رمز التحقق إلى هاتفك', 'success');
         return true;
       }
 
-      throw new Error(response.data?.success || 'فشل في إرسال رمز التحقق');
+      throw new Error(data?.success || 'فشل في إرسال رمز التحقق');
     } catch (error: any) {
       console.error('Error requesting branch deletion:', error);
 
-      if (error.response?.status === 401) {
-        throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
-      } else if (error.response?.status === 403) {
-        throw new Error('ليس لديك صلاحية لحذف الفرع');
-      } else if (error.response?.status === 404) {
-        throw new Error('الفرع غير موجود');
-      } else {
-        throw new Error(error.response?.data?.success || 'فشل في إرسال رمز التحقق');
+      if (error.message) {
+        throw error;
       }
+
+      throw new Error('فشل في إرسال رمز التحقق');
     } finally {
       setLoading(false);
     }
@@ -167,6 +164,8 @@ export default function useBranchOperations() {
   /**
    * Confirm branch deletion with verification code
    * Replicates mobile app's Implementedbyopreation API
+   *
+   * Uses Next.js API route as proxy to handle session properly
    */
   const confirmBranchDeletion = useCallback(async (verificationCode: string): Promise<boolean> => {
     if (!user?.accessToken) {
@@ -176,9 +175,17 @@ export default function useBranchOperations() {
     setLoading(true);
 
     try {
-      const response = await axiosInstance.post(
-        '/api/branches/confirm-delete',
-        { verificationCode },
+      console.log('=== Confirming branch deletion ===');
+      console.log('Verification code:', verificationCode);
+      console.log('User token:', user.accessToken.substring(0, 20) + '...');
+
+      // Call backend directly using axios instance (matching mobile app exactly)
+      // This ensures Authorization header is sent properly and backend JWT middleware
+      // can populate req.session.user
+      console.log('Calling backend directly with axios DELETE request...');
+
+      const response = await axiosInstance.delete(
+        `company/brinsh/Implementedbyopreation?check=${verificationCode}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -187,24 +194,34 @@ export default function useBranchOperations() {
         }
       );
 
-      if (response.status === 200) {
-        Tostget(response.data?.success || 'تم حذف الفرع بنجاح', 'success');
+      console.log('✅ Backend response received');
+      console.log('Response status:', response.status);
+      console.log('Response data:', response.data);
+
+      if (response.status === 200 && response.data?.success) {
+        console.log('✅✅✅ Branch deletion confirmed successfully! ✅✅✅');
+        console.log('Success message:', response.data.success);
+        Tostget(response.data.success || 'تم حذف الفرع بنجاح', 'success');
         return true;
       }
 
-      throw new Error(response.data?.success || 'فشل في حذف الفرع');
+      const errorMsg = response.data?.success || response.data?.message || 'فشل في حذف الفرع';
+      console.log('❌ Backend returned error:', errorMsg);
+      throw new Error(errorMsg);
     } catch (error: any) {
-      console.error('Error confirming branch deletion:', error);
+      console.error('❌ Error confirming branch deletion:', error);
 
-      if (error.response?.status === 401) {
-        throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
-      } else if (error.response?.status === 400) {
-        throw new Error(error.response?.data?.success || 'رمز التحقق غير صحيح');
-      } else if (error.response?.status === 403) {
-        throw new Error('ليس لديك صلاحية لحذف الفرع');
-      } else {
-        throw new Error(error.response?.data?.success || 'فشل في حذف الفرع');
+      // Handle axios error
+      if (error.response) {
+        const errorMsg = error.response.data?.success || error.response.data?.message || 'فشل في حذف الفرع';
+        throw new Error(`${errorMsg} (${error.response.status})`);
       }
+
+      if (error.message) {
+        throw error;
+      }
+
+      throw new Error('فشل في حذف الفرع');
     } finally {
       setLoading(false);
     }

@@ -192,6 +192,7 @@ export default function BranchEditModal({
   // Modal states
   const [showDataEditModal, setShowDataEditModal] = useState(false);
   const [showEvaluationModal, setShowEvaluationModal] = useState(false);
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [showDeleteVerificationModal, setShowDeleteVerificationModal] = useState(false);
   const [showManagerModal, setShowManagerModal] = useState(false);
   const [showMembersModal, setShowMembersModal] = useState(false);
@@ -221,22 +222,38 @@ export default function BranchEditModal({
     setShowEvaluationModal(true);
   };
 
-  const handleDeleteBranch = async () => {
-    if (!branch) return;
+  const handleDeleteBranch = () => {
+    console.log('handleDeleteBranch called, branch:', branch);
+    if (!branch) {
+      console.log('No branch selected');
+      return;
+    }
+    // Show confirmation modal first
+    console.log('Opening delete confirmation modal');
+    setShowDeleteConfirmModal(true);
+  };
 
-    // إضافة تحذير أولي
-    const confirmMessage = `هل أنت متأكد من حذف فرع "${branch.NameSub}"؟\n\nسيتم حذف جميع المشاريع والبيانات المرتبطة به. هذا الإجراء لا يمكن التراجع عنه.`;
-
-    if (!window.confirm(confirmMessage)) {
+  const handleConfirmDeleteRequest = async () => {
+    if (!branch) {
+      console.log('No branch in handleConfirmDeleteRequest');
       return;
     }
 
     try {
+      setShowDeleteConfirmModal(false);
       setLoadingOperation('إرسال رمز التحقق');
-      console.log('Requesting branch deletion for branch:', branch.id);
-      await requestBranchDeletion(branch.id);
-      console.log('Branch deletion request successful, showing verification modal');
-      setShowDeleteVerificationModal(true);
+      console.log('Requesting branch deletion for branch ID:', branch.id, 'Type:', typeof branch.id);
+
+      const result = await requestBranchDeletion(branch.id);
+      console.log('Branch deletion request result:', result);
+
+      if (result) {
+        console.log('Branch deletion request successful, showing verification modal');
+        setShowDeleteVerificationModal(true);
+      } else {
+        console.log('Branch deletion request returned false');
+        Tostget('فشل في إرسال رمز التحقق', 'error');
+      }
     } catch (error: any) {
       console.error('Error requesting branch deletion:', error);
       Tostget(error.message || 'فشل في إرسال رمز التحقق', 'error');
@@ -246,15 +263,38 @@ export default function BranchEditModal({
   };
 
   const handleConfirmDeletion = async (verificationCode: string) => {
+    console.log('=== handleConfirmDeletion called ===');
+    console.log('Verification code:', verificationCode);
+
     try {
-      await confirmBranchDeletion(verificationCode);
-      onClose();
-      // Trigger a refresh of the parent component
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      console.log('Calling confirmBranchDeletion...');
+      const result = await confirmBranchDeletion(verificationCode);
+      console.log('confirmBranchDeletion result:', result);
+
+      if (result) {
+        console.log('✅ Branch deletion confirmed, closing modals...');
+        setShowDeleteVerificationModal(false);
+        onClose();
+
+        // Call onRefresh if provided to update parent component
+        if (onRefresh) {
+          console.log('Calling onRefresh to update branch list...');
+          await onRefresh();
+        }
+
+        // Reload page after a short delay to ensure fresh data
+        setTimeout(() => {
+          console.log('Reloading page to show updated branch list...');
+          window.location.reload();
+        }, 500);
+      } else {
+        console.log('confirmBranchDeletion returned false');
+        throw new Error('فشل في حذف الفرع');
+      }
     } catch (error: any) {
-      console.error('Error confirming branch deletion:', error);
+      console.error('Error in handleConfirmDeletion:', error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
       throw error; // Re-throw to be handled by the modal
     }
   };
@@ -308,7 +348,7 @@ export default function BranchEditModal({
         }
       `}</style>
       
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
         <div 
           className="bg-white rounded-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
           style={{
@@ -432,7 +472,7 @@ export default function BranchEditModal({
                 onPress={handleDeleteBranch}
                 icon={<DeleteIcon />}
                 title="حذف الفرع"
-                isLoading={loadingOperation === 'حذف الفرع'}
+                isLoading={loadingOperation === 'إرسال رمز التحقق'}
                 isDelete={true}
               />
             )}
@@ -456,6 +496,135 @@ export default function BranchEditModal({
         loading={loadingOperation === 'رابط التقييم'}
         initialLink={branch?.Linkevaluation || ''}
       />
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+          <div
+            className="max-w-md w-full mx-4 shadow-xl"
+            style={{
+              backgroundColor: 'var(--theme-card-background)',
+              border: '1px solid var(--theme-border)',
+              borderRadius: `${verticalScale(20)}px`,
+              padding: `${verticalScale(24)}px`,
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+            }}
+          >
+            {/* Warning Icon */}
+            <div className="text-center mb-6">
+              <div
+                className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4"
+                style={{
+                  width: `${verticalScale(64)}px`,
+                  height: `${verticalScale(64)}px`,
+                  borderRadius: `${verticalScale(32)}px`
+                }}
+              >
+                <svg
+                  width={verticalScale(32)}
+                  height={verticalScale(32)}
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  className="text-red-500"
+                  strokeWidth="2"
+                >
+                  <path d="M12 9v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+
+              <h3
+                className="font-semibold text-gray-900 mb-4"
+                style={{
+                  fontSize: `${verticalScale(18 + size)}px`,
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  color: 'var(--theme-text-primary)'
+                }}
+              >
+                تحذير: حذف الفرع
+              </h3>
+
+              <p
+                className="mb-4"
+                style={{
+                  fontSize: `${verticalScale(14 + size)}px`,
+                  lineHeight: 1.6,
+                  color: 'var(--theme-text-secondary)',
+                  fontFamily: fonts.IBMPlexSansArabicMedium
+                }}
+              >
+                هل أنت متأكد من حذف فرع <span style={{ fontFamily: fonts.IBMPlexSansArabicBold, color: 'var(--theme-text-primary)' }}>"{branch?.NameSub}"</span>؟
+              </p>
+
+              <div
+                className="p-4 rounded-lg mb-4"
+                style={{
+                  backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                  border: '1px solid rgba(239, 68, 68, 0.2)'
+                }}
+              >
+                <p
+                  style={{
+                    fontSize: `${verticalScale(13 + size)}px`,
+                    lineHeight: 1.5,
+                    color: '#dc2626',
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold
+                  }}
+                >
+                  ⚠️ سيتم حذف جميع المشاريع والبيانات المرتبطة بهذا الفرع
+                  <br />
+                  <span style={{ fontFamily: fonts.IBMPlexSansArabicBold }}>
+                    هذا الإجراء لا يمكن التراجع عنه
+                  </span>
+                </p>
+              </div>
+
+              <p
+                style={{
+                  fontSize: `${verticalScale(13 + size)}px`,
+                  color: 'var(--theme-text-secondary)',
+                  fontFamily: fonts.IBMPlexSansArabicMedium
+                }}
+              >
+                سيتم إرسال رمز التحقق إلى هاتفك لتأكيد العملية
+              </p>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleConfirmDeleteRequest}
+                disabled={loadingOperation === 'إرسال رمز التحقق'}
+                className="flex-1 py-3 rounded-xl font-semibold transition-all"
+                style={{
+                  backgroundColor: '#ef4444',
+                  color: '#ffffff',
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  fontSize: `${verticalScale(14 + size)}px`,
+                  opacity: loadingOperation === 'إرسال رمز التحقق' ? 0.5 : 1
+                }}
+              >
+                {loadingOperation === 'إرسال رمز التحقق' ? 'جاري الإرسال...' : 'متابعة الحذف'}
+              </button>
+
+              <button
+                onClick={() => setShowDeleteConfirmModal(false)}
+                disabled={loadingOperation === 'إرسال رمز التحقق'}
+                className="flex-1 py-3 rounded-xl font-semibold transition-all"
+                style={{
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  color: 'var(--theme-text-primary)',
+                  fontFamily: fonts.IBMPlexSansArabicBold,
+                  fontSize: `${verticalScale(14 + size)}px`,
+                  border: '1px solid var(--theme-border)'
+                }}
+              >
+                إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <BranchDeleteVerificationModal
         isOpen={showDeleteVerificationModal}

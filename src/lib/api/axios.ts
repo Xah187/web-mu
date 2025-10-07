@@ -2,6 +2,9 @@ import axios from 'axios';
 import axiosRetry from 'axios-retry';
 
 // API Base URL - يمكن تغييره حسب البيئة
+// NOTE: Mobile app uses http://35.247.12.97:8080 directly
+// But web must use https://mushrf.net (which proxies to 35.247.12.97:8080)
+// because direct IP access may be blocked by firewall
 export const Api = 'https://mushrf.net';
 
 // URLs للملفات والتحميلات - matching mobile app exactly
