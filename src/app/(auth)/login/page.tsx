@@ -282,6 +282,7 @@ export default function LoginPage() {
 
       const token = await getFCMToken();
 
+      // SECURITY FIX: Removed hardcoded token - auth endpoint doesn't require authorization
       const response = await axiosInstance.get('/auth', {
         params: {
           PhoneNumber: number,
@@ -289,8 +290,7 @@ export default function LoginPage() {
           code: countryCode
         },
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer dPdJ0ThcQ6ODl2_z5Nn2iO:APA91bE6yk0i_5M3YAmtAvBwEZIayJ4hOqFDMvQwQwhqTfn2bDwirSInge1kZGskTwvtzsEuZ6-FFU-06NVrAbTmB9UpQ63M9v5tgmKwj4_evGfJMz6PlIiWxOlvhHdnhR6fAbodYhRV'
+          'Content-Type': 'application/json'
         }
       });
 

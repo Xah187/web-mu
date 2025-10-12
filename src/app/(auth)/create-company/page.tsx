@@ -98,11 +98,11 @@ export default function CreateRegistrationCompany() {
     setLoading(true);
 
     try {
+      // SECURITY FIX: Removed hardcoded token - company creation endpoint doesn't require authorization
       // API call exactly like mobile app
       const result = await axiosInstance.post('/company', JSON.stringify(title), {
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer dPdJ0ThcQ6ODl2_z5Nn2iO:APA91bE6yk0i_5M3YAmtAvBwEZIayJ4hOqFDMvQwQwhqTfn2bDwirSInge1kZGskTwvtzsEuZ6-FFU-06NVrAbTmB9UpQ63M9v5tgmKwj4_evGfJMz6PlIiWxOlvhHdnhR6fAbodYhRV'
+          'Content-Type': 'application/json'
         }
       });
 

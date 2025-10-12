@@ -102,14 +102,14 @@ function VerificationContent() {
     setError('');
 
     try {
+      // SECURITY FIX: Removed hardcoded token - verification endpoint doesn't require authorization
       const response = await axiosInstance.get('/auth/v2/verification', {
         params: {
           output: code,
           PhoneNumber: phoneNumber
         },
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer dPdJ0ThcQ6ODl2_z5Nn2iO:APA91bE6yk0i_5M3YAmtAvBwEZIayJ4hOqFDMvQwQwhqTfn2bDwirSInge1kZGskTwvtzsEuZ6-FFU-06NVrAbTmB9UpQ63M9v5tgmKwj4_evGfJMz6PlIiWxOlvhHdnhR6fAbodYhRV'
+          'Content-Type': 'application/json'
         }
       });
 
