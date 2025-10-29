@@ -11,6 +11,8 @@ export interface Stage {
   Done: string;
   rate: number;
   Days: number;
+  Ratio?: number;
+  attached?: string;
   StageStartdate: string | null;
   StageEnddate: string | null;
   Delays?: number;
@@ -38,6 +40,7 @@ export interface ProjectDetails {
   countuser?: number;
   TypeOFContract?: string;
   IDcompanySub?: number;
+  IDCompanySub?: number; // معرف الفرع - مطابق للتطبيق المحمول
   EndDate?: string;
   StartDate?: string;
   DisabledFinance?: boolean;
@@ -54,7 +57,7 @@ interface UseProjectDetailsReturn {
   fetchStages: (projectId: number, lastStageId?: number, type?: string) => Promise<void>;
   loadMoreStages: (projectId: number) => Promise<void>;
   refreshProject: (projectId: number) => Promise<void>;
-  addStage: (projectId: number, stageName: string, days: number) => Promise<void>;
+  addStage: (projectId: number, stageName: string, days: number, ratio?: number, attached?: string) => Promise<void>;
   deleteStage: (projectId: number, stageId: number) => Promise<void>;
 }
 
@@ -186,9 +189,11 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
   }, [fetchProjectDetails, fetchStages]);
 
   const addStage = useCallback(async (
-    projectId: number, 
-    stageName: string, 
-    days: number
+    projectId: number,
+    stageName: string,
+    days: number,
+    ratio: number = 0,
+    attached: string = ''
   ) => {
     if (!user?.accessToken) {
       setError('لا يوجد رمز وصول صالح');
@@ -199,12 +204,18 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
       setLoading(true);
       setError(null);
 
+      // Get project details to extract TypeOFContract like mobile app
+      const typeOfContract = project?.TypeOFContract || '';
+
       const response = await axiosInstance.post(
         '/brinshCompany/Stage',
         {
           StageName: stageName,
           ProjectID: projectId,
+          TypeOFContract: typeOfContract,
           Days: days,
+          Ratio: ratio,
+          attached: attached
         },
         {
           headers: {
@@ -225,7 +236,7 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
     } finally {
       setLoading(false);
     }
-  }, [user?.accessToken, fetchStages]);
+  }, [user?.accessToken, fetchStages, project]);
 
   const deleteStage = useCallback(async (projectId: number, stageId: number) => {
     if (!user?.accessToken) {

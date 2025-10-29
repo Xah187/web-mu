@@ -17,7 +17,23 @@ import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import useDataHome from '@/hooks/useDataHome';
 
-
+/**
+ * Get color for contract type - مطابق للتطبيق المحمول
+ * Matches mobile app: Src/Screens/HomSub.tsx - switchcolors function
+ */
+const getContractTypeColor = (typeContract: string): string => {
+  const t = (typeContract || '').trim();
+  // دعم الأنواع الديناميكية الجديدة عبر المطابقة الجزئية
+  if (t.includes('عظم') && t.includes('بدون') && t.includes('قبو')) return '#E5E4E2'; // GREAYPLATINUM
+  if (t.includes('عظم') && t.includes('مع') && t.includes('قبو')) return '#808080';   // GREAYFRENCH
+  if (t.includes('تشطيب') && t.includes('بدون') && t.includes('قبو')) return '#10B982'; // GREEN
+  if (t.includes('تشطيب') && t.includes('مع') && t.includes('قبو')) return '#defcf2';   // GREEN2
+  // مطابقة عامة في حال كانت القيم الجديدة بدون تفاصيل القبو
+  if (t.includes('عظم')) return '#E5E4E2';
+  if (t.includes('تشطيب')) return '#10B982';
+  if (t.includes('حر')) return '#f6f8fe';
+  return '#f6f8fe'; // HOME (default)
+};
 
 // Project Card Component - Exactly matching mobile app BoxProject
 const ProjectCardMobile = ({
@@ -45,6 +61,9 @@ const ProjectCardMobile = ({
 }) => {
   const [showFullCost, setShowFullCost] = useState(false);
   const { hasPermission } = useValidityUser();
+
+  // مطابق للتطبيق المحمول - الحصول على لون نوع العقد
+  const contractColor = getContractTypeColor(project.TypeOFContract || '');
 
   return (
     <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
@@ -110,34 +129,26 @@ const ProjectCardMobile = ({
           >
             {project.Nameproject}
           </h3>
-          {project.Note ? (
-            <p
-              className="font-ibm-arabic-regular text-gray-600 text-sm text-center"
-              style={{
-                fontSize: scale(10),
-                display: '-webkit-box',
-                WebkitLineClamp: 2,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                lineHeight: '1rem',
-                wordBreak: 'break-word',
-                overflowWrap: 'anywhere',
-              }}
-              title={project.Note || ''}
-            >
-              {project.Note}
-            </p>
-          ) : (
-            <p
-              className="font-ibm-arabic-regular text-gray-600 text-sm text-center opacity-0 select-none"
-              style={{
-                fontSize: scale(10),
-                lineHeight: '1rem',
-              }}
-            >
-              -
-            </p>
-          )}
+          {/* مطابق للتطبيق المحمول - عرض Note ونوع العقد */}
+          <p
+            className="font-ibm-arabic-medium text-gray-700 text-sm text-center"
+            style={{
+              fontSize: scale(10),
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              lineHeight: '1rem',
+              wordBreak: 'break-word',
+              overflowWrap: 'anywhere',
+              textShadow: `1px 5px 3px ${contractColor}, 0 0 5px ${contractColor}`,
+              filter: `drop-shadow(0 0 4px ${contractColor})`,
+            }}
+            title={`${project.Note || ''} ${project.TypeOFContract || ''}`}
+          >
+            {project.Note && project.Note !== 'null' ? `${project.Note} >> ` : ''}
+            {project.TypeOFContract || ''}
+          </p>
         </div>
       </div>
 
@@ -362,15 +373,16 @@ const BranchProjectsPage = () => {
       const saveBranchDataOnMount = async () => {
         try {
           // Fetch branch data to get Email and PhoneNumber
-          const response = await axiosInstance.post('/company/brinsh/bring', {
-            IDCompany: user?.data?.IDCompany,
-            type: 'cache'
-          }, {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.accessToken}`
+          // الباك اند الجديد يستخدم GET بدلاً من POST
+          const response = await axiosInstance.get(
+            `/company/brinsh/bring?IDCompany=${user?.data?.IDCompany}&type=cache`,
+            {
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${user?.accessToken}`
+              }
             }
-          });
+          );
 
           if (response.data?.data) {
             const branch = response.data.data.find((b: any) => b.id === branchId);
@@ -416,15 +428,16 @@ const BranchProjectsPage = () => {
   const handleEditBranch = async () => {
     try {
       // Fetch branch data for editing - مطابق للتطبيق المحمول
-      const response = await axiosInstance.post('/company/brinsh/bring', {
-        IDCompany: user?.data?.IDCompany,
-        type: 'update'
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${user?.accessToken}`
+      // الباك اند الجديد يستخدم GET بدلاً من POST
+      const response = await axiosInstance.get(
+        `/company/brinsh/bring?IDCompany=${user?.data?.IDCompany}&type=update`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${user?.accessToken}`
+          }
         }
-      });
+      );
 
       if (response.data?.data) {
         const branch = response.data.data.find((b: any) => b.id === branchId);
@@ -479,9 +492,15 @@ const BranchProjectsPage = () => {
     router.push(`/requests?idProject=${branchId}&typepage=all&nameproject=${encodeURIComponent(branchName || 'الفرع')}`);
   };
 
-  const handleFinance = () => {
+  const handleFinance = async () => {
     // Navigate to covenant (financial custody) page for this branch - matching mobile app
-    router.push(`/covenant?branchId=${branchId}`);
+    // Mobile app: HomSub.tsx line 486-492
+    // Passes: IDCompanyBransh (branch ID) and typePage: "FinancialCustodyparty"
+    const hasPermission = await Uservalidation('اضافة عهد', 0);
+    if (hasPermission) {
+      router.push(`/covenant?branchId=${branchId}&type=FinancialCustodyparty`);
+    }
+    // Error message is handled by Uservalidation
   };
 
   // Matching mobile app: HomSub.tsx line 474-479
@@ -704,28 +723,33 @@ const BranchProjectsPage = () => {
                 </button>
               )}
 
-              {/* Branch Requests in Header */}
-              <RequestsPermissionGuard>
-                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="طلبات الفرع">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                    <polyline points="14,2 14,8 20,8"/>
-                    <line x1="16" y1="13" x2="8" y2="13"/>
-                    <line x1="16" y1="17" x2="8" y2="17"/>
-                    <polyline points="10,9 9,9 8,9"/>
-                  </svg>
-                </button>
-              </RequestsPermissionGuard>
+              {/* Branch Requests in Header - Show for employees only (matching mobile app HomSub.tsx line 452) */}
+              <EmployeeOnly>
+                <RequestsPermissionGuard>
+                  <button onClick={handleRequests} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="طلبات الفرع">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14,2 14,8 20,8"/>
+                      <line x1="16" y1="13" x2="8" y2="13"/>
+                      <line x1="16" y1="17" x2="8" y2="17"/>
+                      <polyline points="10,9 9,9 8,9"/>
+                    </svg>
+                  </button>
+                </RequestsPermissionGuard>
+              </EmployeeOnly>
 
-              {/* Branch Covenant (Finance) in Header */}
-              <PermissionBasedVisibility permission="covenant">
-                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="عهد الفرع">
-                  <svg width="20" height="20" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="currentColor"/>
-                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="currentColor"/>
-                  </svg>
-                </button>
-              </PermissionBasedVisibility>
+              {/* Branch Covenant (Finance) in Header - Show for employees only (matching mobile app HomSub.tsx line 479) */}
+              {/* Mobile app: permissionsConvent && <ButtonCreat /> where permissionsConvent = await Uservalidation('اضافة عهد',Validity) */}
+              <EmployeeOnly>
+                <PermissionBasedVisibility permission="اضافة عهد">
+                  <button onClick={handleFinance} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="عهد الفرع">
+                    <svg width="20" height="20" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="currentColor"/>
+                      <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="currentColor"/>
+                    </svg>
+                  </button>
+                </PermissionBasedVisibility>
+              </EmployeeOnly>
 
               <button onClick={handleNotificationsBranch} className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإشعارات">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -857,8 +881,9 @@ const BranchProjectsPage = () => {
                   </button>
                 </RequestsPermissionGuard>
 
-                {/* Branch Covenant (Finance) Button - matching mobile app */}
-                <PermissionBasedVisibility permission="covenant">
+                {/* Branch Covenant (Finance) Button - matching mobile app HomSub.tsx line 479-496 */}
+                {/* Mobile app: permissionsConvent && <ButtonCreat /> where permissionsConvent = await Uservalidation('اضافة عهد',Validity) */}
+                <PermissionBasedVisibility permission="اضافة عهد">
                   <button
                     onClick={handleFinance}
                     className="px-4 py-3 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200 font-ibm-arabic-bold text-green-700 flex items-center justify-center"

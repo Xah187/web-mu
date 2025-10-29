@@ -11,6 +11,7 @@ export interface StageHomeTemplet {
   Type?: string;
   StageName?: string;
   Days?: number;
+  Stagestype_id?: number;
   [key: string]: any;
 }
 
@@ -29,17 +30,30 @@ export default function useTemplet() {
   const [stageHomes, setStageHomes] = useState<StageHomeTemplet[]>([]);
   const [hasMoreData, setHasMoreData] = useState(true);
 
-  const fetchStageHomes = useCallback(async (StageIDtemplet: number = 0, append: boolean = false) => {
-    if (!user?.accessToken) return [] as StageHomeTemplet[];
+  const fetchStageTypes = useCallback(async () => {
+    if (!user?.accessToken) return [] as any[];
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get('Templet/BringStagestype', {
+        headers: { Authorization: `Bearer ${user.accessToken}` }
+      });
+      return (res.data?.data || []) as any[];
+    } catch (e) {
+      console.error('fetchStageTypes error:', e);
+      return [] as any[];
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.accessToken]);
 
-    // منع التحميل المتكرر
-    if (loading) return [];
+  const fetchStageHomes = useCallback(async (Type: string, StageIDtemplet: number = 0, append: boolean = false) => {
+    if (!user?.accessToken) return [] as StageHomeTemplet[];
 
     try {
       setLoading(true);
       setError(null);
       const res = await axiosInstance.get(
-        `Templet/BringStageHomeTemplet?StageIDtemplet=${StageIDtemplet}`,
+        `Templet/BringStageHomeTemplet?Type=${encodeURIComponent(Type)}&StageIDtemplet=${StageIDtemplet}`,
         { headers: { Authorization: `Bearer ${user.accessToken}` } }
       );
       const data: StageHomeTemplet[] = res.data?.data || [];
@@ -71,7 +85,7 @@ export default function useTemplet() {
     }
   }, [user?.accessToken]);
 
-  const fetchStageSub = useCallback(async (StageID: number, StageSubID: number = 0, append: boolean = false) => {
+  const fetchStageSub = useCallback(async (StageID: number, Stagestype_id: number, StageSubID: number = 0) => {
     if (!user?.accessToken) return null as StageSubTemplet[] | null;
 
     // منع التحميل المتكرر
@@ -80,15 +94,20 @@ export default function useTemplet() {
     try {
       setLoading(true);
       setError(null);
+
+      console.log('🔍 fetchStageSub called with:', { StageID, Stagestype_id, StageSubID });
+
       const res = await axiosInstance.get(
-        `Templet/BringStageSubTemplet?StageID=${StageID}&StageSubID=${StageSubID}`,
+        `Templet/BringStageSubTemplet?StageID=${StageID}&Stagestype_id=${Stagestype_id}&StageSubID=${StageSubID}`,
         { headers: { Authorization: `Bearer ${user.accessToken}` } }
       );
       const data = (res.data?.data || []) as StageSubTemplet[];
 
+      console.log('📋 fetchStageSub response:', data);
+
       return data;
     } catch (e: any) {
-      console.error('fetchStageSub error:', e);
+      console.error('❌ fetchStageSub error:', e);
       setError('خطأ في جلب القوالب الفرعية');
       Tostget('خطأ في جلب القوالب الفرعية');
       return null;
@@ -97,16 +116,16 @@ export default function useTemplet() {
     }
   }, [user?.accessToken]);
 
-  const loadMoreStageHomes = useCallback(async () => {
+  const loadMoreStageHomes = useCallback(async (Type: string) => {
     if (!hasMoreData || loading || stageHomes.length === 0) return;
 
     const lastItem = stageHomes[stageHomes.length - 1];
     if (lastItem?.StageIDtemplet) {
-      await fetchStageHomes(lastItem.StageIDtemplet, true);
+      await fetchStageHomes(Type, lastItem.StageIDtemplet, true);
     }
   }, [hasMoreData, loading, stageHomes, fetchStageHomes]);
 
-  const createStageHome = useCallback(async (payload: { Type: string; StageName: string; Days: number; }) => {
+  const createStageHome = useCallback(async (payload: { Type: string; StageName: string; Days: number; Ratio?: number; attached?: string; }) => {
     if (!user?.accessToken) return false;
     try {
       setLoading(true);
@@ -121,15 +140,15 @@ export default function useTemplet() {
       return false;
     } catch (e: any) {
       console.error('createStageHome error:', e);
-      setError('خطأ في إنشاء القالب');
-      Tostget('خطأ في إنشاء القالب');
+      setError(e.response?.data?.error || 'خطأ في إنشاء القالب');
+      Tostget(e.response?.data?.error || 'خطأ في إنشاء القالب');
       return false;
     } finally {
       setLoading(false);
     }
   }, [user?.accessToken]);
 
-  const createStageSub = useCallback(async (payload: { StageID: number; StageSubName: string; file?: File | null; }) => {
+  const createStageSub = useCallback(async (payload: { StageID: number; StageSubName: string; Stagestype_id: number; file?: File | null; }) => {
     if (!user?.accessToken) return false;
     try {
       setLoading(true);
@@ -137,6 +156,7 @@ export default function useTemplet() {
       const form = new FormData();
       form.append('StageID', String(payload.StageID));
       form.append('StageSubName', payload.StageSubName);
+      form.append('Stagestype_id', String(payload.Stagestype_id));
       if (payload.file) form.append('file', payload.file);
       const res = await axiosInstance.post('Templet/insertStageSub', form, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${user.accessToken}` }
@@ -156,7 +176,7 @@ export default function useTemplet() {
     }
   }, [user?.accessToken]);
 
-  const updateStageHome = useCallback(async (payload: { StageID: number; Type: string; StageName: string; Days: number; }) => {
+  const updateStageHome = useCallback(async (payload: { StageIDtemplet: number; Type: string; StageName: string; Days: number; Ratio?: number; attached?: string; }) => {
     if (!user?.accessToken) return false;
     try {
       setLoading(true);
@@ -171,15 +191,15 @@ export default function useTemplet() {
       return false;
     } catch (e: any) {
       console.error('updateStageHome error:', e);
-      setError('خطأ في تحديث القالب');
-      Tostget('خطأ في تحديث القالب');
+      setError(e.response?.data?.error || 'خطأ في تحديث القالب');
+      Tostget(e.response?.data?.error || 'خطأ في تحديث القالب');
       return false;
     } finally {
       setLoading(false);
     }
   }, [user?.accessToken]);
 
-  const updateStageSub = useCallback(async (payload: { StageSubID: number; StageSubName: string; file?: File | null; }) => {
+  const updateStageSub = useCallback(async (payload: { StageSubID: number; StageSubName: string; Stagestype_id: number; file?: File | null; }) => {
     if (!user?.accessToken) return false;
     try {
       setLoading(true);
@@ -187,6 +207,7 @@ export default function useTemplet() {
       const form = new FormData();
       form.append('StageSubID', String(payload.StageSubID));
       form.append('StageSubName', payload.StageSubName);
+      form.append('Stagestype_id', String(payload.Stagestype_id));
       if (payload.file) form.append('file', payload.file);
       const res = await axiosInstance.put('Templet/UpdateStageSub', form, {
         headers: { 'Content-Type': 'multipart/form-data', Authorization: `Bearer ${user.accessToken}` }
@@ -252,11 +273,63 @@ export default function useTemplet() {
     }
   }, [user?.accessToken]);
 
+  const fetchExcelTemplate = useCallback(async () => {
+    if (!user?.accessToken) return null;
+    try {
+      setLoading(true);
+      const res = await axiosInstance.get('Templet/BringxlsxTemplet', {
+        headers: { Authorization: `Bearer ${user.accessToken}` }
+      });
+      return res.data?.data || null;
+    } catch (e: any) {
+      console.error('fetchExcelTemplate error:', e);
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.accessToken]);
+
+  const uploadExcelTemplate = useCallback(async (file: File, projectId?: number) => {
+    if (!user?.accessToken) return false;
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Upload the Excel file (backend will insert data with Stagestype_id = null due to bug)
+      const formData = new FormData();
+      formData.append('file', file);
+      if (projectId) {
+        formData.append('ProjectID', String(projectId));
+      }
+
+      const res = await axiosInstance.post('Templet/insertTemplet', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${user.accessToken}`
+        }
+      });
+
+      if (res.status === 200) {
+        Tostget(res.data?.success || 'تم رفع الملف بنجاح');
+        return true;
+      }
+      return false;
+    } catch (e: any) {
+      console.error('uploadExcelTemplate error:', e);
+      setError(e.response?.data?.success || e.response?.data?.error || 'خطأ في رفع الملف');
+      Tostget(e.response?.data?.success || e.response?.data?.error || 'خطأ في رفع الملف');
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.accessToken]);
+
   return {
     loading,
     error,
     stageHomes,
     hasMoreData,
+    fetchStageTypes,
     fetchStageHomes,
     loadMoreStageHomes,
     fetchStageSub,
@@ -266,6 +339,8 @@ export default function useTemplet() {
     updateStageSub,
     deleteStageHome,
     deleteStageSub,
+    fetchExcelTemplate,
+    uploadExcelTemplate,
   };
 }
 

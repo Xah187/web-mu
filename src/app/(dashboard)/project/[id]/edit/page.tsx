@@ -22,6 +22,8 @@ interface ProjectData {
   Referencenumber: number;
   TypeOFContract: string;
   IDcompanySub: number;
+  Cost_per_Square_Meter?: number;
+  Project_Space?: number;
 }
 
 interface FormData {
@@ -35,6 +37,8 @@ interface FormData {
   TypeSub: string;
   IDcompanySub: number;
   Contractsigningdate: string;
+  Cost_per_Square_Meter: number;
+  Project_Space: number;
 }
 
 export default function EditProjectPage() {
@@ -48,8 +52,8 @@ export default function EditProjectPage() {
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [project, setProject] = useState<ProjectData | null>(null);
-  const [contractOption, setContractOption] = useState(1); // 1: عظم, 2: تشطيب
-  const [basementOption, setBasementOption] = useState(1); // 1: بدون قبو, 2: مع قبو, 3: حر
+  const [contractTypes, setContractTypes] = useState<Array<{id: number, Type: string}>>([]);
+  const [showContractDropdown, setShowContractDropdown] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
     Nameproject: '',
@@ -58,10 +62,12 @@ export default function EditProjectPage() {
     GuardNumber: '',
     numberBuilding: 1,
     Referencenumber: 0,
-    TypeOFContract: 'عظم',
-    TypeSub: 'بدون قبو',
+    TypeOFContract: '',
+    TypeSub: '',
     IDcompanySub: 0,
-    Contractsigningdate: new Date().toISOString().split('T')[0]
+    Contractsigningdate: new Date().toISOString().split('T')[0],
+    Cost_per_Square_Meter: 0,
+    Project_Space: 0
   });
 
   const formFields = [
@@ -71,6 +77,26 @@ export default function EditProjectPage() {
     { id: 4, name: 'الحارس', key: 'GuardNumber', type: 'text' },
     { id: 5, name: 'تاريخ توقيع العقد', key: 'Contractsigningdate', type: 'date' },
   ];
+
+  // مطابق للتطبيق المحمول - جلب أنواع العقود
+  useEffect(() => {
+    const fetchContractTypes = async () => {
+      try {
+        const response = await axiosInstance.get('/Templet/BringTypeOFContract', {
+          headers: { Authorization: `Bearer ${user?.accessToken}` }
+        });
+        if (response.data?.data) {
+          setContractTypes(response.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching contract types:', error);
+      }
+    };
+
+    if (user?.accessToken) {
+      fetchContractTypes();
+    }
+  }, [user?.accessToken]);
 
   useEffect(() => {
     console.log('Project ID:', projectId);
@@ -99,27 +125,6 @@ export default function EditProjectPage() {
         console.log('Project Data:', projectData);
         setProject(projectData);
 
-        // Parse contract type
-        let contractType = 'عظم';
-        let subType = 'بدون قبو';
-
-        if (projectData.TypeOFContract === 'حر') {
-          contractType = 'حر';
-          subType = 'حر';
-          setContractOption(1);
-          setBasementOption(3);
-        } else if (projectData.TypeOFContract.includes('تشطيب')) {
-          contractType = 'تشطيب';
-          subType = projectData.TypeOFContract.includes('مع قبو') ? 'مع قبو' : 'بدون قبو';
-          setContractOption(2);
-          setBasementOption(projectData.TypeOFContract.includes('مع قبو') ? 2 : 1);
-        } else {
-          contractType = 'عظم';
-          subType = projectData.TypeOFContract.includes('مع قبو') ? 'مع قبو' : 'بدون قبو';
-          setContractOption(1);
-          setBasementOption(projectData.TypeOFContract.includes('مع قبو') ? 2 : 1);
-        }
-
         setFormData({
           Nameproject: projectData.Nameproject || '',
           Note: projectData.Note || '',
@@ -127,12 +132,14 @@ export default function EditProjectPage() {
           GuardNumber: projectData.GuardNumber || '',
           numberBuilding: projectData.numberBuilding || 1,
           Referencenumber: projectData.Referencenumber || 0,
-          TypeOFContract: contractType,
-          TypeSub: subType,
+          TypeOFContract: projectData.TypeOFContract || '',
+          TypeSub: '',
           IDcompanySub: projectData.IDcompanySub || 0,
           Contractsigningdate: projectData.Contractsigningdate
             ? new Date(projectData.Contractsigningdate).toISOString().split('T')[0]
-            : new Date().toISOString().split('T')[0]
+            : new Date().toISOString().split('T')[0],
+          Cost_per_Square_Meter: projectData.Cost_per_Square_Meter || 0,
+          Project_Space: projectData.Project_Space || 0
         });
       }
     } catch (error: any) {
@@ -151,38 +158,13 @@ export default function EditProjectPage() {
     }));
   };
 
-  const handleContractTypeChange = (option: number) => {
+  const handleContractTypeSelect = (id: number, name: string) => {
     if (project) {
       Tostget('لايمكن تعديل نوع العقد');
       return;
     }
-
-    setContractOption(option);
-    if (option === 1) {
-      setFormData(prev => ({ ...prev, TypeOFContract: 'عظم' }));
-    } else if (option === 2) {
-      setFormData(prev => ({ ...prev, TypeOFContract: 'تشطيب' }));
-    }
-  };
-
-  const handleBasementChange = (option: number) => {
-    if (project) {
-      Tostget('لايمكن تعديل نوع العقد');
-      return;
-    }
-
-    setBasementOption(option);
-    if (option === 1) {
-      setFormData(prev => ({ ...prev, TypeSub: 'بدون قبو' }));
-    } else if (option === 2) {
-      setFormData(prev => ({ ...prev, TypeSub: 'مع قبو' }));
-    } else if (option === 3) {
-      setFormData(prev => ({
-        ...prev,
-        TypeOFContract: 'حر',
-        TypeSub: 'حر'
-      }));
-    }
+    setFormData(prev => ({ ...prev, TypeOFContract: name }));
+    setShowContractDropdown(false);
   };
 
   const incrementBuilding = () => {
@@ -214,20 +196,18 @@ export default function EditProjectPage() {
 
     setLoading(true);
     try {
-      const typeOfContract = formData.TypeOFContract.includes('حر')
-        ? 'حر'
-        : `${formData.TypeOFContract} ${formData.TypeSub}`;
-
       const updateData = {
         IDcompanySub: formData.IDcompanySub,
         Nameproject: formData.Nameproject,
         Note: formData.Note,
-        TypeOFContract: typeOfContract,
+        TypeOFContract: formData.TypeOFContract,
         GuardNumber: formData.GuardNumber,
         LocationProject: formData.LocationProject,
         numberBuilding: formData.numberBuilding,
         Referencenumber: formData.Referencenumber,
         Contractsigningdate: new Date(formData.Contractsigningdate),
+        Cost_per_Square_Meter: formData.Cost_per_Square_Meter,
+        Project_Space: formData.Project_Space,
         ProjectID: projectId
       };
 
@@ -547,9 +527,155 @@ export default function EditProjectPage() {
               );
             })()}
           </div>
+
+          {/* Cost per Square Meter - تكلفة المتر المربع */}
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+            {(() => {
+              const currentValue = project ? (project.Cost_per_Square_Meter || 0) : 0;
+              const newValue = formData.Cost_per_Square_Meter;
+              const hasChanged = currentValue !== newValue;
+
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-lg font-ibm-arabic-bold text-gray-800 flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="12" y1="8" x2="12" y2="16"/>
+                        <line x1="8" y1="12" x2="16" y2="12"/>
+                      </svg>
+                      تكلفة المتر المربع
+                      {hasChanged && (
+                        <span className="text-orange-600 text-sm bg-orange-100 px-3 py-1 rounded-full border border-orange-200">
+                          تم التعديل
+                        </span>
+                      )}
+                    </label>
+
+                    {project && (
+                      <div className="text-sm text-gray-500 bg-gray-100 px-3 py-2 rounded-lg">
+                        <span className="font-ibm-arabic-semibold">الحالي: </span>
+                        <span className="font-ibm-arabic-medium">{currentValue}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    type="number"
+                    value={newValue}
+                    onChange={(e) => handleInputChange('Cost_per_Square_Meter', e.target.value)}
+                    className={`w-full p-4 border-2 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                      hasChanged
+                        ? 'border-orange-300 bg-orange-50 shadow-md'
+                        : 'border-gray-300 bg-gray-50'
+                    }`}
+                    placeholder="أدخل تكلفة المتر المربع"
+                  />
+
+                  {hasChanged && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-yellow-500 p-1 rounded-full">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                            <path d="M12 9v4"/>
+                            <path d="M12 17h.01"/>
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-yellow-800 font-ibm-arabic-medium text-sm">
+                            <span className="font-ibm-arabic-bold">التغيير:</span> من
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded mx-1">
+                              "{currentValue}"
+                            </span>
+                            إلى
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded mx-1">
+                              "{newValue}"
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
+
+          {/* Project Space - مساحة المشروع */}
+          <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all">
+            {(() => {
+              const currentValue = project ? (project.Project_Space || 0) : 0;
+              const newValue = formData.Project_Space;
+              const hasChanged = currentValue !== newValue;
+
+              return (
+                <>
+                  <div className="flex items-center justify-between mb-4">
+                    <label className="text-lg font-ibm-arabic-bold text-gray-800 flex items-center gap-2">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                        <line x1="12" y1="22.08" x2="12" y2="12"/>
+                      </svg>
+                      مساحة المشروع
+                      {hasChanged && (
+                        <span className="text-orange-600 text-sm bg-orange-100 px-3 py-1 rounded-full border border-orange-200">
+                          تم التعديل
+                        </span>
+                      )}
+                    </label>
+
+                    {project && (
+                      <div className="text-sm text-gray-500 bg-gray-100 px-3 py-2 rounded-lg">
+                        <span className="font-ibm-arabic-semibold">الحالي: </span>
+                        <span className="font-ibm-arabic-medium">{currentValue}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <input
+                    type="number"
+                    value={newValue}
+                    onChange={(e) => handleInputChange('Project_Space', e.target.value)}
+                    className={`w-full p-4 border-2 rounded-xl font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+                      hasChanged
+                        ? 'border-orange-300 bg-orange-50 shadow-md'
+                        : 'border-gray-300 bg-gray-50'
+                    }`}
+                    placeholder="أدخل مساحة المشروع"
+                  />
+
+                  {hasChanged && (
+                    <div className="mt-4 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-yellow-500 p-1 rounded-full">
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3">
+                            <path d="M12 9v4"/>
+                            <path d="M12 17h.01"/>
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-yellow-800 font-ibm-arabic-medium text-sm">
+                            <span className="font-ibm-arabic-bold">التغيير:</span> من
+                            <span className="bg-red-100 text-red-800 px-2 py-1 rounded mx-1">
+                              "{currentValue}"
+                            </span>
+                            إلى
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded mx-1">
+                              "{newValue}"
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </>
+              );
+            })()}
+          </div>
         </div>
 
-        {/* Contract Type Section */}
+        {/* Contract Type Section - مطابق للتطبيق المحمول */}
         <div className="mb-8">
           <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
             نوع العقد
@@ -564,94 +690,54 @@ export default function EditProjectPage() {
             </div>
           )}
 
-          {/* Contract Type Options */}
-          <div className="flex gap-4 mb-6">
+          {/* Contract Type Dropdown - مطابق للتطبيق المحمول */}
+          <div className="relative bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
             <button
-              onClick={() => handleContractTypeChange(1)}
+              onClick={() => !project && setShowContractDropdown(!showContractDropdown)}
               disabled={!!project}
-              className={`flex-1 p-4 rounded-xl border-2 transition-colors ${
-                contractOption === 1
-                  ? 'border-blue-600 bg-blue-50'
-                  : 'border-gray-300 bg-white'
-              } ${project ? 'opacity-50 cursor-not-allowed' : ''}`}
+              className={`w-full p-4 border-2 rounded-xl font-ibm-arabic-medium text-right flex items-center justify-between transition-all ${
+                project
+                  ? 'border-gray-300 bg-gray-100 cursor-not-allowed opacity-50'
+                  : 'border-blue-500 bg-white hover:bg-blue-50'
+              }`}
             >
-              <span className={`font-ibm-arabic-semibold ${
-                contractOption === 1 ? 'text-blue-600' : 'text-gray-700'
-              }`}>
-                عظم
+              <span className={formData.TypeOFContract ? 'text-gray-900' : 'text-gray-400'}>
+                {formData.TypeOFContract || 'اختر نوع العقد'}
               </span>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                className={`transition-transform ${showContractDropdown ? 'rotate-180' : ''}`}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
 
-            <button
-              onClick={() => handleContractTypeChange(2)}
-              disabled={!!project}
-              className={`flex-1 p-4 rounded-xl border-2 transition-colors ${
-                contractOption === 2
-                  ? 'border-blue-600 bg-blue-50'
-                  : 'border-gray-300 bg-white'
-              } ${project ? 'opacity-50 cursor-not-allowed' : ''}`}
-            >
-              <span className={`font-ibm-arabic-semibold ${
-                contractOption === 2 ? 'text-blue-600' : 'text-gray-700'
-              }`}>
-                تشطيب
-              </span>
-            </button>
+            {/* Dropdown List */}
+            {showContractDropdown && !project && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-blue-500 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+                {contractTypes.map((type) => (
+                  <button
+                    key={type.id}
+                    onClick={() => handleContractTypeSelect(type.id, type.Type)}
+                    className={`w-full p-4 text-right font-ibm-arabic-medium hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0 ${
+                      formData.TypeOFContract === type.Type ? 'bg-blue-100 text-blue-600' : 'text-gray-700'
+                    }`}
+                  >
+                    {type.Type}
+                  </button>
+                ))}
+                {contractTypes.length === 0 && (
+                  <div className="p-4 text-center text-gray-500 font-ibm-arabic-medium">
+                    جاري تحميل الأنواع...
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-
-          {/* Basement Options */}
-          {contractOption !== 3 && (
-            <div className="flex gap-4 mb-6">
-              <button
-                onClick={() => handleBasementChange(1)}
-                disabled={!!project}
-                className={`flex-1 p-4 rounded-xl border-2 transition-colors ${
-                  basementOption === 1
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 bg-white'
-                } ${project ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span className={`font-ibm-arabic-semibold ${
-                  basementOption === 1 ? 'text-blue-600' : 'text-gray-700'
-                }`}>
-                  بدون قبو
-                </span>
-              </button>
-
-              <button
-                onClick={() => handleBasementChange(2)}
-                disabled={!!project}
-                className={`flex-1 p-4 rounded-xl border-2 transition-colors ${
-                  basementOption === 2
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 bg-white'
-                } ${project ? 'opacity-50 cursor-not-allowed' : ''}`}
-              >
-                <span className={`font-ibm-arabic-semibold ${
-                  basementOption === 2 ? 'text-blue-600' : 'text-gray-700'
-                }`}>
-                  مع قبو
-                </span>
-              </button>
-            </div>
-          )}
-
-          {/* Free Contract Option */}
-          <button
-            onClick={() => handleBasementChange(3)}
-            disabled={!!project}
-            className={`w-full p-4 rounded-xl border-2 transition-colors ${
-              basementOption === 3
-                ? 'border-blue-600 bg-blue-50'
-                : 'border-gray-300 bg-white'
-            } ${project ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <span className={`font-ibm-arabic-semibold ${
-              basementOption === 3 ? 'text-blue-600' : 'text-gray-700'
-            }`}>
-              حر
-            </span>
-          </button>
         </div>
 
         {/* Submit Button */}

@@ -95,16 +95,16 @@ export default function usePermissionAPI() {
 
     try {
       // API call to get branch-specific permissions
-      const response = await axiosInstance.post('company/brinsh/bring', {
-        IDCompany: user.data.IDCompany,
-        IDSub: branchId,
-        type: 'cache'
-      }, {
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.accessToken}`
+      // الباك اند الجديد يستخدم GET بدلاً من POST
+      const response = await axiosInstance.get(
+        `company/brinsh/bring?IDCompany=${user.data.IDCompany}&type=cache`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
         }
-      });
+      );
 
       if (response.status === 200 && response.data) {
         // Update boss status for this branch

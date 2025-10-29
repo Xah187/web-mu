@@ -50,6 +50,7 @@ export default function ProjectRequestsPage() {
   const [requestCounts, setRequestCounts] = useState<RequestCounts>({ Close: 0, Open: 0 });
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
   const [sectionStates, setSectionStates] = useState<{ [key: string]: { isExpanded: boolean; requests: Request[]; lastID: number; hasMore: boolean } }>({});
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   // Modals
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -98,6 +99,43 @@ export default function ProjectRequestsPage() {
       }
     } catch (error) {
       console.error('Error fetching request counts:', error);
+    }
+  };
+
+  // Export Requests Report as PDF - Matching mobile app
+  const exportRequestsPDF = async () => {
+    if (!projectId) {
+      Tostget('معرف المشروع غير صحيح');
+      return;
+    }
+
+    // Get typepage from URL params or default to 'part'
+    const typepage = searchParams.get('typepage') || 'part';
+
+    setExportingPDF(true);
+    try {
+      const response = await axiosInstance.get(
+        `brinshCompany/BringreportRequessts?id=${projectId}&type=${typepage}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.namefile) {
+        const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
+        window.open(`${baseUrl}/${response.data.namefile}`, '_blank');
+        Tostget('تم إنشاء التقرير بنجاح');
+      } else {
+        Tostget(response.data?.success || 'فشل في إنشاء التقرير');
+      }
+    } catch (error: any) {
+      console.error('Error exporting requests PDF:', error);
+      Tostget(error.response?.data?.success || 'خطأ في تصدير التقرير');
+    } finally {
+      setExportingPDF(false);
     }
   };
 
@@ -472,6 +510,27 @@ export default function ProjectRequestsPage() {
                 <path d="M12 5v14m-7-7h14"/>
               </svg>
               إضافة طلب
+            </button>
+
+            {/* Export PDF Button - Matching mobile app */}
+            <button
+              onClick={exportRequestsPDF}
+              disabled={exportingPDF}
+              className="inline-flex items-center gap-2 text-red-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="تصدير PDF"
+            >
+              {exportingPDF ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+              ) : (
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+              )}
+              تصدير PDF
             </button>
           </div>
         }

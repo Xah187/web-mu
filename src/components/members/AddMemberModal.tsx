@@ -16,6 +16,7 @@ interface AddMemberModalProps {
   onSuccess: () => void;
 }
 
+// مطابق للتطبيق المحمول 100%
 const jobsList = [
   { id: 1, name: 'مهندس موقع' },
   { id: 2, name: 'مستشار جودة' },
@@ -24,15 +25,17 @@ const jobsList = [
   { id: 5, name: 'زائر' },
   { id: 6, name: 'مقاول' },
   { id: 7, name: 'حارس موقع' },
-  { id: 8, name: 'مراقب جودة' },
-  { id: 9, name: 'مدخل بيانات' },
-  { id: 10, name: 'موظف' },
-  { id: 11, name: 'إستشاري موقع' },
-  { id: 12, name: 'مراقب موقع' },
+  { id: 8, name: 'زائر' },
+  { id: 9, name: 'مراقب جودة' },
+  { id: 10, name: 'مدخل بيانات' },
+  { id: 11, name: 'موظف' },
+  { id: 12, name: 'إستشاري موقع' },
+  { id: 13, name: 'مراقب موقع' },
 ];
 
+// مطابق للتطبيق المحمول 100%
 const adminJobsList = [
-  { id: 13, name: 'مسئول طلبيات' },
+  { id: 16, name: 'مسئول طلبيات' },
   { id: 14, name: 'مسئول طلبيات خفيفة' },
   { id: 15, name: 'مسئول طلبيات ثقيلة' },
   { id: 16, name: 'مالية' },
@@ -41,11 +44,10 @@ const adminJobsList = [
   { id: 19, name: 'مدير تنفيذي' },
 ];
 
+// مطابق للتطبيق المحمول - خيارين فقط
 const jobDescriptions = [
   { id: 1, name: 'موظف' },
-  { id: 2, name: 'مدير' },
-  { id: 3, name: 'مشرف' },
-  { id: 4, name: 'منسق' },
+  { id: 2, name: 'مستخدم' },
 ];
 
 // Helper function to convert Arabic numbers to English

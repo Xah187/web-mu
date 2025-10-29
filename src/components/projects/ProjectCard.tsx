@@ -5,6 +5,24 @@ import { Project } from '@/hooks/useBranchProjects';
 import useValidityUser from '@/hooks/useValidityUser';
 import moment from 'moment';
 
+/**
+ * Get color for contract type - مطابق للتطبيق المحمول
+ * Matches mobile app: Src/Screens/HomSub.tsx - switchcolors function
+ */
+const getContractTypeColor = (typeContract: string): string => {
+  const t = (typeContract || '').trim();
+  // دعم الأنواع الديناميكية الجديدة عبر المطابقة الجزئية
+  if (t.includes('عظم') && t.includes('بدون') && t.includes('قبو')) return '#E5E4E2'; // GREAYPLATINUM
+  if (t.includes('عظم') && t.includes('مع') && t.includes('قبو')) return '#808080';   // GREAYFRENCH
+  if (t.includes('تشطيب') && t.includes('بدون') && t.includes('قبو')) return '#10B982'; // GREEN
+  if (t.includes('تشطيب') && t.includes('مع') && t.includes('قبو')) return '#defcf2';   // GREEN2
+  // مطابقة عامة في حال كانت القيم الجديدة بدون تفاصيل القبو
+  if (t.includes('عظم')) return '#E5E4E2';
+  if (t.includes('تشطيب')) return '#10B982';
+  if (t.includes('حر')) return '#f6f8fe';
+  return '#f6f8fe'; // HOME (default)
+};
+
 // Bell Icon matching the exact original design
 const BellIcon = ({ number = 0 }: { number?: number }) => (
   <div className="relative">
@@ -151,16 +169,34 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     }
   };
 
+  // مطابق للتطبيق المحمول - الحصول على لون نوع العقد
+  const contractColor = getContractTypeColor(project.TypeOFContract || '');
+
   return (
-    <div
-      className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-all duration-200 mb-2.5 mx-0"
-      onClick={onPress}
-      style={{
-        borderRadius: 16,
-      }}
-    >
-      {/* Header Section - Project name and Bell */}
-      <div className="flex justify-between items-start px-7 pt-3 pb-2 relative">
+    <div className="relative mb-2.5 mx-0">
+      {/* Contract Type Color Indicator - مطابق للتطبيق المحمول - خارج overflow */}
+      <div
+        className="absolute z-20"
+        style={{
+          backgroundColor: contractColor,
+          width: '16px',
+          height: '16px',
+          top: '12px',
+          right: '8px',
+          borderRadius: '50%',
+          boxShadow: `0 0 10px ${contractColor}, 0 0 20px ${contractColor}`,
+        }}
+      />
+
+      <div
+        className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden cursor-pointer hover:shadow-md transition-all duration-200"
+        onClick={onPress}
+        style={{
+          borderRadius: 16,
+        }}
+      >
+        {/* Header Section - Project name and Bell */}
+        <div className="flex justify-between items-start px-7 pt-3 pb-2 relative">
         {/* Bell icon */}
         <button
           onClick={(e) => {
@@ -195,13 +231,17 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <h3 className="font-semibold text-gray-900 mb-1 text-sm leading-tight text-center truncate">
             {project.Nameproject}
           </h3>
-          {project.Note ? (
-            <p className="text-gray-600 text-xs text-center truncate">
-              {project.Note}
-            </p>
-          ) : (
-            <p className="text-gray-600 text-xs text-center opacity-0 select-none">-</p>
-          )}
+          {/* مطابق للتطبيق المحمول - عرض Note ونوع العقد */}
+          <p
+            className="text-gray-700 text-xs text-center truncate font-medium"
+            style={{
+              textShadow: `1px 5px 3px ${contractColor}, 0 0 5px ${contractColor}`,
+              filter: `drop-shadow(0 0 4px ${contractColor})`,
+            }}
+          >
+            {project.Note && project.Note !== 'null' ? `${project.Note} >> ` : ''}
+            {project.TypeOFContract || ''}
+          </p>
         </div>
       </div>
 
@@ -383,6 +423,10 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       {/* Close bounded content wrapper */}
       </div>
 
+      {/* Close main card wrapper */}
+      </div>
+
+    {/* Close outer wrapper with color indicator */}
     </div>
   );
 };

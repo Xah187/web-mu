@@ -70,14 +70,19 @@ export default function useApiPosts() {
       throw new Error('Missing authentication');
     }
 
-    // Build URL exactly like mobile app without URLSearchParams encoding
-    const url = `posts/SearchPosts?CompanyID=${filterData.CompanyID}&DateStart=${filterData.DateStart || ''}&DateEnd=${filterData.DateEnd || ''}&type=${filterData.type || 'بحسب التاريخ'}&nameProject=${filterData.nameProject || ''}&userName=${filterData.userName || ''}&PostID=${filterData.PostID || 0}&branch=${filterData.branch || ''}&user=${user.data?.userName || ''}`;
+    // EXACTLY like mobile app (line 239): user=${user.data.userName}
+    // No quotes, no encoding - just raw userName like mobile app
+    const userName = user.data?.userName || '';
+
+    // Build URL EXACTLY like mobile app
+    const url = `posts/SearchPosts?CompanyID=${filterData.CompanyID}&DateStart=${filterData.DateStart || ''}&DateEnd=${filterData.DateEnd || ''}&type=${filterData.type || 'بحسب التاريخ'}&nameProject=${filterData.nameProject || ''}&userName=${filterData.userName || ''}&PostID=${filterData.PostID || 0}&branch=${filterData.branch || ''}&user=${userName}`;
 
     console.log('API SearchPosts URL:', url);
     console.log('API SearchPosts filterData:', filterData);
 
     const response = await axiosInstance.get(url, {
       headers: {
+        'Content-Type': 'application/json',
         'Authorization': `Bearer ${user.accessToken}`
       }
     });
@@ -144,12 +149,9 @@ export default function useApiPosts() {
       throw new Error('Missing authentication');
     }
 
-    const response = await axiosInstance.post(
-      'company/brinsh/bring',
-      {
-        IDCompany: companyId,
-        type: 'cache'
-      },
+    // الباك اند الجديد يستخدم GET بدلاً من POST
+    const response = await axiosInstance.get(
+      `company/brinsh/bring?IDCompany=${companyId}&type=cache`,
       {
         headers: {
           'Content-Type': 'application/json',

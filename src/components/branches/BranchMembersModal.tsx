@@ -104,21 +104,34 @@ export default function BranchMembersModal({
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
-      
+
       // تحديد المستخدمين الجدد والمستخدمين المحذوفين
       const newMembers = selectedUserIds.filter(id => !currentMemberIds.includes(id));
       const removedMembers = currentMemberIds.filter(id => !selectedUserIds.includes(id));
-      
+
       // مطابق للتطبيق المحمول - تحديث أعضاء الفرع
+      // Mobile: kind='user', type='عضو'
+      // checkGloblenew: object with {id: {id, Validity: []}}
+      // checkGlobleold: object with {id: id}
+      const checkGloblenew = newMembers.reduce((acc, id) => {
+        acc[id] = { id, Validity: [] };
+        return acc;
+      }, {} as Record<number, any>);
+
+      const checkGlobleold = removedMembers.reduce((acc, id) => {
+        acc[id] = id;
+        return acc;
+      }, {} as Record<number, number>);
+
       const updateData = {
         idBrinsh: parseInt(branchId),
         type: 'عضو',
-        checkGloblenew: newMembers,
-        checkGlobleold: removedMembers,
+        checkGloblenew,
+        checkGlobleold,
         kind: 'user'
       };
 
-      const response = await axiosInstance.put('/user/UpdatUserNewUpdatviltay', updateData, {
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', updateData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user?.accessToken}`
@@ -128,7 +141,7 @@ export default function BranchMembersModal({
       if (response.status === 200) {
         const addedCount = newMembers.length;
         const removedCount = removedMembers.length;
-        
+
         let message = 'تم تحديث أعضاء الفرع بنجاح';
         if (addedCount > 0 && removedCount > 0) {
           message = `تم إضافة ${addedCount} وإزالة ${removedCount} من أعضاء الفرع`;
@@ -137,7 +150,7 @@ export default function BranchMembersModal({
         } else if (removedCount > 0) {
           message = `تم إزالة ${removedCount} عضو من الفرع`;
         }
-        
+
         Tostget(message, 'success');
         onSuccess?.();
         onClose();

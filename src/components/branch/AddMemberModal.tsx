@@ -49,8 +49,9 @@ export default function AddMemberModal({
   // جلب الأعضاء الحاليين في الفرع - مطابق للتطبيق المحمول
   const fetchCurrentBranchMembers = async () => {
     try {
+      // مطابق للتطبيق المحمول: استخدام type=user و selectuser=bransh
       const response = await axiosInstance.get(
-        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=justuser&number=0&kind_request=all`,
+        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=user&number=0&kind_request=all&selectuser=bransh`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -167,66 +168,64 @@ export default function AddMemberModal({
 
   const handleMemberToggle = (memberId: number) => {
     const isCurrentlySelected = selectedMembers.includes(memberId);
-    const wasOriginallyInBranch = currentBranchMembers[memberId];
 
     console.log(`🔄 تبديل العضو ${memberId}:`, {
-      isCurrentlySelected,
-      wasOriginallyInBranch: !!wasOriginallyInBranch
+      isCurrentlySelected
     });
 
     if (isCurrentlySelected) {
       // إلغاء التحديد
       setSelectedMembers(prev => prev.filter(id => id !== memberId));
-
-      if (wasOriginallyInBranch) {
-        // إذا كان موجود أصلاً في الفرع، أضفه لقائمة الحذف
-        setCurrentBranchMembers(prev => {
-          const newState = { ...prev };
-          delete newState[memberId];
-          return newState;
-        });
-      }
     } else {
       // تحديد العضو
       setSelectedMembers(prev => [...prev, memberId]);
-
-      if (!wasOriginallyInBranch) {
-        // إذا لم يكن موجود أصلاً، أضفه لقائمة الإضافة
-        setCurrentBranchMembers(prev => ({
-          ...prev,
-          [memberId]: { id: memberId, Validity: [] }
-        }));
-      }
     }
   };
 
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // تحضير البيانات مطابق للتطبيق المحمول
+      // تحضير البيانات مطابق للتطبيق المحمول PageUsers.tsx
       const originalBranchMemberIds = Object.keys(currentBranchMembers).map(id => parseInt(id));
       const currentSelectedIds = selectedMembers;
 
       // الأعضاء الجدد (موجودين في التحديد لكن غير موجودين أصلاً)
-      const checkGloblenew = currentSelectedIds.filter(id => !originalBranchMemberIds.includes(id));
+      const newMemberIds = currentSelectedIds.filter(id => !originalBranchMemberIds.includes(id));
 
       // الأعضاء المحذوفين (موجودين أصلاً لكن غير محددين الآن)
-      const checkGlobleold = originalBranchMemberIds.filter(id => !currentSelectedIds.includes(id));
+      const removedMemberIds = originalBranchMemberIds.filter(id => !currentSelectedIds.includes(id));
+
+      // بناء checkGloblenew كـ object مطابق للتطبيق المحمول
+      // في التطبيق المحمول: checkGloblenew[id] = { id, Validity: [] }
+      const checkGloblenew: { [key: number]: any } = {};
+      newMemberIds.forEach(id => {
+        checkGloblenew[id] = { id, Validity: [] };
+      });
+
+      // بناء checkGlobleold كـ object مطابق للتطبيق المحمول
+      // في التطبيق المحمول: checkGlobleold[id] = id
+      const checkGlobleold: { [key: number]: number } = {};
+      removedMemberIds.forEach(id => {
+        checkGlobleold[id] = id;
+      });
 
       console.log('📊 تحديث أعضاء الفرع:', {
         originalMembers: originalBranchMemberIds,
         currentSelected: currentSelectedIds,
-        newMembers: checkGloblenew,
-        removedMembers: checkGlobleold
+        newMembers: newMemberIds,
+        removedMembers: removedMemberIds,
+        checkGloblenew,
+        checkGlobleold
       });
 
       // إرسال التحديث - مطابق للتطبيق المحمول
+      // في التطبيق المحمول: type='user', kind='user'
       const response = await axiosInstance.put('/user/updat/userBrinshv2', {
         idBrinsh: branchId,
-        type: 'justuser',
+        type: 'user',
         checkGloblenew: checkGloblenew,
         checkGlobleold: checkGlobleold,
-        kind: 'justuser'
+        kind: 'user'
       }, {
         headers: {
           'Content-Type': 'application/json',
@@ -234,9 +233,11 @@ export default function AddMemberModal({
         }
       });
 
+      console.log('📊 API Response:', response.data);
+
       if (response.data?.success === 'successfuly') {
-        const addedCount = checkGloblenew.length;
-        const removedCount = checkGlobleold.length;
+        const addedCount = newMemberIds.length;
+        const removedCount = removedMemberIds.length;
 
         if (addedCount > 0 && removedCount > 0) {
           Tostget(`تم إضافة ${addedCount} وحذف ${removedCount} من أعضاء الفرع`);

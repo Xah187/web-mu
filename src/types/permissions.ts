@@ -30,6 +30,7 @@ export type PermissionType =
   | 'اضافة مرحلة فرعية'
   | 'تعديل مرحلة فرعية'
   | 'حذف مرحلة فرعية'
+  | 'حذف مهمة فرعية' // Same as حذف مرحلة فرعية - from mobile app AddValidity.tsx line 32
   | 'إضافة مرحلة رئيسية'
   | 'تعديل مرحلة رئيسية'
   | 'حذف مرحلة رئيسية'
@@ -46,16 +47,29 @@ export type PermissionType =
   | 'حذف المستخدم'
   | 'اضافة عضو'
   | 'اغلاق المشروع'
+  | 'اغلاق مشروع' // From mobile app AddValidity.tsx line 56
   | 'إغلاق وفتح المشروع'
   | 'حذف المشروع'
   | 'إنشاء المشروع'
+  | 'إنشاء مشروع' // From mobile app AddValidity.tsx line 51
   | 'تعديل بيانات المشروع'
-  | 'تعديل بيانات الفرغ'
+  | 'تعديل بيانات الفرع' // From mobile app AddValidity.tsx line 52
+  | 'تعديل بيانات الفرغ' // Typo version - kept for backward compatibility
   | 'المشاريع المغلقة'
   | 'رفع ملف'
   | 'covenant'
   | 'التحضير'
   | 'تعديل تاريخ المشروع'
+  | 'تعديل تاريخ بدء المشروع'
+  | 'إضافة مستخدمين للمشروع'
+  | 'اضافة اعضاء الفرع'
+  | 'اضافة عهد'
+  | 'حذف مشروع'
+  // Visibility permissions from mobile app NavbarPhase.tsx
+  | 'بدء المشروع'
+  | 'إظهار المالية'
+  | 'إظهار الإرشيف'
+  | 'إظهار التكلفه اليومية'
   | 'مدير الفرع' // Used for checking branch manager role (like mobile app)
   | 'Admin'; // Special permission type
 
@@ -87,15 +101,15 @@ export interface PermissionContextType {
   boss: BossType;
 }
 
-// Available Permissions List (from mobile app)
-export const AVAILABLE_PERMISSIONS: PermissionType[] = [
+// Available Permissions List (from mobile app AddValidity.tsx)
+// Project Permissions (type = 1) - Matching mobile app AddValidity.tsx lines 26-48
+export const PROJECT_PERMISSIONS: PermissionType[] = [
   'اقفال المرحلة',
   'اضافة مرحلة فرعية',
-  'تعديل مرحلة فرعية',
-  'حذف مرحلة فرعية',
   'إضافة مرحلة رئيسية',
   'تعديل مرحلة رئيسية',
   'حذف مرحلة رئيسية',
+  'حذف مهمة فرعية',
   'تشييك الانجازات الفرعية',
   'إضافة تأخيرات',
   'انشاء مجلد او تعديله',
@@ -104,6 +118,31 @@ export const AVAILABLE_PERMISSIONS: PermissionType[] = [
   'إنشاء طلبات',
   'تشييك الطلبات',
   'إشعارات المالية',
+  'إظهار المالية',
+  'إظهار الإرشيف',
+  'إظهار التكلفه اليومية',
+  'إضافة مستخدمين للمشروع',
+  'بدء المشروع',
+  'تعديل تاريخ بدء المشروع',
+  'تعديل بيانات المشروع',
+  'حذف مشروع',
+];
+
+// Branch Permissions (type = 0) - Matching mobile app AddValidity.tsx lines 50-57
+// ⚠️ IMPORTANT: Must match EXACTLY with mobile app - including typos!
+export const BRANCH_PERMISSIONS: PermissionType[] = [
+  'إنشاء مشروع',
+  'تعديل بيانات الفرع',
+  'المشاريع المغلقة',
+  'اضافة اعضاء الفرع',
+  'اضافة عهد',
+  'اغلاق مشروع',
+];
+
+// All Available Permissions (combined)
+export const AVAILABLE_PERMISSIONS: PermissionType[] = [
+  ...PROJECT_PERMISSIONS,
+  ...BRANCH_PERMISSIONS,
   'تعديل صلاحيات',
   'covenant',
 ];

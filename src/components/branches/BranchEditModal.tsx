@@ -6,7 +6,6 @@ import { BranchData } from '@/hooks/useCompanyData';
 import { Tostget } from '@/components/ui/Toast';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import useBranchOperations from '@/hooks/useBranchOperations';
-import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { verticalScale } from '@/utils/responsiveSize';
 import BranchDataEditModal from './BranchDataEditModal';
@@ -105,10 +104,10 @@ function OperationButton({ onPress, icon, title, isLoading = false, isDelete = f
       className="operation-button"
       style={{
         borderRadius: 16,
-        backgroundColor: '#f6f8fe',
+        backgroundColor: 'var(--color-surface-secondary)',
         marginBottom: verticalScale(10),
         borderStyle: 'dashed',
-        borderColor: 'rgba(27, 78, 209, 0.2)',
+        borderColor: 'var(--color-primary-alpha)',
         borderWidth: 1,
         width: '90%',
         alignSelf: 'center',
@@ -123,14 +122,14 @@ function OperationButton({ onPress, icon, title, isLoading = false, isDelete = f
         minHeight: size <= 5 ? verticalScale(56) : 'auto',
         cursor: 'pointer',
         transition: 'all 0.2s ease',
-        border: '1px dashed rgba(27, 78, 209, 0.2)',
+        border: '1px dashed var(--color-primary-alpha)',
         overflow: 'hidden'
       }}
       onMouseOver={(e) => {
-        e.currentTarget.style.backgroundColor = '#e8f0fe';
+        e.currentTarget.style.backgroundColor = 'var(--color-surface)';
       }}
       onMouseOut={(e) => {
-        e.currentTarget.style.backgroundColor = '#f6f8fe';
+        e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)';
       }}
     >
       {/* Loading or Icon */}
@@ -139,7 +138,7 @@ function OperationButton({ onPress, icon, title, isLoading = false, isDelete = f
           style={{
             width: 25,
             height: 25,
-            border: `2px solid ${colors.BLUE}`,
+            border: '2px solid var(--color-primary)',
             borderTop: '2px solid transparent',
             borderRadius: '50%',
             animation: 'spin 1s linear infinite',
@@ -157,7 +156,7 @@ function OperationButton({ onPress, icon, title, isLoading = false, isDelete = f
         style={{
           fontWeight: '600',
           fontFamily: fonts.IBMPlexSansArabicSemiBold,
-          color: isDelete ? colors.RED : colors.BLACK,
+          color: isDelete ? 'var(--color-error)' : 'var(--color-text-primary)',
           textAlign: 'center',
           margin: '0 9px',
           fontSize: verticalScale(16 + size)
@@ -223,39 +222,25 @@ export default function BranchEditModal({
   };
 
   const handleDeleteBranch = () => {
-    console.log('handleDeleteBranch called, branch:', branch);
-    if (!branch) {
-      console.log('No branch selected');
-      return;
-    }
-    // Show confirmation modal first
-    console.log('Opening delete confirmation modal');
+    if (!branch) return;
     setShowDeleteConfirmModal(true);
   };
 
   const handleConfirmDeleteRequest = async () => {
-    if (!branch) {
-      console.log('No branch in handleConfirmDeleteRequest');
-      return;
-    }
+    if (!branch) return;
 
     try {
       setShowDeleteConfirmModal(false);
       setLoadingOperation('إرسال رمز التحقق');
-      console.log('Requesting branch deletion for branch ID:', branch.id, 'Type:', typeof branch.id);
 
       const result = await requestBranchDeletion(branch.id);
-      console.log('Branch deletion request result:', result);
 
       if (result) {
-        console.log('Branch deletion request successful, showing verification modal');
         setShowDeleteVerificationModal(true);
       } else {
-        console.log('Branch deletion request returned false');
         Tostget('فشل في إرسال رمز التحقق', 'error');
       }
     } catch (error: any) {
-      console.error('Error requesting branch deletion:', error);
       Tostget(error.message || 'فشل في إرسال رمز التحقق', 'error');
     } finally {
       setLoadingOperation(null);
@@ -263,57 +248,45 @@ export default function BranchEditModal({
   };
 
   const handleConfirmDeletion = async (verificationCode: string) => {
-    console.log('=== handleConfirmDeletion called ===');
-    console.log('Verification code:', verificationCode);
-
     try {
-      console.log('Calling confirmBranchDeletion...');
       const result = await confirmBranchDeletion(verificationCode);
-      console.log('confirmBranchDeletion result:', result);
 
       if (result) {
-        console.log('✅ Branch deletion confirmed, closing modals...');
         setShowDeleteVerificationModal(false);
         onClose();
 
-        // Call onRefresh if provided to update parent component
         if (onRefresh) {
-          console.log('Calling onRefresh to update branch list...');
           await onRefresh();
         }
 
-        // Reload page after a short delay to ensure fresh data
         setTimeout(() => {
-          console.log('Reloading page to show updated branch list...');
           window.location.reload();
         }, 500);
       } else {
-        console.log('confirmBranchDeletion returned false');
         throw new Error('فشل في حذف الفرع');
       }
     } catch (error: any) {
-      console.error('Error in handleConfirmDeletion:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-      throw error; // Re-throw to be handled by the modal
+      throw error;
     }
   };
 
   // Handle save branch data
   const handleSaveBranchData = async (updatedBranch: any) => {
     try {
+      // مطابق للتطبيق المحمول - إرسال NumberCompany مع البيانات
       await updateBranchData({
         id: updatedBranch.id,
+        NumberCompany: updatedBranch.NumberCompany || branch?.NumberCompany || user?.data?.IDCompany,
         NameSub: updatedBranch.NameSub,
         BranchAddress: updatedBranch.BranchAddress,
         Email: updatedBranch.Email,
         PhoneNumber: updatedBranch.PhoneNumber
       });
-      
+
       // Update parent component
       await onSave(updatedBranch);
     } catch (error: any) {
-      throw error; // Let the modal handle the error display
+      throw error;
     }
   };
 
@@ -364,7 +337,7 @@ export default function BranchEditModal({
             className="border-b relative"
             style={{
               padding: `${verticalScale(16)}px ${verticalScale(20)}px`,
-              borderBottomColor: '#e5e7eb',
+              borderBottomColor: 'var(--color-border)',
               borderBottomWidth: 1,
               minHeight: verticalScale(60),
               display: 'flex',
@@ -399,7 +372,7 @@ export default function BranchEditModal({
               style={{
                 fontFamily: fonts.IBMPlexSansArabicSemiBold,
                 fontSize: verticalScale(16 + size),
-                color: colors.BORDER,
+                color: 'var(--color-text-secondary)',
                 fontWeight: '600',
                 textAlign: 'center',
                 margin: 0

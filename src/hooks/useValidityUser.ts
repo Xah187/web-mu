@@ -79,28 +79,18 @@ export default function useValidityUser() {
           return resolve(true);
         }
 
-        // Special logic for covenant permission - matching mobile app
-        if (kind === 'covenant') {
-          const jobDescription = users?.data?.jobdiscrption || '';
-          const job = users?.data?.job || '';
-
-          // Check if user has Acceptingcovenant in Validity (like mobile app)
-          if (Array.isArray(Validity)) {
-            const hasCovenantAccess = Validity.some((validityItem: any) =>
-              validityItem?.Acceptingcovenant === true
-            );
-            if (hasCovenantAccess) {
-              return resolve(true);
-            }
-          }
-
-          // Check if user is requests manager with covenant access (like mobile app logic)
-          if (jobDescription === 'مسئول طلبيات' ||
-              jobDescription.includes('طلبيات') ||
-              job === 'مسئول طلبيات' ||
-              job.includes('طلبيات')) {
-            return resolve(true);
-          }
+        // Special logic for covenant permission - matching mobile app ValidityUser.tsx
+        // In mobile app, covenant is checked ONLY through Validity.includes('اضافة عهد')
+        // NO special logic for requests managers or Acceptingcovenant
+        // The covenant permission is granted through:
+        // 1. Admin (always has access)
+        // 2. Branch Manager (boss === 'مدير الفرع')
+        // 3. Users with 'اضافة عهد' in their Validity array
+        if (kind === 'covenant' || kind === 'اضافة عهد') {
+          // Mobile app ValidityUser.tsx line 27-40:
+          // Just checks Validity.includes(kind)
+          // No special logic for requests managers
+          // Covenant access is controlled by the 'اضافة عهد' permission only
         }
 
         // Check if permission exists in Validity array
@@ -140,12 +130,14 @@ export default function useValidityUser() {
         return true;
       }
 
-      // Special logic for requests permissions - matching mobile app
+      // Special logic for requests permissions - matching mobile app RequestsFunction.tsx line 246
+      // Checks both job and jobdiscrption for requests-related roles
       if (kind === 'تشييك الطلبات' || kind === 'إنشاء طلبات') {
         const jobDescription = user?.data?.jobdiscrption || '';
         const job = user?.data?.job || '';
 
         // Check if user is requests manager (like mobile app logic)
+        // Pattern: "مسئول طلبيات ثقيلة", "مسئول طلبيات خفيفة", "مسئول طلبيات"
         if (jobDescription === 'مسئول طلبيات' ||
             jobDescription.includes('طلبيات') ||
             job === 'مسئول طلبيات' ||
@@ -154,28 +146,18 @@ export default function useValidityUser() {
         }
       }
 
-      // Special logic for covenant permission - matching mobile app
-      if (kind === 'covenant') {
-        const jobDescription = user?.data?.jobdiscrption || '';
-        const job = user?.data?.job || '';
-
-        // Check if user has Acceptingcovenant in Validity (like mobile app)
-        if (Array.isArray(Validity)) {
-          const hasCovenantAccess = Validity.some((validityItem: any) =>
-            validityItem?.Acceptingcovenant === true
-          );
-          if (hasCovenantAccess) {
-            return true;
-          }
-        }
-
-        // Check if user is requests manager with covenant access (like mobile app logic)
-        if (jobDescription === 'مسئول طلبيات' ||
-            jobDescription.includes('طلبيات') ||
-            job === 'مسئول طلبيات' ||
-            job.includes('طلبيات')) {
-          return true;
-        }
+      // Special logic for covenant permission - matching mobile app ValidityUser.tsx
+      // In mobile app, covenant is checked ONLY through Validity.includes('اضافة عهد')
+      // NO special logic for requests managers or Acceptingcovenant
+      // The covenant permission is granted through:
+      // 1. Admin (always has access)
+      // 2. Branch Manager (boss === 'مدير الفرع')
+      // 3. Users with 'اضافة عهد' in their Validity array
+      if (kind === 'covenant' || kind === 'اضافة عهد') {
+        // Mobile app ValidityUser.tsx line 27-40:
+        // Just checks Validity.includes(kind)
+        // No special logic for requests managers
+        // Covenant access is controlled by the 'اضافة عهد' permission only
       }
 
       // Special logic for specialized jobs - matching mobile app
@@ -278,9 +260,21 @@ export default function useValidityUser() {
 
   /**
    * Check if user has requests permission (sync version)
+   * Matching mobile app RequestsFunction.tsx line 246 and line 258
    */
   const hasRequestsPermission = (): boolean => {
-    return hasPermission('إنشاء طلبات') || hasPermission('تشييك الطلبات');
+    const jobDescription = user?.data?.jobdiscrption || '';
+    const job = user?.data?.job || '';
+
+    // Check if user is requests manager (like mobile app logic)
+    // Pattern: "مسئول طلبيات ثقيلة", "مسئول طلبيات خفيفة", "مسئول طلبيات"
+    const isRequestsManager =
+      jobDescription === 'مسئول طلبيات' ||
+      jobDescription.includes('طلبيات') ||
+      job === 'مسئول طلبيات' ||
+      job.includes('طلبيات');
+
+    return isRequestsManager || hasPermission('إنشاء طلبات') || hasPermission('تشييك الطلبات');
   };
 
   return {

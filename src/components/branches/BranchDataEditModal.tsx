@@ -160,10 +160,8 @@ export default function BranchDataEditModal({
 
       await onSave(updatedBranch);
       onClose();
-      Tostget('تم تحديث بيانات الفرع بنجاح', 'success');
     } catch (error) {
-      console.error('Error saving branch:', error);
-      Tostget('فشل في تحديث بيانات الفرع', 'error');
+      // Error is handled by parent
     }
   };
 

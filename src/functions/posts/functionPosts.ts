@@ -143,29 +143,18 @@ export default function useFunctionPosts(companyId: number) {
         lastPost: posts.length > 0 ? posts[posts.length - 1] : null
       });
 
-      // Use BringPost by default; if a filter is active, page SearchPosts with same filter
+      // EXACTLY like mobile app: use BringPost for default feed, SearchPosts for filters
+      // Mobile app: if (FilterData.Done === true) use SearchPosts, else use BringPost
+      // BringPost passes PhoneNumber correctly which is required for employee users
       let data;
       if (!filterData.Done) {
-        console.log('Using BringPost for default feed...');
-        data = await apiFetchPosts(companyId, lastPostId, user?.data?.userName);
+        console.log('Using BringPost for default feed (like mobile app)...');
 
-        // If BringPost returns empty (no posts today), try SearchPosts with wide date range
-        if (!data?.data || data.data.length === 0) {
-          console.log('BringPost returned empty, trying SearchPosts with wide date range...');
-          const fallbackParams = {
-            CompanyID: companyId,
-            DateStart: '24-01-01', // Wide range from 2024
-            DateEnd: '25-12-31',   // To 2025
-            type: 'بحسب التاريخ',
-            nameProject: '',
-            userName: '',
-            PostID: lastPostId,
-            branch: '',
-            user: user?.data?.userName || ''
-          };
-          data = await apiSearchPosts(fallbackParams);
-          console.log('Fallback SearchPosts result:', data);
-        }
+        // Use BringPost API like mobile app
+        // Note: Backend has hardcoded date "2025-07-14" but it passes PhoneNumber correctly
+        // which is required for employee users to see posts from their projects
+        data = await apiFetchPosts(companyId, lastPostId, user?.data?.userName || '');
+        console.log('BringPost result:', data);
       } else {
         const params = {
           CompanyID: companyId,

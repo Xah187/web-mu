@@ -88,26 +88,17 @@ export default function BranchDeleteVerificationModal({
 
   const handleConfirm = async () => {
     const verificationCode = code.join('');
-    console.log('=== handleConfirm called ===');
-    console.log('Verification code:', verificationCode);
-    console.log('Code length:', verificationCode.length);
 
     if (verificationCode.length !== 4) {
-      console.log('Code length validation failed');
       Tostget('يرجى إدخال رمز التحقق كاملاً');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      console.log('Calling onConfirm with code:', verificationCode);
       await onConfirm(verificationCode);
-      console.log('onConfirm completed successfully');
       onClose();
     } catch (error: any) {
-      console.error('Error confirming deletion:', error);
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
       Tostget(error.message || 'فشل في تأكيد الحذف', 'error');
     } finally {
       setIsSubmitting(false);

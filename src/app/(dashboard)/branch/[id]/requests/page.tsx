@@ -65,6 +65,7 @@ export default function BranchRequestsPage() {
   });
   const [projects, setProjects] = useState<any[]>([]);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   useEffect(() => {
     if (branchId) {
@@ -111,6 +112,43 @@ export default function BranchRequestsPage() {
       console.error('Error fetching requests:', error);
     } finally {
       setLoading(prev => ({ ...prev, [activeTab]: false }));
+    }
+  };
+
+  // Export Branch Requests Report as PDF - Matching mobile app
+  // Mobile app: HomSub.tsx navigates to Requests with typepage='all'
+  // Then Requests.tsx calls BringreportRequessts(idProject, typepage)
+  const exportBranchRequestsPDF = async () => {
+    if (!branchId) {
+      Tostget('معرف الفرع غير صحيح');
+      return;
+    }
+
+    setExportingPDF(true);
+    try {
+      // type='all' means all requests for this branch (not just one project)
+      const response = await axiosInstance.get(
+        `brinshCompany/BringreportRequessts?id=${branchId}&type=all`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.namefile) {
+        const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
+        window.open(`${baseUrl}/${response.data.namefile}`, '_blank');
+        Tostget('تم إنشاء التقرير بنجاح');
+      } else {
+        Tostget(response.data?.success || 'فشل في إنشاء التقرير');
+      }
+    } catch (error: any) {
+      console.error('Error exporting branch requests PDF:', error);
+      Tostget(error.response?.data?.success || 'خطأ في تصدير التقرير');
+    } finally {
+      setExportingPDF(false);
     }
   };
 
@@ -181,17 +219,39 @@ export default function BranchRequestsPage() {
 
       {/* Content */}
       <div className="px-6 py-4">
-        {/* Create Request Button - Show for employees only like mobile app */}
-        <EmployeeOnly>
-          <div className="mb-6">
+        {/* Action Buttons - Matching mobile app */}
+        <div className="mb-6 flex flex-wrap gap-4 items-center">
+          {/* Create Request Button - Show for employees only like mobile app */}
+          <EmployeeOnly>
             <button
               onClick={() => setShowCreateModal(true)}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
             >
               اضافة طلب
             </button>
-          </div>
-        </EmployeeOnly>
+          </EmployeeOnly>
+
+          {/* Export PDF Button - Matching mobile app */}
+          <button
+            onClick={exportBranchRequestsPDF}
+            disabled={exportingPDF}
+            className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-green-700 transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            title="تصدير PDF"
+          >
+            {exportingPDF ? (
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+                <polyline points="10 9 9 9 8 9"/>
+              </svg>
+            )}
+            تصدير PDF
+          </button>
+        </div>
 
         {/* Request Type Tabs */}
         <div className="mb-6">

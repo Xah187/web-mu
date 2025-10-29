@@ -12,6 +12,7 @@ export default function SubTempletPage() {
   const router = useRouter();
   const stageId = Number(params.stageId);
   const stageName = search.get('name') || '';
+  const stagestypeId = Number(search.get('Stagestype_id') || '0');
   const { fetchStageSub, createStageSub, updateStageSub, deleteStageSub } = useTemplet();
   const [subItems, setSubItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -85,7 +86,7 @@ export default function SubTempletPage() {
     if (loading) return; // منع التحميل المتكرر
 
     setLoading(true);
-    const data = await fetchStageSub(stageId, last);
+    const data = await fetchStageSub(stageId, stagestypeId, last);
     if (Array.isArray(data)) {
       // تحديث حالة وجود المزيد من البيانات
       setHasMoreSubData(data.length >= 10);
@@ -127,7 +128,7 @@ export default function SubTempletPage() {
     const StageSubName = String(form.get('StageSubName') || '').trim();
     const file = selectedCreateFile;
     if (!StageSubName) return;
-    const ok = await createStageSub({ StageID: stageId, StageSubName, file });
+    const ok = await createStageSub({ StageID: stageId, StageSubName, Stagestype_id: stagestypeId, file });
     if (ok) {
       (e.currentTarget as HTMLFormElement).reset();
       setSelectedCreateFile(null);
@@ -149,6 +150,7 @@ export default function SubTempletPage() {
     if (!editingSubStage) return;
     const ok = await updateStageSub({
       StageSubID: editingSubStage.StageSubID,
+      Stagestype_id: stagestypeId,
       ...updatedData
     });
     if (ok) {

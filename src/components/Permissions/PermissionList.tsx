@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { PermissionType, AVAILABLE_PERMISSIONS } from '@/types/permissions';
+import React, { useState, useEffect } from 'react';
+import { PermissionType, PROJECT_PERMISSIONS, BRANCH_PERMISSIONS } from '@/types/permissions';
 import useValidityUser from '@/hooks/useValidityUser';
 
 interface PermissionListProps {
@@ -9,39 +9,61 @@ interface PermissionListProps {
   onPermissionChange: (permissions: PermissionType[]) => void;
   readonly?: boolean;
   title?: string;
+  type?: 'project' | 'branch'; // Matching mobile app's type parameter (1 = project, 0 = branch)
 }
 
 /**
  * Permission List Component
  * Replicates the mobile app's AddValidity.tsx component
+ * Supports both project and branch permissions based on type
  */
 export default function PermissionList({
   selectedPermissions = [],
   onPermissionChange,
   readonly = false,
-  title = 'الصلاحيات'
+  title = 'الصلاحيات',
+  type = 'project' // Default to project permissions
 }: PermissionListProps) {
   const { isAdmin } = useValidityUser();
-  const [availablePermissions] = useState<PermissionType[]>(AVAILABLE_PERMISSIONS);
+
+  // Get permissions based on type - Matching mobile app AddValidity.tsx lines 26-58
+  const getPermissionsByType = (): PermissionType[] => {
+    return type === 'project' ? PROJECT_PERMISSIONS : BRANCH_PERMISSIONS;
+  };
+
+  const [availablePermissions, setAvailablePermissions] = useState<PermissionType[]>(
+    getPermissionsByType().filter(p => !selectedPermissions.includes(p))
+  );
+
+  // Update available permissions when selected permissions change
+  useEffect(() => {
+    const allPermissions = getPermissionsByType();
+    const available = allPermissions.filter(p => !selectedPermissions.includes(p));
+    setAvailablePermissions(available);
+  }, [selectedPermissions, type]);
 
   /**
    * Handle permission toggle
-   * Replicates mobile app's handlSwitch function
+   * Replicates mobile app's handlSwitch function (AddValidity.tsx lines 84-100)
    */
   const handlePermissionToggle = (permission: PermissionType) => {
     if (readonly) return;
 
     const isSelected = selectedPermissions.includes(permission);
     let newPermissions: PermissionType[];
+    let newAvailable: PermissionType[];
 
     if (isSelected) {
-      // Remove permission
+      // Remove permission from selected and add back to available
       newPermissions = selectedPermissions.filter(p => p !== permission);
+      newAvailable = [...availablePermissions, permission];
     } else {
-      // Add permission
+      // Add permission to selected and remove from available
       newPermissions = [...selectedPermissions, permission];
+      newAvailable = availablePermissions.filter(p => p !== permission);
     }
 
+    setAvailablePermissions(newAvailable);
     onPermissionChange(newPermissions);
   };
 
@@ -111,14 +133,21 @@ export default function PermissionList({
         {title}
       </h3>
 
-      {/* Selected Permissions */}
+      {/* Type Indicator */}
+      <div className="mb-4 p-2 bg-blue-50 border border-blue-200 rounded-lg">
+        <p className="text-blue-600 font-cairo text-xs text-center">
+          {type === 'project' ? 'صلاحيات المشروع' : 'صلاحيات الفرع'}
+        </p>
+      </div>
+
+      {/* Selected Permissions - Matching mobile app AddValidity.tsx lines 174-200 */}
       {selectedPermissions.length > 0 && (
         <div className="mb-6">
           <div className="p-4 bg-home border border-bordercolor rounded-xl">
             <p className="text-xs font-cairo text-border mb-3 text-right">
               الصلاحيات المحددة ({selectedPermissions.length})
             </p>
-            <div className="flex flex-wrap gap-2 justify-end">
+            <div className="flex flex-wrap gap-2 justify-start">
               {selectedPermissions.map((permission, index) => (
                 <PermissionButton
                   key={`selected-${index}`}
@@ -131,22 +160,20 @@ export default function PermissionList({
         </div>
       )}
 
-      {/* Available Permissions */}
-      {!readonly && (
+      {/* Available Permissions - Matching mobile app AddValidity.tsx lines 202-211 */}
+      {!readonly && availablePermissions.length > 0 && (
         <div>
           <p className="text-xs font-cairo text-border mb-3 text-right">
-            الصلاحيات المتاحة
+            الصلاحيات المتاحة ({availablePermissions.length})
           </p>
-          <div className="flex flex-wrap gap-2 justify-end">
-            {availablePermissions
-              .filter(permission => !selectedPermissions.includes(permission))
-              .map((permission, index) => (
-                <PermissionButton
-                  key={`available-${index}`}
-                  permission={permission}
-                  isSelected={false}
-                />
-              ))}
+          <div className="flex flex-wrap gap-2 justify-start">
+            {availablePermissions.map((permission, index) => (
+              <PermissionButton
+                key={`available-${index}`}
+                permission={permission}
+                isSelected={false}
+              />
+            ))}
           </div>
         </div>
       )}

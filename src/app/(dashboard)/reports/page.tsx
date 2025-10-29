@@ -14,6 +14,12 @@ import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import { useAppSelector } from '@/store';
 
+/**
+ * Reports Page - Matching Mobile App
+ * Permissions: ALL USERS can access (matching mobile app behavior)
+ * Backend filters results based on user job/permissions
+ * Mobile App Reference: Src/Screens/Reports.tsx
+ */
 export default function ReportsPage() {
   const userState = useAppSelector((state) => state.user);
   const _user = userState?.user; // Extract the actual user object
@@ -27,10 +33,13 @@ export default function ReportsPage() {
     loading,
     branchesLoading,
     projectsLoading,
+    reportLoading,
     selectBranch,
     selectProject,
-
-    fetchBranches
+    fetchBranches,
+    generateFinancialStatement,
+    generateRequestsReport,
+    generateTimelineReport
   } = useReports();
 
   const [showBranchModal, setShowBranchModal] = useState(false);
@@ -50,7 +59,44 @@ export default function ReportsPage() {
     Tostget(`تم اختيار المشروع: ${project.Nameproject}`);
   };
 
+  // Handle report generation - Matching mobile app switchReport function
+  const handleGenerateReport = async (type: number) => {
+    if (!selectedProject?.id) {
+      Tostget('الرجاء اختيار مشروع أولاً');
+      return;
+    }
 
+    let fileUrl: string | null = null;
+
+    switch (type) {
+      case 5: // Statistical Report - Display in page (like mobile app case 5)
+        // This is already handled by selectProject, just show success message
+        Tostget('تم تحميل التقرير الإحصائي');
+        break;
+      case 1: // Requests Report - Part
+        fileUrl = await generateRequestsReport(selectedProject.id, 'part');
+        break;
+      case 2: // Financial Statement - All
+        fileUrl = await generateFinancialStatement(selectedProject.id, 'all');
+        break;
+      case 3: // Financial Statement - Party (Expenses)
+        fileUrl = await generateFinancialStatement(selectedProject.id, 'party');
+        break;
+      case 4: // Timeline Report
+        fileUrl = await generateTimelineReport(selectedProject.id);
+        break;
+      default:
+        Tostget('نوع تقرير غير معروف');
+        return;
+    }
+
+    if (fileUrl) {
+      // Open the file in a new tab
+      const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
+      window.open(`${baseUrl}/${fileUrl}`, '_blank');
+      Tostget('تم إنشاء التقرير بنجاح');
+    }
+  };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -71,6 +117,8 @@ export default function ReportsPage() {
     return ((reportData.countSTageTrue / reportData.countStageall) * 100);
   };
 
+  // No permission check - All users can access reports page (matching mobile app)
+  // Backend will filter results based on user permissions
   return (
     <ResponsiveLayout
       header={
@@ -240,7 +288,190 @@ export default function ReportsPage() {
             </div>
           </div>
 
+          {/* Report Type Buttons - Matching Mobile App */}
+          {selectedProject && (
+            <div className="mt-6">
+              <div className="bg-white rounded-2xl p-6 shadow-sm" style={{ backgroundColor: colors.WHITE }}>
+                <h3
+                  className="mb-4 text-center"
+                  style={{
+                    fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                    fontSize: verticalScale(16),
+                    color: colors.BLACK
+                  }}
+                  dir="rtl"
+                >
+                  نوع التقرير
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                  {/* Report 1: Requests Report (تقرير طلبيات) */}
+                  <button
+                    onClick={() => handleGenerateReport(1)}
+                    disabled={reportLoading}
+                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: colors.WHITE
+                    }}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Shopping cart icon for requests/orders */}
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="9" cy="21" r="1"/>
+                        <circle cx="20" cy="21" r="1"/>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+                      </svg>
+                      <span
+                        style={{
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          fontSize: verticalScale(14),
+                          color: colors.BLACK
+                        }}
+                        dir="rtl"
+                      >
+                        تقرير طلبيات
+                      </span>
+                    </div>
+                  </button>
 
+                  {/* Report 2: Financial Statement - All (تقرير ماليه شامل) */}
+                  <button
+                    onClick={() => handleGenerateReport(2)}
+                    disabled={reportLoading}
+                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: colors.WHITE
+                    }}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Covenant/Financial custody icon - matching projects page */}
+                      <svg width="28" height="28" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill={colors.BLUE}/>
+                        <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill={colors.BLUE}/>
+                      </svg>
+                      <span
+                        style={{
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          fontSize: verticalScale(14),
+                          color: colors.BLACK
+                        }}
+                        dir="rtl"
+                      >
+                        تقرير ماليه شامل
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Report 3: Expenses Report (تقرير مصروفات) */}
+                  <button
+                    onClick={() => handleGenerateReport(3)}
+                    disabled={reportLoading}
+                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: colors.WHITE
+                    }}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Credit card icon for expenses */}
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                      </svg>
+                      <span
+                        style={{
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          fontSize: verticalScale(14),
+                          color: colors.BLACK
+                        }}
+                        dir="rtl"
+                      >
+                        تقرير مصروفات
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Report 4: Timeline Report (الجدول الزمني) */}
+                  <button
+                    onClick={() => handleGenerateReport(4)}
+                    disabled={reportLoading}
+                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: colors.WHITE
+                    }}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Calendar icon for timeline/schedule */}
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                      </svg>
+                      <span
+                        style={{
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          fontSize: verticalScale(14),
+                          color: colors.BLACK
+                        }}
+                        dir="rtl"
+                      >
+                        الجدول الزمني
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Report 5: Statistical Report (تقرير احصائي للمشروع) */}
+                  <button
+                    onClick={() => handleGenerateReport(5)}
+                    disabled={reportLoading}
+                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    style={{
+                      borderColor: 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: colors.WHITE
+                    }}
+                  >
+                    <div className="flex flex-col items-center gap-2">
+                      {/* Pie chart icon for statistical report */}
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                        <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                      </svg>
+                      <span
+                        style={{
+                          fontFamily: fonts.IBMPlexSansArabicMedium,
+                          fontSize: verticalScale(14),
+                          color: colors.BLACK
+                        }}
+                        dir="rtl"
+                      >
+                        تقرير احصائي للمشروع
+                      </span>
+                    </div>
+                  </button>
+                </div>
+
+                {/* Loading Indicator for Report Generation */}
+                {reportLoading && (
+                  <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-200">
+                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin ml-2"></div>
+                    <span
+                      style={{
+                        fontFamily: fonts.IBMPlexSansArabicRegular,
+                        fontSize: verticalScale(14),
+                        color: colors.BLACK
+                      }}
+                      dir="rtl"
+                    >
+                      جاري إنشاء التقرير...
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Loading Indicator */}
           {loading && (

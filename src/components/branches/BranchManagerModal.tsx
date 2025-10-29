@@ -91,17 +91,18 @@ export default function BranchManagerModal({
 
     try {
       setSubmitting(true);
-      
+
       // مطابق للتطبيق المحمول - تحديث مدير الفرع
+      // Mobile: kind='AdminSub' -> kind='boss', type='مدير الفرع'
       const updateData = {
         idBrinsh: parseInt(branchId),
         type: 'مدير الفرع',
-        checkGloblenew: [selectedUserId],
-        checkGlobleold: [],
+        checkGloblenew: selectedUserId, // مطابق للتطبيق - رقم واحد وليس array
+        checkGlobleold: null,
         kind: 'boss'
       };
 
-      const response = await axiosInstance.put('/user/UpdatUserNewUpdatviltay', updateData, {
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', updateData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user?.accessToken}`

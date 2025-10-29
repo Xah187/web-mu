@@ -42,6 +42,7 @@
     "redux-thunk": "^3.1.0",
     "socket.io-client": "^4.8.1",
     "styled-components": "^6.1.19",
+    "xlsx": "^0.18.5",
     "zod": "^4.1.5"
   },
   "devDependencies": {

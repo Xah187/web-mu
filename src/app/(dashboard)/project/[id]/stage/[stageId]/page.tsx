@@ -21,6 +21,7 @@ import SubStageNotesModal from '@/components/stages/SubStageNotesModal';
 import StageEditModal from '@/components/stages/StageEditModal';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import useSubStageNotes from '@/hooks/useSubStageNotes';
+import StageAchievementModal from '@/components/stages/StageAchievementModal';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -30,11 +31,13 @@ const StageHeader = ({
   progress,
   startDate,
   endDate,
+  ratio,
   onBack,
   onChat,
   onDelays,
   onEdit,
   onClose,
+  onAttachAchievement,
   isCompleted,
   canClose,
   user
@@ -43,11 +46,13 @@ const StageHeader = ({
   progress: number;
   startDate?: string;
   endDate?: string;
+  ratio?: number;
   onBack: () => void;
   onChat: () => void;
   onDelays: () => void;
   onEdit: () => void;
   onClose: () => void;
+  onAttachAchievement: () => void;
   isCompleted: boolean;
   canClose: boolean;
   user: any;
@@ -210,9 +215,9 @@ const StageHeader = ({
         </div>
       </div>
 
-      {/* Dates */}
+      {/* Dates and Ratio */}
       <div
-        className="flex justify-between text-center"
+        className="flex justify-around text-center"
         style={{ marginBottom: `${scale(20)}px` }}
       >
         <div
@@ -261,12 +266,35 @@ const StageHeader = ({
             {formatDate(endDate)}
           </p>
         </div>
+        <div
+          className="bg-blue-50 rounded-lg"
+          style={{
+            padding: `${scale(12)}px ${scale(16)}px`,
+            borderRadius: `${scale(12)}px`
+          }}
+        >
+          <p
+            className="text-blue-600 font-ibm-arabic-bold"
+            style={{
+              fontSize: `${scale(11)}px`,
+              marginBottom: `${scale(4)}px`
+            }}
+          >
+            النسبة التقديرية
+          </p>
+          <p
+            className="text-blue-700 font-ibm-arabic-bold text-center"
+            style={{ fontSize: `${scale(12)}px` }}
+          >
+            {ratio || 0}
+          </p>
+        </div>
       </div>
 
       {/* Action Buttons */}
       <div
         className="flex justify-center"
-        style={{ gap: `${scale(16)}px` }}
+        style={{ gap: `${scale(12)}px` }}
       >
         <button
           onClick={onChat}
@@ -309,6 +337,23 @@ const StageHeader = ({
             </span>
           </button>
         )}
+
+        <button
+          onClick={onAttachAchievement}
+          className="flex items-center bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+          style={{
+            padding: `${scale(12)}px ${scale(16)}px`,
+            borderRadius: `${scale(12)}px`,
+            gap: `${scale(8)}px`
+          }}
+        >
+          <span
+            className="font-ibm-arabic-semibold text-gray-700"
+            style={{ fontSize: `${scale(13)}px` }}
+          >
+            إرفاق إنجاز المرحلة
+          </span>
+        </button>
       </div>
     </div>
   );
@@ -701,7 +746,7 @@ const StageDetailsPage = () => {
   const { Uservalidation, hasPermission } = useValidityUser();
 
   const { project, fetchProjectDetails } = useProjectDetails();
-  const { subStages, loading: loadingSub, hasMore, fetchInitial, loadMore, error: subError, setSubStages } = useSubStages();
+  const { subStages, loading: loadingSub, hasMore, fetchInitial, loadMore, error: subError, setSubStages, uploadStageAchievement } = useSubStages();
 
   const [stageDetails, setStageDetails] = useState<any>(null);
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -726,6 +771,9 @@ const StageDetailsPage = () => {
   const [showAddNoteModal, setShowAddNoteModal] = useState(false);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [noteSubStage, setNoteSubStage] = useState<SubStage | null>(null);
+
+  // Achievement modal state
+  const [showAchievementModal, setShowAchievementModal] = useState(false);
 
   // Notes hook
   const { addNote, loading: notesLoading } = useSubStageNotes();
@@ -1080,6 +1128,15 @@ const StageDetailsPage = () => {
     }
   };
 
+  const handleUploadAchievement = async (file: File) => {
+    if (!stageDetails?.StageID) return;
+
+    const success = await uploadStageAchievement(projectId, stageDetails.StageID, file);
+    if (success) {
+      setShowAchievementModal(false);
+    }
+  };
+
   if (subError) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -1162,6 +1219,116 @@ const StageDetailsPage = () => {
         {stageDetails && (
           <div className="mb-4">
             <StageStatusBadge stage={stageDetails} />
+          </div>
+        )}
+
+        {/* Stage Info Section - Dates and Ratio */}
+        {stageDetails && (
+          <div
+            className="bg-white rounded-2xl mb-6"
+            style={{
+              padding: `${scale(20)}px`,
+              boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+            }}
+          >
+            {/* Dates and Ratio */}
+            <div
+              className="flex justify-around text-center"
+              style={{ gap: `${scale(12)}px` }}
+            >
+              <div
+                className="bg-blue-50 rounded-lg"
+                style={{
+                  padding: `${scale(12)}px ${scale(16)}px`,
+                  borderRadius: `${scale(12)}px`
+                }}
+              >
+                <p
+                  className="text-blue-600 font-ibm-arabic-bold"
+                  style={{
+                    fontSize: `${scale(11)}px`,
+                    marginBottom: `${scale(4)}px`
+                  }}
+                >
+                  تاريخ البداية
+                </p>
+                <p
+                  className="text-blue-700 font-ibm-arabic-bold"
+                  style={{ fontSize: `${scale(12)}px` }}
+                >
+                  {stageDetails.StartDate ? formatDateEnglish(stageDetails.StartDate) : '-'}
+                </p>
+              </div>
+              <div
+                className="bg-blue-50 rounded-lg"
+                style={{
+                  padding: `${scale(12)}px ${scale(16)}px`,
+                  borderRadius: `${scale(12)}px`
+                }}
+              >
+                <p
+                  className="text-blue-600 font-ibm-arabic-bold"
+                  style={{
+                    fontSize: `${scale(11)}px`,
+                    marginBottom: `${scale(4)}px`
+                  }}
+                >
+                  تاريخ النهاية
+                </p>
+                <p
+                  className="text-blue-700 font-ibm-arabic-bold"
+                  style={{ fontSize: `${scale(12)}px` }}
+                >
+                  {stageDetails.EndDate ? formatDateEnglish(stageDetails.EndDate) : '-'}
+                </p>
+              </div>
+              <div
+                className="bg-blue-50 rounded-lg"
+                style={{
+                  padding: `${scale(12)}px ${scale(16)}px`,
+                  borderRadius: `${scale(12)}px`
+                }}
+              >
+                <p
+                  className="text-blue-600 font-ibm-arabic-bold"
+                  style={{
+                    fontSize: `${scale(11)}px`,
+                    marginBottom: `${scale(4)}px`
+                  }}
+                >
+                  النسبة التقديرية
+                </p>
+                <p
+                  className="text-blue-700 font-ibm-arabic-bold text-center"
+                  style={{ fontSize: `${scale(12)}px` }}
+                >
+                  {stageDetails.Ratio || 0}
+                </p>
+              </div>
+            </div>
+
+            {/* Attach Achievement Button */}
+            <div
+              className="flex justify-center"
+              style={{ marginTop: `${scale(16)}px` }}
+            >
+              <button
+                onClick={() => setShowAchievementModal(true)}
+                className="flex items-center bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                style={{
+                  padding: `${scale(12)}px ${scale(16)}px`,
+                  borderRadius: `${scale(12)}px`,
+                  gap: `${scale(8)}px`
+                }}
+              >
+                <span
+                  className="font-ibm-arabic-semibold text-gray-700"
+                  style={{ fontSize: `${scale(13)}px` }}
+                >
+                  إرفاق إنجاز المرحلة
+                </span>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1625,6 +1792,14 @@ const StageDetailsPage = () => {
           onNotesUpdated={handleNotesUpdated}
         />
       )}
+
+      {/* Stage Achievement Modal */}
+      <StageAchievementModal
+        isOpen={showAchievementModal}
+        onClose={() => setShowAchievementModal(false)}
+        onSubmit={handleUploadAchievement}
+        stageName={stageDetails?.StageName || ''}
+      />
     </ResponsiveLayout>
   );
 };

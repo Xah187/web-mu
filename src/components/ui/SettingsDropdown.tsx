@@ -69,10 +69,9 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Show templet for specific conditions like original settings page
-  // Stage templates access - Allow all Admin in company 1 OR specific phone numbers
-  const admin = ['502464530', '567256943'];
-  const showTemplet = (user?.data?.job === 'Admin' && Number(user?.data?.IDCompany) === 1) ||
-                     admin.includes(user?.data?.PhoneNumber || '');
+  // Stage templates access - Updated: Admin and مستشار جودة for all companies
+  const usersStage = ['Admin', 'مستشار جودة'];
+  const showTemplet = usersStage.includes(user?.data?.job || '');
 
 
 

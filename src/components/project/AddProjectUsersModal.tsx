@@ -418,9 +418,11 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
 
               {/* Sub-modal Content */}
               <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
+                {/* Matching mobile app AddValidity.tsx - type=1 for project permissions */}
                 <PermissionList
                   selectedPermissions={selectedPerms}
                   onPermissionChange={(perms)=>setSelectedPerms(perms as PermissionType[])}
+                  type="project"
                 />
               </div>
 

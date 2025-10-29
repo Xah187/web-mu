@@ -9,16 +9,16 @@ interface ProjectFormData {
   LocationProject: string;
   GuardNumber: string;
   TypeOFContract: string;
-  TypeSub: string;
   numberBuilding: number;
   Referencenumber: number;
-  Contractsigningdate: string;
+  Cost_per_Square_Meter: number;
+  Project_Space: number;
 }
 
 export const useCreateProject = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { user } = useSelector((state: any) => state.user || {});
 
   const createProject = async (formData: ProjectFormData): Promise<boolean> => {
@@ -32,27 +32,34 @@ export const useCreateProject = () => {
       return false;
     }
 
+    if (!formData.TypeOFContract) {
+      setError('يجب اختيار نوع العقد');
+      return false;
+    }
+
     setLoading(true);
     setError(null);
 
     try {
-      // تحضير البيانات مطابق للتطبيق المحمول
-      const TypeOf = formData.TypeOFContract.includes('حر') 
-        ? 'حر' 
-        : `${formData.TypeOFContract} ${formData.TypeSub}`;
-
+      // مطابق للتطبيق المحمول - إرسال البيانات مباشرة
       const submitData = {
-        ...formData,
-        TypeOFContract: TypeOf,
+        IDcompanySub: formData.IDcompanySub,
+        Nameproject: formData.Nameproject,
+        Note: formData.Note,
         LocationProject: formData.LocationProject.startsWith('https')
           ? formData.LocationProject
           : null,
+        GuardNumber: formData.GuardNumber,
+        TypeOFContract: formData.TypeOFContract,
+        numberBuilding: formData.numberBuilding,
         Referencenumber: parseInt(String(formData.Referencenumber)) || 0,
-        Contractsigningdate: new Date(formData.Contractsigningdate)
+        Cost_per_Square_Meter: parseFloat(String(formData.Cost_per_Square_Meter)) || 0,
+        Project_Space: parseFloat(String(formData.Project_Space)) || 0
       };
 
       const response = await axiosInstance.post('/brinshCompany/v2/project', submitData, {
         headers: {
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${user.accessToken}`,
         },
       });
@@ -60,11 +67,10 @@ export const useCreateProject = () => {
       if (response.status === 200) {
         return true;
       }
-      
+
       setError('فشل في إنشاء المشروع');
       return false;
     } catch (error: any) {
-      console.error('خطأ في إنشاء المشروع:', error);
       setError(error.response?.data?.success || 'فشل في إنشاء المشروع');
       return false;
     } finally {
@@ -72,8 +78,36 @@ export const useCreateProject = () => {
     }
   };
 
+  /**
+   * Get contract types from backend
+   * Replicates mobile app's BringTypeOFContract API
+   */
+  const getContractTypes = async (): Promise<Array<{id: number, Type: string}>> => {
+    if (!user?.accessToken) {
+      return [];
+    }
+
+    try {
+      const response = await axiosInstance.get('/Templet/BringTypeOFContract', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user.accessToken}`,
+        },
+      });
+
+      if (response.status === 200 && response.data?.data) {
+        return response.data.data;
+      }
+
+      return [];
+    } catch (error: any) {
+      return [];
+    }
+  };
+
   return {
     createProject,
+    getContractTypes,
     loading,
     error,
     clearError: () => setError(null)

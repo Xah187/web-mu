@@ -29,6 +29,7 @@ const ProjectHeader = ({
   isStarted,
   user,
   showTopNav = true,
+  showFinancialData = true, // New prop to control financial data visibility
 }: {
   project: ProjectDetails | null;
   onBack: () => void;
@@ -41,6 +42,7 @@ const ProjectHeader = ({
   isStarted: boolean;
   user: any;
   showTopNav?: boolean;
+  showFinancialData?: boolean; // Matching mobile app NavbarPhase.tsx line 181-258
 }) => {
   if (!project) {
     return (
@@ -100,15 +102,18 @@ const ProjectHeader = ({
         </div>
         )}
 
-          {/* Start Project Button */}
-          {!isStarted && user?.data?.jobdiscrption === 'موظف' && (
-            <button
-              onClick={onStartProject}
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
-              style={{ fontSize: scale(12) }}
-            >
-              بدء تنفيذ المشروع
-            </button>
+          {/* Start Project Button - Matching mobile app NavbarPhase.tsx line 111 */}
+          {/* Mobile app checks: ProjectStartdate === null && permissions['بدء المشروع'] */}
+          {!isStarted && (
+            <PermissionBasedVisibility permission="بدء المشروع">
+              <button
+                onClick={onStartProject}
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+                style={{ fontSize: scale(12) }}
+              >
+                بدء تنفيذ المشروع
+              </button>
+            </PermissionBasedVisibility>
           )}
       </div>
 
@@ -163,8 +168,9 @@ const ProjectHeader = ({
                    fontFeatureSettings: '"tnum"',
                    color: 'var(--color-text-primary)'
                  }}>
-                {formatCurrency(project.ConstCompany || 0)}
-                <span className="text-xs mr-1">ر.س</span>
+                {/* Matching mobile app NavbarPhase.tsx line 181-183 */}
+                {showFinancialData ? formatCurrency(project.ConstCompany || 0) : 'xxxx'}
+                {showFinancialData && <span className="text-xs mr-1">ر.س</span>}
               </p>
             </div>
           </div>
@@ -189,7 +195,8 @@ const ProjectHeader = ({
                    fontFeatureSettings: '"tnum"',
                    color: 'var(--color-text-primary)'
                  }}>
-                {project.DaysUntiltoday || 0}
+                {/* Matching mobile app NavbarPhase.tsx line 218-220 */}
+                {showFinancialData ? (project.DaysUntiltoday || 0) : 'xxxx'}
               </p>
             </div>
           </div>
@@ -214,9 +221,14 @@ const ProjectHeader = ({
                    fontFeatureSettings: '"tnum"',
                    color: 'var(--color-text-primary)'
                  }}>
-                {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
-                {String(project.TotalcosttothCompany).length > 8 && '..'}
-                <span className="text-xs mr-1">ر.س</span>
+                {/* Matching mobile app NavbarPhase.tsx line 249-251 */}
+                {showFinancialData ? (
+                  <>
+                    {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
+                    {String(project.TotalcosttothCompany).length > 8 && '..'}
+                    <span className="text-xs mr-1">ر.س</span>
+                  </>
+                ) : 'xxxx'}
               </p>
             </div>
           </div>
@@ -259,66 +271,72 @@ const ProjectHeader = ({
             </button>
           </div>
 
-          {/* Finance Button Container */}
-          <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
-            <button
-              onClick={onFinance}
-              className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
-              style={{
-                borderColor: 'var(--color-primary)',
-                backgroundColor: 'var(--color-primary)' + '20'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-              }}
-            >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
-                   style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="var(--color-primary)"/>
-                  <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-primary)"/>
-                </svg>
-              </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>مالية</span>
-            </button>
-          </div>
+          {/* Finance Button Container - Matching mobile app NavbarPhase.tsx line 277 */}
+          {/* Mobile app checks: permissions['إظهار المالية'] */}
+          <PermissionBasedVisibility permission="إظهار المالية">
+            <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+              <button
+                onClick={onFinance}
+                className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+                style={{
+                  borderColor: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-primary)' + '20'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                }}
+              >
+                <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
+                     style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
+                  <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="var(--color-primary)"/>
+                    <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-primary)"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>مالية</span>
+              </button>
+            </div>
+          </PermissionBasedVisibility>
 
-          {/* Archives Button Container */}
-          <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
-            <button
-              onClick={onArchives}
-              className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
-              style={{
-                borderColor: 'var(--color-primary)',
-                backgroundColor: 'var(--color-primary)' + '20'
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
-                e.currentTarget.style.borderColor = 'var(--color-primary)';
-              }}
-            >
-              <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
-                   style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
-                <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="2" y="4" width="20" height="4" rx="1" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  <rect x="9" y="12" width="6" height="2" rx="1" fill="var(--color-primary)"/>
-                  <line x1="7" y1="16" x2="17" y2="16" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
-                  <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
-                </svg>
-              </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>أرشيف</span>
-            </button>
-          </div>
+          {/* Archives Button Container - Matching mobile app NavbarPhase.tsx line 285 */}
+          {/* Mobile app checks: permissions['إظهار الإرشيف'] */}
+          <PermissionBasedVisibility permission="إظهار الإرشيف">
+            <div className="theme-card rounded-xl shadow-sm p-1 sm:p-2 lg:p-3 overflow-hidden">
+              <button
+                onClick={onArchives}
+                className="group w-full rounded-lg border shadow-sm hover:shadow-md transition-all p-1 sm:p-2 lg:p-3 flex flex-col items-center"
+                style={{
+                  borderColor: 'var(--color-primary)',
+                  backgroundColor: 'var(--color-primary)' + '20'
+                }}
+                onMouseOver={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '30';
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                }}
+                onMouseOut={(e) => {
+                  e.currentTarget.style.backgroundColor = 'var(--color-primary)' + '20';
+                  e.currentTarget.style.borderColor = 'var(--color-primary)';
+                }}
+              >
+                <div className="w-5 h-5 sm:w-6 sm:h-6 lg:w-8 lg:h-8 rounded-full flex items-center justify-center mb-1 transition-colors"
+                     style={{ backgroundColor: 'var(--color-primary)' + '30' }}>
+                  <svg width="12" height="12" className="sm:w-3 sm:h-3 lg:w-4 lg:h-4" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="3" y="8" width="18" height="12" rx="2" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <rect x="2" y="4" width="20" height="4" rx="1" stroke="var(--color-primary)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <rect x="9" y="12" width="6" height="2" rx="1" fill="var(--color-primary)"/>
+                    <line x1="7" y1="16" x2="17" y2="16" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                    <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                </div>
+                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>أرشيف</span>
+              </button>
+            </div>
+          </PermissionBasedVisibility>
         </div>
       </div>
     </>
@@ -338,6 +356,15 @@ const StageCard = ({
   const { hasPermission } = useValidityUser();
   const isCompleted = stage.Done === 'true';
   const progress = stage.rate || 0;
+
+  const handleExternalLinkClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (stage.attached) {
+      window.open(stage.attached, '_blank', 'noopener,noreferrer');
+    } else {
+      Tostget('لايوجد رابط خارجي للمرحلة');
+    }
+  };
 
   return (
     <div className="group relative h-full bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-md hover:border-blue-200 transition-all overflow-hidden">
@@ -414,21 +441,44 @@ const StageCard = ({
 
         <div className="text-xs text-gray-500 mb-1">نسبة الإنجاز</div>
 
-        {/* Delete Button - Only if has permission */}
-        {hasPermission('حذف مرحلة رئيسية') && (
+        {/* Action Buttons Row - Top of card */}
+        <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
+          {/* External Link Button - Right side */}
           <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onDelete();
+            onClick={handleExternalLinkClick}
+            className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-colors"
+            style={{
+              width: '32px',
+              height: '32px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
-            className="absolute top-3 left-3 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            aria-label="حذف المرحلة"
+            aria-label="دليل خارجي"
+            title={stage.attached ? 'فتح الدليل الخارجي' : 'لايوجد رابط خارجي'}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16v-4m0-4h.01" />
             </svg>
           </button>
-        )}
+
+          {/* Delete Button - Left side - Only if has permission */}
+          {hasPermission('حذف مرحلة رئيسية') && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              aria-label="حذف المرحلة"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -466,12 +516,28 @@ const ProjectDetailsPage = () => {
   const [showReorderModal, setShowReorderModal] = useState(false);
   const [showAddUsersModal, setShowAddUsersModal] = useState(false);
   const [showEditStartDateModal, setShowEditStartDateModal] = useState(false);
+  const [showDeleteProjectModal, setShowDeleteProjectModal] = useState(false);
   const [selectedStage, setSelectedStage] = useState<Stage | null>(null);
-  const [newStageName, setNewStageName] = useState('');
-  const [newStageDays, setNewStageDays] = useState('');
+  const [stageData, setStageData] = useState({
+    StageName: '',
+    Days: 0,
+    Ratio: 0,
+    attached: ''
+  });
   const [startDate, setStartDate] = useState<string>('');
 
   const [sortOption, setSortOption] = useState<'default' | 'progress' | 'name' | 'status'>('default');
+
+  // Check permission for showing financial data - Matching mobile app NavbarPhase.tsx line 50
+  const [showFinancialData, setShowFinancialData] = useState(false);
+
+  useEffect(() => {
+    const checkFinancialPermission = async () => {
+      const hasPermission = await Uservalidation('إظهار التكلفه اليومية', projectId);
+      setShowFinancialData(hasPermission);
+    };
+    checkFinancialPermission();
+  }, [Uservalidation, projectId]);
 
   const sortedStages = useMemo(() => {
     const arr = [...(stages || [])];
@@ -538,9 +604,9 @@ const ProjectDetailsPage = () => {
   };
 
   const handleStartProject = async () => {
-    // Check if user has permission to start project - matching mobile app exactly (PageHomeProject.tsx line 294)
-    // Mobile app uses: if (await Uservalidation('مدير الفرع', idProject))
-    const hasPermission = await Uservalidation('مدير الفرع', projectId);
+    // Check if user has permission to start project - matching mobile app exactly (PageHomeProject.tsx line 306-310)
+    // Mobile app uses: if (await Uservalidation('تعديل تاريخ بدء المشروع', Validity))
+    const hasPermission = await Uservalidation('تعديل تاريخ بدء المشروع', projectId);
     if (!hasPermission) {
       return;
     }
@@ -604,16 +670,36 @@ const ProjectDetailsPage = () => {
   };
 
   const confirmAddStage = async () => {
-    if (!newStageName.trim() || !newStageDays.trim()) return;
+    if (!stageData.StageName.trim()) {
+      alert('يجب إدخال اسم المرحلة');
+      return;
+    }
 
     try {
-      await addStage(projectId, newStageName.trim(), parseInt(newStageDays));
+      await addStage(
+        projectId,
+        stageData.StageName.trim(),
+        stageData.Days,
+        stageData.Ratio,
+        stageData.attached
+      );
       setShowAddStageModal(false);
-      setNewStageName('');
-      setNewStageDays('');
+      setStageData({
+        StageName: '',
+        Days: 0,
+        Ratio: 0,
+        attached: ''
+      });
     } catch (error) {
       console.error('خطأ في إضافة المرحلة:', error);
     }
+  };
+
+  const updateDays = (type: 'plus' | 'minus') => {
+    setStageData(prev => ({
+      ...prev,
+      Days: type === 'plus' ? prev.Days + 1 : prev.Days > 0 ? prev.Days - 1 : 0
+    }));
   };
 
   const confirmDeleteStage = async () => {
@@ -725,6 +811,7 @@ const ProjectDetailsPage = () => {
           isStarted={isProjectStarted}
           user={user}
           showTopNav={false}
+          showFinancialData={showFinancialData}
         />
 
       {/* Pull to refresh indicator */}
@@ -764,7 +851,7 @@ const ProjectDetailsPage = () => {
                 className="p-3"
                 title="المزيد"
               >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
                 </svg>
               </button>
@@ -772,68 +859,150 @@ const ProjectDetailsPage = () => {
               {showSettingsModal && (
                 <div className="fixed inset-0 z-[1000] bg-black/40" onClick={() => setShowSettingsModal(false)}>
                   <div
-                    className="absolute left-1/2 top-1/2 w-[min(22rem,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white p-2 shadow-lg"
+                    className="absolute left-1/2 top-1/2 w-[min(22rem,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-lg overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button
-                      className="w-full text-right px-4 py-2 hover:bg-gray-50"
-                      onClick={async () => {
-                        if (await Uservalidation('إضافة مرحلة رئيسية', projectId)) {
-                          setShowAddStageModal(true);
-                        }
-                        setShowSettingsModal(false);
-                      }}
-                    >
-                      إضافة مرحلة (مهمة)
-                    </button>
-                    <button
-                      className="w-full text-right px-4 py-2 hover:bg-gray-50"
-                      onClick={async () => {
-                        if (await Uservalidation('ترتيب المراحل', projectId)) {
-                          try {
-                            const res = await axiosInstance.get(`/brinshCompany/v2/BringStage`, {
-                              params: { ProjectID: projectId, type: 'update', number: 0 },
-                              headers: { Authorization: `Bearer ${user.accessToken}` },
-                            });
-                            const stageall = [...(stages || []), ...(res.data?.data || [])];
-                            const verifyDone = stageall.find((pic: any) => pic.Done === 'true');
-                            if (!verifyDone) {
-                              setShowReorderModal(true);
-                            } else {
-                              Tostget('لايمكن إعادة ترتيب المراحل فهناك مراحل قد انجزت');
-                            }
-                          } catch (e) {
-                            console.error(e);
-                          }
-                        }
-                        setShowSettingsModal(false);
-                      }}
-                    >
-                      ترتيب المراحل
-                    </button>
-                    <button
-                      className="w-full text-right px-4 py-2 hover:bg-gray-50"
-                      onClick={async () => {
-                        const ok = await Uservalidation('تعديل صلاحيات', 0);
-                        if (!ok) { setShowSettingsModal(false); return; }
-                        setShowAddUsersModal(true);
-                        setShowSettingsModal(false);
-                      }}
-                    >
-                      إضافة مستخدمين
-                    </button>
-                    <button
-                      className="w-full text-right px-4 py-2 hover:bg-gray-50"
+                    {/* Header */}
+                    <div className="px-4 py-3 border-b border-gray-200">
+                      <h3 className="font-ibm-arabic-semibold text-gray-500" style={{ fontSize: scale(14) }}>
+                        الاعدادات
+                      </h3>
+                    </div>
 
-                      onClick={async () => {
-                        if (await Uservalidation('تعديل بيانات المشروع', projectId)) {
-                          setShowEditStartDateModal(true);
-                        }
-                        setShowSettingsModal(false);
-                      }}
-                    >
-                      تعديل تاريخ بداية المشروع
-                    </button>
+                    {/* Options */}
+                    <div className="py-2">
+                      {/* 1. إنشاء مرحلة */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          if (await Uservalidation('إضافة مرحلة رئيسية', projectId)) {
+                            setShowAddStageModal(true);
+                          }
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 15 16" fill="none">
+                          <path d="M7.5 3V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M2.5 8H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        إنشاء مرحلة
+                      </button>
+
+                      {/* 2. ترتيب المراحل */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          if (await Uservalidation('ترتيب المراحل', projectId)) {
+                            try {
+                              const res = await axiosInstance.get(`/brinshCompany/v2/BringStage`, {
+                                params: { ProjectID: projectId, type: 'update', number: 0 },
+                                headers: { Authorization: `Bearer ${user.accessToken}` },
+                              });
+                              const stageall = [...(stages || []), ...(res.data?.data || [])];
+                              const verifyDone = stageall.find((pic: any) => pic.Done === 'true');
+                              if (!verifyDone) {
+                                setShowReorderModal(true);
+                              } else {
+                                Tostget('لايمكن إعادة ترتيب المراحل فهناك مراحل قد انجزت');
+                              }
+                            } catch (e) {
+                              console.error(e);
+                            }
+                          }
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                          <path d="M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                          <path d="M13 4L20 11" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
+                          <path d="M14 22H22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                        ترتيب المراحل
+                      </button>
+
+                      {/* 3. اضافة مستخدمين - Matching mobile app PageHomeProject.tsx line 192-199 */}
+                      {/* تم تغييره ليفتح صفحة كاملة بدلاً من مودال - مطابق للتطبيق المحمول PageUsers.tsx */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          const ok = await Uservalidation('إضافة مستخدمين للمشروع', projectId);
+                          if (!ok) { setShowSettingsModal(false); return; }
+                          // فتح صفحة أعضاء المشروع بدلاً من المودال
+                          // استخدام IDcompanySub من بيانات المشروع (مطابق للتطبيق المحمول)
+                          const branchId = project?.IDcompanySub || project?.IDCompanySub || user?.data?.IDCompanyBransh || '';
+                          router.push(`/project/${projectId}/members?name=${encodeURIComponent(project?.Nameproject || 'المشروع')}&branchId=${branchId}`);
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                          <circle cx="9" cy="7" r="4"/>
+                          <line x1="19" y1="8" x2="19" y2="14"/>
+                          <line x1="22" y1="11" x2="16" y2="11"/>
+                        </svg>
+                        اضافة مستخدمين
+                      </button>
+
+                      {/* 4. تعديل تاريخ بدء المشروع - Matching mobile app PageHomeProject.tsx line 223-232 */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          if (await Uservalidation('تعديل تاريخ بدء المشروع', projectId)) {
+                            const verifyDone = stages?.find((pic: any) => pic.Done === 'true');
+                            if (!verifyDone) {
+                              setShowEditStartDateModal(true);
+                            } else {
+                              Tostget('لايمكن تعديل تاريخ المشروع فهناك مراحل قد اقفلت');
+                            }
+                          }
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+                          <path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" />
+                        </svg>
+                        تعديل تاريخ بدء المشروع
+                      </button>
+
+                      {/* 5. تعديل بيانات المشروع */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          if (await Uservalidation('تعديل بيانات المشروع', projectId)) {
+                            handleEdit();
+                          }
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        تعديل بيانات المشروع
+                      </button>
+
+                      {/* 6. حذف المشروع */}
+                      <button
+                        className="w-full text-right px-4 py-3 hover:bg-red-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors text-red-600"
+                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        onClick={async () => {
+                          if (await Uservalidation('حذف مشروع', projectId)) {
+                            setShowDeleteProjectModal(true);
+                          }
+                          setShowSettingsModal(false);
+                        }}
+                      >
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        حذف المشروع
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -1012,8 +1181,12 @@ const ProjectDetailsPage = () => {
               <button
                 onClick={() => {
                   setShowAddStageModal(false);
-                  setNewStageName('');
-                  setNewStageDays('');
+                  setStageData({
+                    StageName: '',
+                    Days: 0,
+                    Ratio: 0,
+                    attached: ''
+                  });
                 }}
                 className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
                 style={{
@@ -1031,62 +1204,157 @@ const ProjectDetailsPage = () => {
 
             {/* Content */}
             <div style={{ paddingLeft: '24px', paddingRight: '24px', paddingBottom: '16px' }}>
-              <div style={{ marginBottom: '20px' }}>
+              {/* Days Counter */}
+              <div
+                className="flex justify-between items-center rounded-xl mb-4"
+                style={{
+                  backgroundColor: 'var(--theme-surface-secondary)',
+                  padding: '16px',
+                  border: '1px solid var(--theme-border)'
+                }}
+              >
+                <div>
+                  <label
+                    className="block mb-1"
+                    style={{
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--theme-text-secondary)'
+                    }}
+                  >
+                    عدد الأيام
+                  </label>
+                  <div
+                    style={{
+                      fontSize: '18px',
+                      fontFamily: 'var(--font-ibm-arabic-semibold)',
+                      color: 'var(--theme-text-primary)'
+                    }}
+                  >
+                    {stageData.Days} <span style={{ fontSize: '14px' }}>يوم</span>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => updateDays('plus')}
+                    className="rounded transition-all duration-200 hover:scale-110"
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'var(--theme-card-background)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-primary)'
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M18 15l-6-6-6 6"/>
+                    </svg>
+                  </button>
+                  <button
+                    onClick={() => updateDays('minus')}
+                    className="rounded transition-all duration-200 hover:scale-110"
+                    style={{
+                      padding: '6px 12px',
+                      backgroundColor: 'var(--theme-card-background)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-primary)'
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M6 9l6 6 6-6"/>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+
+              {/* Stage Name and Ratio in one row */}
+              <div className="flex gap-3 mb-4">
+                <div className="flex-1">
+                  <label
+                    className="block mb-2"
+                    style={{
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--theme-text-secondary)'
+                    }}
+                  >
+                    اسم المرحلة
+                  </label>
+                  <input
+                    type="text"
+                    value={stageData.StageName}
+                    onChange={(e) => setStageData(prev => ({ ...prev, StageName: e.target.value }))}
+                    className="w-full rounded-xl transition-all duration-200"
+                    style={{
+                      padding: '12px',
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-primary)',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      textAlign: 'right'
+                    }}
+                    placeholder="ادخل اسم المرحلة"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <label
+                    className="block mb-2"
+                    style={{
+                      fontSize: '12px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      color: 'var(--theme-text-secondary)'
+                    }}
+                  >
+                    النسبة التقديرية
+                  </label>
+                  <input
+                    type="number"
+                    value={stageData.Ratio}
+                    onChange={(e) => setStageData(prev => ({ ...prev, Ratio: Number(e.target.value) || 0 }))}
+                    className="w-full rounded-xl transition-all duration-200"
+                    style={{
+                      padding: '12px',
+                      backgroundColor: 'var(--theme-surface-secondary)',
+                      border: '1px solid var(--theme-border)',
+                      color: 'var(--theme-text-primary)',
+                      fontSize: '14px',
+                      fontFamily: 'var(--font-ibm-arabic-medium)',
+                      textAlign: 'right'
+                    }}
+                    placeholder="النسبة التقديرية"
+                    min="0"
+                  />
+                </div>
+              </div>
+
+              {/* External Link */}
+              <div style={{ marginBottom: '16px' }}>
                 <label
-                  className="block"
+                  className="block mb-2"
                   style={{
-                    fontSize: '14px',
+                    fontSize: '12px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--theme-text-primary)',
-                    marginBottom: '8px'
+                    color: 'var(--theme-text-secondary)'
                   }}
                 >
-                  اسم المرحلة
+                  دليل خارجي
                 </label>
                 <input
                   type="text"
-                  value={newStageName}
-                  onChange={(e) => setNewStageName(e.target.value)}
-                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
+                  value={stageData.attached}
+                  onChange={(e) => setStageData(prev => ({ ...prev, attached: e.target.value }))}
+                  className="w-full rounded-xl transition-all duration-200"
                   style={{
-                    padding: '12px 16px',
-                    backgroundColor: 'var(--theme-input-background)',
+                    padding: '12px',
+                    backgroundColor: 'var(--theme-surface-secondary)',
                     border: '1px solid var(--theme-border)',
                     color: 'var(--theme-text-primary)',
-                    fontSize: '16px',
-                    fontFamily: 'var(--font-ibm-arabic-medium)'
-                  }}
-                  placeholder="أدخل اسم المرحلة"
-                />
-              </div>
-
-              <div style={{ marginBottom: '24px' }}>
-                <label
-                  className="block"
-                  style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--theme-text-primary)',
-                    marginBottom: '8px'
+                    textAlign: 'right'
                   }}
-                >
-                  عدد الأيام
-                </label>
-                <input
-                  type="number"
-                  value={newStageDays}
-                  onChange={(e) => setNewStageDays(e.target.value)}
-                  className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: 'var(--theme-input-background)',
-                    border: '1px solid var(--theme-border)',
-                    color: 'var(--theme-text-primary)',
-                    fontSize: '16px',
-                    fontFamily: 'var(--font-ibm-arabic-medium)'
-                  }}
-                  placeholder="أدخل عدد الأيام"
-                  min="1"
+                  placeholder="رابط خارجي"
                 />
               </div>
             </div>
@@ -1108,8 +1376,8 @@ const ProjectDetailsPage = () => {
             >
               <button
                 onClick={confirmAddStage}
-                disabled={!newStageName.trim() || !newStageDays.trim() || loading}
-                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50"
+                disabled={!stageData.StageName.trim() || loading}
+                className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md disabled:opacity-50 flex items-center justify-center gap-2"
                 style={{
                   padding: '12px 24px',
                   backgroundColor: 'var(--theme-success)',
@@ -1120,13 +1388,24 @@ const ProjectDetailsPage = () => {
                   width: '45%'
                 }}
               >
-                {loading ? 'جاري الإضافة...' : 'إضافة'}
+                {loading ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    <span>جاري الإضافة...</span>
+                  </>
+                ) : (
+                  'إنشاء'
+                )}
               </button>
               <button
                 onClick={() => {
                   setShowAddStageModal(false);
-                  setNewStageName('');
-                  setNewStageDays('');
+                  setStageData({
+                    StageName: '',
+                    Days: 0,
+                    Ratio: 0,
+                    attached: ''
+                  });
                 }}
                 className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
                 style={{
@@ -1532,6 +1811,93 @@ const ProjectDetailsPage = () => {
                 }}
               >
                 إلغاء
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Project Modal */}
+      {showDeleteProjectModal && (
+        <div className="fixed inset-0 z-[1001] bg-black/40 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
+            {/* Header */}
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(18) }}>
+                تأكيد حذف المشروع
+              </h3>
+            </div>
+
+            {/* Content */}
+            <div className="px-6 py-6">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <p className="font-ibm-arabic-semibold text-gray-900 mb-2" style={{ fontSize: scale(15) }}>
+                    هل أنت متأكد من حذف هذا المشروع؟
+                  </p>
+                  <p className="font-ibm-arabic-regular text-gray-600" style={{ fontSize: scale(13) }}>
+                    سيتم حذف المشروع وجميع المراحل والبيانات المرتبطة به بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.
+                  </p>
+                  {project && (
+                    <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                      <p className="font-ibm-arabic-medium text-gray-700" style={{ fontSize: scale(13) }}>
+                        المشروع: <span className="font-ibm-arabic-bold">{project.Nameproject}</span>
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 rounded-b-2xl">
+              <button
+                onClick={() => setShowDeleteProjectModal(false)}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-ibm-arabic-semibold disabled:opacity-50"
+                style={{ fontSize: scale(14) }}
+              >
+                إلغاء
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const res = await axiosInstance.delete(`/brinshCompany/DeletProjectwithDependencies`, {
+                      params: { id: projectId },
+                      headers: { Authorization: `Bearer ${user.accessToken}` }
+                    });
+                    if (res.status === 200) {
+                      Tostget('تم حذف المشروع بنجاح');
+                      setShowDeleteProjectModal(false);
+                      router.back();
+                    }
+                  } catch (e: any) {
+                    console.error(e);
+                    Tostget(e.response?.data?.error || 'خطأ في حذف المشروع');
+                  }
+                }}
+                disabled={loading}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-ibm-arabic-bold disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ fontSize: scale(14) }}
+              >
+                {loading ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    جاري الحذف...
+                  </>
+                ) : (
+                  <>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    حذف المشروع
+                  </>
+                )}
               </button>
             </div>
           </div>

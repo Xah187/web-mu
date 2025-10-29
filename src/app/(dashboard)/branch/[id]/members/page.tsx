@@ -5,12 +5,11 @@ import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
-import useValidityUser from '@/hooks/useValidityUser';
 import AddMemberModal from '@/components/branch/AddMemberModal';
 import EditMemberModal from '@/components/branch/EditMemberModal';
 import DeleteMemberModal from '@/components/branch/DeleteMemberModal';
-
-import AddProjectsModal from '@/components/branch/AddProjectsModal';
+import PermissionsModal from '@/components/branch/PermissionsModal';
+import AddMultipleProjectsModal from '@/components/branch/AddMultipleProjectsModal';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -25,6 +24,12 @@ interface BranchMember {
   jobHOM?: string;
   image?: string;
   Date: string;
+  is_in_branch?: string;
+  is_in_Acceptingcovenant?: string;
+  original_is_in?: string;
+  Adminbransh?: string;
+  ValidityBransh?: string[] | string; // صلاحيات الفرع - مطابق للتطبيق المحمول
+  ValidityProject?: string[] | string; // صلاحيات المشروع - مطابق للتطبيق المحمول
 }
 
 interface BranchMembersResponse {
@@ -47,7 +52,6 @@ export default function BranchMembersPage() {
   const mode = searchParams.get('mode') || 'members'; // manager, members, finance
 
   const { user } = useSelector((state: any) => state.user || {});
-  const { Uservalidation } = useValidityUser();
 
   const [members, setMembers] = useState<BranchMember[]>([]);
   const [loading, setLoading] = useState(false);
@@ -57,10 +61,14 @@ export default function BranchMembersPage() {
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showEditMemberModal, setShowEditMemberModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
-
-  const [showProjectsModal, setShowProjectsModal] = useState(false);
+  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
+  const [showMultipleProjectsModal, setShowMultipleProjectsModal] = useState(false);
   const [selectedMember, setSelectedMember] = useState<BranchMember | null>(null);
   const [actionLoading, setActionLoading] = useState<{ [key: string]: boolean }>({});
+
+  // حالة إضافة/إزالة الأعضاء - مطابق للتطبيق المحمول
+  const [checkGloblenew, setCheckGloblenew] = useState<{ [key: number]: any }>({});
+  const [checkGlobledelete, setCheckGlobledelete] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
     if (branchId && user?.accessToken) {
@@ -71,11 +79,26 @@ export default function BranchMembersPage() {
   const fetchBranchMembers = async (lastId = 0) => {
     try {
       setLoading(true);
-      // مطابق للتطبيق المحمول - API صحيح مع type=justuser للفرع المحدد
+      // مطابق للتطبيق المحمول - API صحيح
       console.log('🔍 Fetching branch members for branch:', branchId, 'mode:', mode);
 
+      // تحديد نوع الطلب حسب الوضع - مطابق للتطبيق المحمول
+      let apiType = 'user'; // الافتراضي لجلب أعضاء الفرع
+      let selectuser = 'bransh'; // الافتراضي
+
+      if (mode === 'manager') {
+        apiType = 'AdminSub'; // لتغيير مدير الفرع
+        selectuser = 'bransh';
+      } else if (mode === 'finance') {
+        apiType = 'Acceptingcovenant'; // لصلاحية المالية
+        selectuser = 'bransh';
+      } else if (mode === 'members') {
+        apiType = 'user'; // لإضافة/إزالة أعضاء
+        selectuser = 'bransh';
+      }
+
       const response = await axiosInstance.get(
-        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=justuser&number=${lastId}&kind_request=all`,
+        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=${apiType}&number=${lastId}&kind_request=all&selectuser=${selectuser}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -90,41 +113,28 @@ export default function BranchMembersPage() {
         const result: BranchMembersResponse = response.data;
         const allMembers = result.data;
 
-        // فلترة الأعضاء حسب الوضع المطلوب - مطابق للتطبيق المحمول
-        let filteredMembers = allMembers;
-
-        if (mode === 'manager') {
-          // تغيير مدير فرع - عرض جميع الأعضاء للاختيار من بينهم
-          filteredMembers = allMembers.filter(member =>
-            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
-          );
-        } else if (mode === 'members') {
-          // إضافة أو إزالة أعضاء - عرض جميع أعضاء الشركة
-          filteredMembers = allMembers;
-        } else if (mode === 'finance') {
-          // صلاحية مالية الفرع - عرض الأعضاء الذين لديهم صلاحية مالية
-          filteredMembers = allMembers.filter(member =>
-            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
-          );
-        } else {
-          // الوضع العادي - عرض أعضاء الفرع فقط
-          filteredMembers = allMembers.filter(member =>
-            result.checkGloble && Object.keys(result.checkGloble).includes(String(member.id))
-          );
-        }
-
+        // الباك اند الجديد يرجع البيانات مع حقول is_in_branch, is_in_Acceptingcovenant, Adminbransh
+        // مطابق للتطبيق المحمول PageUsers.tsx
         console.log('👥 All members from API:', allMembers.length);
-        console.log('🔍 CheckGloble keys:', result.checkGloble ? Object.keys(result.checkGloble) : 'undefined');
-        console.log('✅ Filtered members for mode', mode, ':', filteredMembers.length, 'for branch:', branchId);
+        console.log('📋 Sample member:', allMembers[0]);
+
+        // لا حاجة للفلترة - الباك اند يرجع البيانات الصحيحة حسب type
+        const filteredMembers = allMembers;
 
         if (lastId === 0) {
           setMembers(filteredMembers);
-          // في API يرجع bosss أو idAdmin بدلاً من boss
-          setBoss(result.boss || result.bosss || result.idAdmin || 0);
+          // في API الجديد يرجع idAdmin في البيانات
+          const adminMember = allMembers.find((m: any) => m.Adminbransh === 'true');
+          setBoss(adminMember?.id || result.idAdmin || 0);
         } else {
-          setMembers(prev => [...prev, ...filteredMembers]);
+          // إزالة المكررات عند إضافة أعضاء جدد
+          setMembers(prev => {
+            const existingIds = new Set(prev.map(m => m.id));
+            const newMembers = filteredMembers.filter(m => !existingIds.has(m.id));
+            return [...prev, ...newMembers];
+          });
         }
-        setHasMore(filteredMembers.length > 0);
+        setHasMore(filteredMembers.length >= 10); // الباك اند يرجع 10 في كل مرة
       }
     } catch (error) {
       console.error('Error fetching branch members:', error);
@@ -138,6 +148,106 @@ export default function BranchMembersPage() {
     if (hasMore && !loading && members.length > 0) {
       const lastMember = members[members.length - 1];
       fetchBranchMembers(lastMember.id);
+    }
+  };
+
+  // إضافة/إزالة عضو من الفرع - مطابق للتطبيق المحمول PageUsers.tsx
+  const handleGlobalChoice = (memberId: number, isInBranchValue: string) => {
+    // 1) تحديث المستخدم في المصفوفة
+    const key = mode === 'finance' ? 'is_in_Acceptingcovenant' : 'is_in_branch';
+    const updatedMembers = members.map(m =>
+      m.id === memberId ? { ...m, [key]: isInBranchValue } : m
+    );
+
+    // 2) بناء القوائم الجديدة
+    const nextNew = { ...checkGloblenew };
+    const nextDel = { ...checkGlobledelete };
+
+    const target: any = members.find(m => m.id === memberId);
+    const original = target?.original_is_in; // "true" | "false"
+
+    if (isInBranchValue !== original) {
+      if (isInBranchValue === "true") {
+        nextNew[memberId] = { id: memberId, Validity: [] };
+        delete nextDel[memberId];
+      } else {
+        delete nextNew[memberId];
+        if (original === "true") nextDel[memberId] = memberId;
+        else delete nextDel[memberId];
+      }
+    } else {
+      delete nextNew[memberId];
+      delete nextDel[memberId];
+    }
+
+    // 3) تحديث الحالة
+    setMembers(updatedMembers);
+    setCheckGloblenew(nextNew);
+    setCheckGlobledelete(nextDel);
+
+    return { nextNew, nextDel };
+  };
+
+  // حفظ التغييرات - مطابق للتطبيق المحمول
+  const handleSaveChanges = async () => {
+    try {
+      setActionLoading({ save: true });
+
+      // إضافة الأعضاء الجدد
+      if (Object.keys(checkGloblenew).length > 0) {
+        const response = await axiosInstance.put(
+          '/user/updat/userBrinshv2',
+          {
+            IDCompanySub: branchId,
+            type: mode === 'finance' ? 'Acceptingcovenant' : mode === 'manager' ? 'AdminSub' : 'user',
+            checkGloble: checkGloblenew
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user?.accessToken}`
+            }
+          }
+        );
+
+        if (response.data?.success) {
+          Tostget('تم إضافة الأعضاء بنجاح');
+        }
+      }
+
+      // حذف الأعضاء
+      if (Object.keys(checkGlobledelete).length > 0) {
+        const response = await axiosInstance.put(
+          '/user/updat/userBrinshv2',
+          {
+            IDCompanySub: branchId,
+            type: mode === 'finance' ? 'Acceptingcovenant' : mode === 'manager' ? 'AdminSub' : 'user',
+            checkGloble: {},
+            checkGlobledelete: checkGlobledelete
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${user?.accessToken}`
+            }
+          }
+        );
+
+        if (response.data?.success) {
+          Tostget('تم إزالة الأعضاء بنجاح');
+        }
+      }
+
+      // إعادة تحميل البيانات
+      setCheckGloblenew({});
+      setCheckGlobledelete({});
+      await fetchBranchMembers(0);
+
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      Tostget('خطأ في حفظ التغييرات');
+    } finally {
+      setActionLoading({ save: false });
     }
   };
 
@@ -185,12 +295,21 @@ export default function BranchMembersPage() {
 
 
 
-  const handleAddProjects = async (member: BranchMember) => {
-    // إضافة مشاريع للمستخدم - مطابق للتطبيق المحمول
-    // مطابق للشرط: Number(idBransh) && !Number(type)
+  const handleEditPermissions = async (member: BranchMember) => {
+    // تعديل صلاحيات المستخدم - مطابق للتطبيق المحمول
+    if (user?.data?.job === 'Admin' || user?.data?.job === 'مدير الفرع') {
+      setSelectedMember(member);
+      setShowPermissionsModal(true);
+    } else {
+      Tostget('ليس لديك صلاحية لتعديل الصلاحيات');
+    }
+  };
+
+  const handleAddMultipleProjects = async (member: BranchMember) => {
+    // إضافة مشاريع متعددة للمستخدم - مطابق للتطبيق المحمول
     if (user?.data?.job === 'Admin' && branchId) {
       setSelectedMember(member);
-      setShowProjectsModal(true);
+      setShowMultipleProjectsModal(true);
     } else {
       Tostget('ليس في نطاق صلاحياتك');
     }
@@ -253,12 +372,12 @@ export default function BranchMembersPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="2739362721 2744413139"
+          title={getPageTitle()}
           backButton={
             <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg"
-              aria-label="312c4839"
+              aria-label="رجوع"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
             </button>
@@ -277,7 +396,7 @@ export default function BranchMembersPage() {
             <button
               onClick={handleAddMember}
               className="p-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              title="إضافة عضو للفرع"
+              title="إضافة عضو"
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
@@ -311,14 +430,51 @@ export default function BranchMembersPage() {
               {members.map((member) => (
                 <MemberCard
                   key={member.id}
-                  member={member}
+                  member={member as any}
                   onOptions={() => handleMemberOptions(member)}
                   getJobDisplay={getJobDisplay}
                   getJobColor={getJobColor}
                   formatDate={formatDate}
+                  mode={mode}
+                  onToggleMember={handleGlobalChoice}
                 />
               ))}
             </div>
+
+            {/* زر حفظ التغييرات - يظهر فقط في mode='members' أو 'finance' */}
+            {(mode === 'members' || mode === 'finance') && (Object.keys(checkGloblenew).length > 0 || Object.keys(checkGlobledelete).length > 0) && (
+              <div className="mt-6 flex gap-3">
+                <button
+                  onClick={handleSaveChanges}
+                  disabled={actionLoading.save}
+                  className="flex-1 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl font-ibm-arabic-semibold transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                >
+                  {actionLoading.save ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      جاري الحفظ...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      حفظ التغييرات ({Object.keys(checkGloblenew).length + Object.keys(checkGlobledelete).length})
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={() => {
+                    setCheckGloblenew({});
+                    setCheckGlobledelete({});
+                    fetchBranchMembers(0);
+                  }}
+                  className="px-6 py-3 bg-gray-200 text-gray-800 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+                >
+                  إلغاء
+                </button>
+              </div>
+            )}
 
             {hasMore && (
               <div className="mt-6 text-center">
@@ -398,7 +554,25 @@ export default function BranchMembersPage() {
                 </button>
               )}
 
-              {/* 2. حذف المستخدم */}
+              {/* 2. تعديل الصلاحيات - مطابق للتطبيق المحمول */}
+              {(user?.data?.job === 'Admin' || user?.data?.job === 'مدير الفرع') && selectedMember.job !== 'Admin' && (
+                <button
+                  onClick={() => {
+                    setShowOptionsModal(false);
+                    handleEditPermissions(selectedMember);
+                  }}
+                  className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-green-600">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                  </svg>
+                  <span className="font-ibm-arabic-semibold text-gray-900">تعديل الصلاحيات</span>
+                </button>
+              )}
+
+              {/* 3. حذف المستخدم */}
               {user?.data?.job === 'Admin' && selectedMember.job !== 'Admin' && (
                 <button
                   onClick={() => {
@@ -415,12 +589,12 @@ export default function BranchMembersPage() {
                 </button>
               )}
 
-              {/* 3. إضافة عدة مشاريع - مطابق للتطبيق المحمول */}
+              {/* 4. إضافة عدة مشاريع - مطابق للتطبيق المحمول */}
               {user?.data?.job === 'Admin' && branchId && (
                 <button
                   onClick={() => {
                     setShowOptionsModal(false);
-                    handleAddProjects(selectedMember);
+                    handleAddMultipleProjects(selectedMember);
                   }}
                   className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
                 >
@@ -449,7 +623,7 @@ export default function BranchMembersPage() {
         </div>
       )}
 
-      {/* Add Member Modal */}
+      {/* Add Member Modal - إضافة عضو موجود للفرع - مطابق للتطبيق المحمول */}
       <AddMemberModal
         isOpen={showAddMemberModal}
         onClose={() => setShowAddMemberModal(false)}
@@ -490,20 +664,36 @@ export default function BranchMembersPage() {
         }}
       />
 
-
-
-      {/* Add Projects Modal */}
-      <AddProjectsModal
-        isOpen={showProjectsModal}
+      {/* Permissions Modal - مطابق للتطبيق المحمول */}
+      <PermissionsModal
+        isOpen={showPermissionsModal}
         onClose={() => {
-          setShowProjectsModal(false);
+          setShowPermissionsModal(false);
           setSelectedMember(null);
         }}
         member={selectedMember}
-        branchId={branchId}
+        branchId={branchId} // Pass branchId for API call - matching mobile app
+        type={0} // 0 for branch permissions - matching mobile app
         onSuccess={() => {
           fetchBranchMembers();
-          setShowProjectsModal(false);
+          setShowPermissionsModal(false);
+          setSelectedMember(null);
+        }}
+      />
+
+      {/* Add Multiple Projects Modal - مطابق للتطبيق المحمول */}
+      <AddMultipleProjectsModal
+        isOpen={showMultipleProjectsModal}
+        onClose={() => {
+          setShowMultipleProjectsModal(false);
+          setSelectedMember(null);
+        }}
+        branchId={branchId}
+        memberPhoneNumber={selectedMember?.PhoneNumber || ''}
+        memberName={selectedMember?.userName || ''}
+        onSuccess={() => {
+          fetchBranchMembers();
+          setShowMultipleProjectsModal(false);
           setSelectedMember(null);
         }}
       />
@@ -514,11 +704,13 @@ export default function BranchMembersPage() {
 
 // Member Card Component
 interface MemberCardProps {
-  member: BranchMember;
+  member: BranchMember & { is_in_branch?: string; is_in_Acceptingcovenant?: string; original_is_in?: string };
   onOptions: () => void;
   getJobDisplay: (member: BranchMember) => string;
   getJobColor: (job: string) => string;
   formatDate: (date: string) => string;
+  mode?: string;
+  onToggleMember?: (memberId: number, value: string) => void;
 }
 
 function MemberCard({
@@ -526,13 +718,37 @@ function MemberCard({
   onOptions,
   getJobDisplay,
   getJobColor,
-  formatDate
+  formatDate,
+  mode,
+  onToggleMember
 }: MemberCardProps) {
+  // تحديد حالة العضو - مطابق للتطبيق المحمول
+  const isInBranch = mode === 'finance'
+    ? member.is_in_Acceptingcovenant === 'true'
+    : member.is_in_branch === 'true';
+
+  const handleToggle = () => {
+    if (onToggleMember) {
+      const newValue = isInBranch ? 'false' : 'true';
+      onToggleMember(member.id, newValue);
+    }
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="p-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3 flex-1">
+            {/* Checkbox لإضافة/إزالة العضو - يظهر فقط في mode='members' أو 'finance' */}
+            {(mode === 'members' || mode === 'finance') && onToggleMember && (
+              <input
+                type="checkbox"
+                checked={isInBranch}
+                onChange={handleToggle}
+                className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
+              />
+            )}
+
             <div className="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
               {member.image ? (
                 <img src={member.image} alt="User" className="w-full h-full object-cover" />
@@ -559,6 +775,7 @@ function MemberCard({
             </div>
           </div>
 
+          {/* زر الخيارات - يظهر دائماً مطابق للتطبيق المحمول */}
           <button
             onClick={onOptions}
             className="p-2 hover:bg-gray-200 rounded-lg transition-colors"

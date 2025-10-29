@@ -189,8 +189,11 @@ export default function HomePage() {
     const hasPermission = await Uservalidation('covenant', 0);
     if (hasPermission) {
       // Navigate to covenant page with company branch ID
-      const branchId = user?.data?.IDCompany || '';
-      router.push(`/covenant?branchId=${branchId}`);
+      // Mobile app: HomeAdmin.tsx line 490-492
+      // Passes: IDCompanyBransh: 0 (means all company covenants)
+      // typePage defaults to "FinancialCustodyall" in CovenantBrinsh.tsx line 28
+      const branchId = 0; // 0 means all company covenants (not specific branch)
+      router.push(`/covenant?branchId=${branchId}&type=FinancialCustodyall`);
     }
     // Error message is handled by Uservalidation
   };
@@ -224,19 +227,11 @@ export default function HomePage() {
     router.push(`/branch/${branch.id}/projects?name=${encodeURIComponent(branch.NameSub)}`);
   };
 
-  // Handle branch settings - only for admins
-  const handleBranchSettings = (branch: any) => {
-    if (isAdmin) {
-      router.push(`/branch/${branch.id}/settings`);
-    } else {
-      Tostget('غير مصرح لك بهذا الإجراء');
-    }
-  };
-
-  // Handle branch edit - open edit modal
-  // Matching mobile app: HomSub.tsx line 258 - uses Uservalidation('تعديل بيانات الفرغ', 0)
-  const handleBranchEdit = async (branch: any) => {
-    const hasPermission = await Uservalidation('تعديل بيانات الفرغ', 0);
+  // Handle branch settings - مطابق للتطبيق المحمول (يفتح modal الإعدادات بـ 6 خيارات)
+  // Mobile app: HomeAdmin.tsx line 535-544
+  const handleBranchSettings = async (branch: any) => {
+    // في التطبيق المحمول: يتحقق من صلاحية Admin
+    const hasPermission = await Uservalidation('Admin');
     if (hasPermission) {
       setSelectedBranch(branch);
       setEditModalOpen(true);
@@ -247,8 +242,10 @@ export default function HomePage() {
   // Handle save branch changes
   const handleSaveBranch = async (updatedBranch: any) => {
     try {
+      // مطابق للتطبيق المحمول - إرسال NumberCompany مع البيانات
       await updateBranchData({
         id: updatedBranch.id,
+        NumberCompany: updatedBranch.NumberCompany || user?.data?.IDCompany,
         NameSub: updatedBranch.NameSub,
         BranchAddress: updatedBranch.BranchAddress,
         Email: updatedBranch.Email,
@@ -444,16 +441,21 @@ export default function HomePage() {
               width: '100%'
             }}
           >
-            {homeData.data.map((branch: any) => (
+            {/* مطابق للتطبيق المحمول HomeAdmin.tsx السطر 517-520: يستخدم index كـ key */}
+            {/* إضافة فلترة للبيانات المكررة لتجنب مشكلة duplicate keys */}
+            {homeData.data
+              .filter((branch: any, index: number, self: any[]) =>
+                // إزالة الفروع المكررة - الاحتفاظ بأول ظهور فقط
+                index === self.findIndex((b: any) => b.id === branch.id)
+              )
+              .map((branch: any, index: number) => (
               <BranchCard
-                key={branch.id}
+                key={`branch-${branch.id}-${index}`} // استخدام composite key مطابق للتطبيق المحمول
                 title={branch.NameSub}
                 projectCount={branch.CountProject || 0}
                 onPress={() => handleBranchPress(branch)}
                 onSettingsPress={() => handleBranchSettings(branch)}
-                onEditPress={() => handleBranchEdit(branch)}
-                showSettings={isAdmin}
-                showEdit={isEmployee} // Matching mobile app: BoxSubCompne.tsx line 51 - only employees see edit button
+                showSettings={isAdmin} // مطابق للتطبيق المحمول: displaySetting={permissions['اعدادات'] ? 'flex': 'none'}
               />
             ))}
           </div>

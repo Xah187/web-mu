@@ -17,80 +17,75 @@ interface ProjectFormData {
   LocationProject: string;
   GuardNumber: string;
   TypeOFContract: string;
-  TypeSub: string;
   numberBuilding: number;
   Referencenumber: number;
-  Contractsigningdate: string;
+  Cost_per_Square_Meter: number;
+  Project_Space: number;
 }
 
 const CreateProjectPage = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const branchId = parseInt(searchParams.get('branchId') || '0');
-  
+
   const { user } = useSelector((state: any) => state.user || {});
-  const { createProject, loading, error, clearError } = useCreateProject();
+  const { createProject, getContractTypes, loading, error, clearError } = useCreateProject();
   const [activeField, setActiveField] = useState<number>(0);
-  const [contractOption, setContractOption] = useState(1); // 1: عظم, 2: تشطيب, 3: حر
-  const [subOption, setSubOption] = useState(1); // 1: بدون قبو, 2: مع قبو
-  
+  const [contractTypes, setContractTypes] = useState<Array<{id: number, Type: string}>>([]);
+  const [showContractDropdown, setShowContractDropdown] = useState(false);
+
   const [formData, setFormData] = useState<ProjectFormData>({
     IDcompanySub: branchId,
     Nameproject: '',
     Note: '',
     LocationProject: '',
     GuardNumber: '',
-    TypeOFContract: 'عظم',
-    TypeSub: 'بدون قبو',
+    TypeOFContract: '',
     numberBuilding: 1,
     Referencenumber: 0,
-    Contractsigningdate: new Date().toISOString().split('T')[0], // تاريخ اليوم بصيغة YYYY-MM-DD
+    Cost_per_Square_Meter: 0,
+    Project_Space: 0
   });
 
   const formFields = [
     { id: 1, name: 'اسم المشروع', key: 'Nameproject', type: 'text' },
     { id: 2, name: 'اسم فرعي', key: 'Note', type: 'text' },
     { id: 3, name: 'الموقع', key: 'LocationProject', type: 'text' },
-    { id: 4, name: 'الحارس', key: 'GuardNumber', type: 'number' },
-    { id: 5, name: 'الرقم المرجعي', key: 'Referencenumber', type: 'number' },
-    { id: 6, name: 'تاريخ توقيع العقد', key: 'Contractsigningdate', type: 'date' },
+    { id: 4, name: 'الحارس', key: 'GuardNumber', type: 'text' },
   ];
+
+  // مطابق للتطبيق المحمول - جلب أنواع العقود عند تحميل الصفحة
+  useEffect(() => {
+    const fetchContractTypes = async () => {
+      const types = await getContractTypes();
+      setContractTypes(types);
+    };
+    fetchContractTypes();
+  }, []);
 
   const handleInputChange = (key: string, value: string) => {
     setFormData(prev => ({
       ...prev,
-      [key]: (key === 'GuardNumber' || key === 'Referencenumber')
-        ? value.replace(/[^\d]/g, '')
-        : value
+      [key]: value
     }));
   };
 
-  const handleContractTypeChange = (option: number) => {
-    setContractOption(option);
-    if (option === 1) {
-      setFormData(prev => ({ ...prev, TypeOFContract: 'عظم', TypeSub: 'بدون قبو' }));
-      setSubOption(1);
-    } else if (option === 2) {
-      setFormData(prev => ({ ...prev, TypeOFContract: 'تشطيب', TypeSub: 'بدون قبو' }));
-      setSubOption(1);
-    } else if (option === 3) {
-      setFormData(prev => ({ ...prev, TypeOFContract: 'حر', TypeSub: 'حر' }));
-    }
-  };
+  const handleNumberChange = (key: string, value: string) => {
+    // مطابق للتطبيق المحمول - تحويل الأرقام العربية إلى إنجليزية
+    const convertedValue = value.replace(/[٠-٩]/g, (d) => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+    const numericValue = convertedValue.replace(/[^\d.]/g, '');
 
-  const handleSubTypeChange = (option: number) => {
-    setSubOption(option);
     setFormData(prev => ({
       ...prev,
-      TypeSub: option === 1 ? 'بدون قبو' : 'مع قبو'
+      [key]: numericValue
     }));
   };
 
   const handleBuildingCountChange = (type: 'plus' | 'minus') => {
     setFormData(prev => ({
       ...prev,
-      numberBuilding: type === 'plus' 
-        ? prev.numberBuilding + 1 
+      numberBuilding: type === 'plus'
+        ? prev.numberBuilding + 1
         : Math.max(0, prev.numberBuilding - 1)
     }));
   };
@@ -164,87 +159,131 @@ const CreateProjectPage = () => {
           ))}
         </div>
 
-        {/* Building Count */}
-        <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
-          <label className="block text-right font-ibm-arabic-semibold text-gray-900 mb-4" style={{ fontSize: scale(16) }}>
-            عدد المباني
-          </label>
-          <div className="flex items-center justify-center space-x-6 space-x-reverse">
-            <button
-              onClick={() => handleBuildingCountChange('minus')}
-              className="w-14 h-14 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors border-2 border-gray-200"
-              disabled={formData.numberBuilding <= 0}
-            >
-              <span className="text-2xl font-bold text-gray-700">-</span>
-            </button>
-            <div className="bg-blue-50 rounded-xl px-6 py-3 min-w-[80px]">
-              <span className="text-3xl font-ibm-arabic-bold text-blue-600 text-center block">
+        {/* Cost per Square Meter & Project Space - مطابق للتطبيق المحمول */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
+            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
+              تكلفة المتر المربع
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={formData.Cost_per_Square_Meter || ''}
+              onChange={(e) => handleNumberChange('Cost_per_Square_Meter', e.target.value)}
+              className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
+              style={{ fontSize: scale(16) }}
+              placeholder="0"
+            />
+          </div>
+
+          <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
+            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
+              مساحة المشروع
+            </label>
+            <input
+              type="text"
+              inputMode="decimal"
+              value={formData.Project_Space || ''}
+              onChange={(e) => handleNumberChange('Project_Space', e.target.value)}
+              className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
+              style={{ fontSize: scale(16) }}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        {/* Building Count & Reference Number - مطابق للتطبيق المحمول */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
+            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
+              عدد الفلل
+            </label>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handleBuildingCountChange('plus')}
+                  className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center hover:bg-blue-700 transition-colors"
+                >
+                  <span className="text-white text-lg">▲</span>
+                </button>
+                <button
+                  onClick={() => handleBuildingCountChange('minus')}
+                  className="w-8 h-8 bg-white border border-gray-300 rounded flex items-center justify-center hover:bg-gray-50 transition-colors"
+                  disabled={formData.numberBuilding <= 0}
+                >
+                  <span className="text-gray-700 text-lg">▼</span>
+                </button>
+              </div>
+              <span className="text-2xl font-ibm-arabic-semibold text-gray-900">
                 {formData.numberBuilding}
               </span>
             </div>
-            <button
-              onClick={() => handleBuildingCountChange('plus')}
-              className="w-14 h-14 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg"
-            >
-              <span className="text-2xl font-bold text-white">+</span>
-            </button>
           </div>
-        </div>
 
-        {/* Contract Type Selection */}
-        <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
-          <label className="block text-right font-ibm-arabic-semibold text-gray-900 mb-4" style={{ fontSize: scale(16) }}>
-            نوع العقد
-          </label>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { id: 1, label: 'عظم', value: 'عظم' },
-              { id: 2, label: 'تشطيب', value: 'تشطيب' },
-              { id: 3, label: 'حر', value: 'حر' }
-            ].map((option) => (
-              <button
-                key={option.id}
-                onClick={() => handleContractTypeChange(option.id)}
-                className={`p-4 rounded-xl font-ibm-arabic-semibold transition-all duration-200 border-2 ${
-                  contractOption === option.id
-                    ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                    : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
-                }`}
-                style={{ fontSize: scale(14) }}
-              >
-                {option.label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Sub Type Selection (only for عظم and تشطيب) */}
-        {contractOption !== 3 && (
-          <div className="bg-white rounded-xl p-6 border-2 border-gray-200">
-            <label className="block text-right font-ibm-arabic-semibold text-gray-900 mb-4" style={{ fontSize: scale(16) }}>
-              نوع فرعي
+          <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
+            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
+              الرقم المرجعي
             </label>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { id: 1, label: 'بدون قبو' },
-                { id: 2, label: 'مع قبو' }
-              ].map((option) => (
+            <input
+              type="text"
+              inputMode="numeric"
+              value={formData.Referencenumber || ''}
+              onChange={(e) => handleNumberChange('Referencenumber', e.target.value)}
+              className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
+              style={{ fontSize: scale(16) }}
+              placeholder="0"
+            />
+          </div>
+        </div>
+
+        {/* Contract Type Dropdown - مطابق للتطبيق المحمول */}
+        <div className="relative bg-white rounded-xl border-2 border-gray-200">
+          <button
+            type="button"
+            onClick={() => setShowContractDropdown(!showContractDropdown)}
+            className="w-full p-4 text-right flex items-center justify-between"
+          >
+            <svg
+              className={`w-5 h-5 text-gray-400 transition-transform ${showContractDropdown ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+            <div className="flex-1 text-right">
+              {formData.TypeOFContract ? (
+                <span className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(14) }}>
+                  {formData.TypeOFContract}
+                </span>
+              ) : (
+                <span className="font-ibm-arabic-medium text-gray-500" style={{ fontSize: scale(14) }}>
+                  اختار نوع العقد
+                </span>
+              )}
+            </div>
+          </button>
+
+          {showContractDropdown && (
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white border-2 border-gray-200 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
+              {contractTypes.map((type) => (
                 <button
-                  key={option.id}
-                  onClick={() => handleSubTypeChange(option.id)}
-                  className={`p-4 rounded-xl font-ibm-arabic-semibold transition-all duration-200 border-2 ${
-                    subOption === option.id
-                      ? 'bg-blue-600 text-white border-blue-600 shadow-lg'
-                      : 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
-                  }`}
-                  style={{ fontSize: scale(14) }}
+                  key={type.id}
+                  type="button"
+                  onClick={() => {
+                    setFormData(prev => ({ ...prev, TypeOFContract: type.Type }));
+                    setShowContractDropdown(false);
+                  }}
+                  className="w-full p-4 text-right hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
                 >
-                  {option.label}
+                  <span className="font-ibm-arabic-medium text-gray-900" style={{ fontSize: scale(14) }}>
+                    {type.Type}
+                  </span>
                 </button>
               ))}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Submit Button */}
         <div className="pt-8 pb-6">

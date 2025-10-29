@@ -23,6 +23,7 @@ export interface CompanyData {
 
 export interface BranchData {
   id: string;
+  NumberCompany: number; // مطابق للتطبيق المحمول - مطلوب في API تحديث الفرع
   NameSub: string;
   BranchAddress: string;
   Email: string;
@@ -88,19 +89,14 @@ export const useCompanyData = () => {
     setError(null);
 
     try {
-      const requestData = {
-        IDCompany: user.data.IDCompany,
-        type: type
-      };
-
       // Store token in localStorage for axios interceptor
       if (typeof window !== 'undefined') {
         localStorage.setItem('token', user.accessToken);
       }
-      
-      const response = await axiosInstance.post(
-        'company/brinsh/bring',
-        requestData,
+
+      // الباك اند الجديد يستخدم GET بدلاً من POST
+      const response = await axiosInstance.get(
+        `company/brinsh/bring?IDCompany=${user.data.IDCompany}&type=${type}`,
         {
           headers: {
             'Content-Type': 'application/json',

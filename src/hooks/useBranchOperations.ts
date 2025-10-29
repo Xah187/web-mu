@@ -8,6 +8,7 @@ import { Tostget } from '@/components/ui/Toast';
 
 export interface BranchUpdateData {
   id: string;
+  NumberCompany: number; // مطابق للتطبيق المحمول - مطلوب في Backend API
   NameSub: string;
   BranchAddress: string;
   Email: string;
@@ -29,7 +30,7 @@ export default function useBranchOperations() {
     }
 
     setLoading(true);
-    
+
     try {
       const response = await axiosInstance.put(
         'company/brinsh/Update',
@@ -43,21 +44,25 @@ export default function useBranchOperations() {
       );
 
       if (response.status === 200) {
+        Tostget('تم تحديث بيانات الفرع بنجاح', 'success');
         return true;
       }
-      
+
       throw new Error(response.data?.message || 'فشل في تحديث بيانات الفرع');
     } catch (error: any) {
-      console.error('Error updating branch data:', error);
-      
       if (error.response?.status === 401) {
+        Tostget('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى', 'error');
         throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
       } else if (error.response?.status === 403) {
+        Tostget('ليس لديك صلاحية لتعديل بيانات الفرع', 'error');
         throw new Error('ليس لديك صلاحية لتعديل بيانات الفرع');
       } else if (error.response?.status === 404) {
+        Tostget('الفرع غير موجود', 'error');
         throw new Error('الفرع غير موجود');
       } else {
-        throw new Error(error.response?.data?.message || 'فشل في تحديث بيانات الفرع');
+        const errorMsg = error.response?.data?.message || error.message || 'فشل في تحديث بيانات الفرع';
+        Tostget(errorMsg, 'error');
+        throw new Error(errorMsg);
       }
     } finally {
       setLoading(false);
@@ -74,12 +79,13 @@ export default function useBranchOperations() {
     }
 
     setLoading(true);
-    
+
     try {
+      // مطابق للتطبيق المحمول - إرسال IDcompanySub و Linkevaluation
       const response = await axiosInstance.post(
         'company/brinsh/InsertLinkevaluation',
         {
-          IDBranch: branchId,
+          IDcompanySub: parseInt(branchId),
           Linkevaluation: link
         },
         {
@@ -94,11 +100,9 @@ export default function useBranchOperations() {
         Tostget(response.data?.success || 'تم إضافة رابط التقييم بنجاح', 'success');
         return true;
       }
-      
+
       throw new Error(response.data?.message || 'فشل في إضافة رابط التقييم');
     } catch (error: any) {
-      console.error('Error adding evaluation link:', error);
-      
       if (error.response?.status === 401) {
         throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
       } else if (error.response?.status === 403) {
@@ -116,46 +120,38 @@ export default function useBranchOperations() {
    * Replicates mobile app's Branchdeletionprocedures API
    */
   const requestBranchDeletion = useCallback(async (branchId: string): Promise<boolean> => {
-    console.log('requestBranchDeletion called with branchId:', branchId);
-
     if (!user?.accessToken) {
-      console.error('No access token available');
       throw new Error('لا يوجد رمز مصادقة');
     }
 
     setLoading(true);
 
     try {
-      console.log('Making fetch request to /api/branches/delete-request');
+      // مطابق للتطبيق المحمول - إرسال IDBrach (مع الخطأ الإملائي المتعمد)
+      const response = await axiosInstance.get(
+        `company/brinsh/deleteBranch?IDBrach=${branchId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        }
+      );
 
-      const response = await fetch('/api/branches/delete-request', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user.accessToken}`
-        },
-        body: JSON.stringify({ branchId })
-      });
-
-      console.log('Fetch response status:', response.status);
-      const data = await response.json();
-      console.log('Fetch response data:', data);
-
-      if (response.ok) {
-        console.log('Branch deletion request successful');
-        Tostget(data?.success || 'تم إرسال رمز التحقق إلى هاتفك', 'success');
+      if (response.status === 200) {
+        Tostget('تم إرسال رمز التحقق إلى هاتفك', 'success');
         return true;
       }
 
-      throw new Error(data?.success || 'فشل في إرسال رمز التحقق');
-    } catch (error: any) {
-      console.error('Error requesting branch deletion:', error);
-
-      if (error.message) {
-        throw error;
-      }
-
       throw new Error('فشل في إرسال رمز التحقق');
+    } catch (error: any) {
+      if (error.response?.status === 401) {
+        throw new Error('انتهت صلاحية الجلسة. يرجى تسجيل الدخول مرة أخرى');
+      } else if (error.response?.status === 403) {
+        throw new Error('ليس لديك صلاحية لحذف الفرع');
+      } else {
+        throw new Error(error.response?.data?.message || 'فشل في إرسال رمز التحقق');
+      }
     } finally {
       setLoading(false);
     }
@@ -164,8 +160,6 @@ export default function useBranchOperations() {
   /**
    * Confirm branch deletion with verification code
    * Replicates mobile app's Implementedbyopreation API
-   *
-   * Uses Next.js API route as proxy to handle session properly
    */
   const confirmBranchDeletion = useCallback(async (verificationCode: string): Promise<boolean> => {
     if (!user?.accessToken) {
@@ -175,15 +169,7 @@ export default function useBranchOperations() {
     setLoading(true);
 
     try {
-      console.log('=== Confirming branch deletion ===');
-      console.log('Verification code:', verificationCode);
-      console.log('User token:', user.accessToken.substring(0, 20) + '...');
-
-      // Call backend directly using axios instance (matching mobile app exactly)
-      // This ensures Authorization header is sent properly and backend JWT middleware
-      // can populate req.session.user
-      console.log('Calling backend directly with axios DELETE request...');
-
+      // مطابق للتطبيق المحمول - إرسال check parameter
       const response = await axiosInstance.delete(
         `company/brinsh/Implementedbyopreation?check=${verificationCode}`,
         {
@@ -194,24 +180,13 @@ export default function useBranchOperations() {
         }
       );
 
-      console.log('✅ Backend response received');
-      console.log('Response status:', response.status);
-      console.log('Response data:', response.data);
-
       if (response.status === 200 && response.data?.success) {
-        console.log('✅✅✅ Branch deletion confirmed successfully! ✅✅✅');
-        console.log('Success message:', response.data.success);
         Tostget(response.data.success || 'تم حذف الفرع بنجاح', 'success');
         return true;
       }
 
-      const errorMsg = response.data?.success || response.data?.message || 'فشل في حذف الفرع';
-      console.log('❌ Backend returned error:', errorMsg);
-      throw new Error(errorMsg);
+      throw new Error(response.data?.success || response.data?.message || 'فشل في حذف الفرع');
     } catch (error: any) {
-      console.error('❌ Error confirming branch deletion:', error);
-
-      // Handle axios error
       if (error.response) {
         const errorMsg = error.response.data?.success || error.response.data?.message || 'فشل في حذف الفرع';
         throw new Error(`${errorMsg} (${error.response.status})`);

@@ -60,7 +60,6 @@ export default function MembersPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
-  const [showPermissionsModal, setShowPermissionsModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -178,17 +177,17 @@ export default function MembersPage() {
   };
 
   const handleDeleteMember = (user: User) => {
+    // مطابق للتطبيق المحمول - لا يمكن حذف Admin
+    if (user.job === 'Admin') {
+      Tostget('لا يمكن حذف مدير النظام');
+      return;
+    }
     if (!isAdmin) {
       Tostget('ليس لديك صلاحية لحذف الأعضاء');
       return;
     }
     setSelectedUser(user);
     setShowDeleteModal(true);
-  };
-
-  const handleEditPermissions = (member: User) => {
-    setSelectedUser(member);
-    setShowPermissionsModal(true);
   };
 
   const handleMemberAdded = () => {
@@ -241,93 +240,6 @@ export default function MembersPage() {
           }}
           onSuccess={handleMemberDeleted}
         />
-      )}
-
-      {showPermissionsModal && selectedUser && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
-            {/* Header */}
-            <div className="p-4 border-b border-bordercolor">
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-cairo font-semibold text-darkslategray">
-                  تعديل صلاحيات {selectedUser.userName}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowPermissionsModal(false);
-                    setSelectedUser(null);
-                  }}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                  </svg>
-                </button>
-              </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-4 overflow-y-auto max-h-[60vh]">
-              <div className="text-center py-8">
-                <div className="mb-4">
-                  <svg className="mx-auto h-12 w-12 text-blue" fill="none" stroke="currentColor" viewBox="0 0 48 48">
-                    <rect x="8" y="20" width="32" height="20" rx="4" ry="4" strokeWidth="2" />
-                    <circle cx="24" cy="30" r="2" />
-                    <path d="M16 20V14a8 8 0 0 1 16 0v6" strokeWidth="2" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-cairo font-semibold text-darkslategray mb-2">
-                  تعديل الصلاحيات
-                </h3>
-                <p className="text-gray-600 font-cairo mb-6">
-                  هذه الميزة متاحة لتحديد الصلاحيات المخصصة لكل مستخدم.
-                  <br />
-                  في التطبيق الأصلي، يتم تحديد الصلاحيات بشكل منفصل بعد إضافة العضو.
-                </p>
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                  <p className="text-blue-800 font-cairo text-sm">
-                    <strong>معلومات العضو:</strong>
-                    <br />
-                    الاسم: {selectedUser.userName}
-                    <br />
-                    الوظيفة: {selectedUser.job}
-                    <br />
-                    صفة المستخدم: {selectedUser.jobdiscrption}
-                    <br />
-                    الصلاحيات الحالية: {selectedUser.Validity?.length || 0}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer */}
-            <div className="p-4 border-t border-bordercolor">
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setShowPermissionsModal(false);
-                    setSelectedUser(null);
-                  }}
-                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-cairo font-medium hover:bg-gray-200 transition-colors"
-                >
-                  إغلاق
-                </button>
-                <button
-                  onClick={() => {
-                    // TODO: Implement permissions editing
-                    Tostget('سيتم تطبيق هذه الميزة قريباً');
-                    setShowPermissionsModal(false);
-                    setSelectedUser(null);
-                  }}
-                  className="flex-1 py-3 px-4 bg-blue text-white rounded-lg font-cairo font-medium hover:bg-blue-600 transition-colors"
-                >
-                  حفظ الصلاحيات
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
       )}
 
       {showFilterModal && (
@@ -437,7 +349,6 @@ export default function MembersPage() {
                       user={member}
                       onEdit={() => handleEditMember(member)}
                       onDelete={() => handleDeleteMember(member)}
-                      onEditPermissions={isAdmin ? () => handleEditPermissions(member) : undefined}
                       showActions={isAdmin || member.PhoneNumber === user?.data?.PhoneNumber}
                     />
                   ))}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
+import { BRANCH_PERMISSIONS, PROJECT_PERMISSIONS, PermissionType } from '@/types/permissions';
 
 interface BranchMember {
   id: number;
@@ -22,39 +23,29 @@ interface PermissionsModalProps {
   onClose: () => void;
   member: BranchMember | null;
   onSuccess: () => void;
+  branchId?: number; // Branch ID for API call - matching mobile app
+  type?: string | number; // Type for API call - matching mobile app (0 for branch, number for project)
 }
-
-// قائمة الصلاحيات المتاحة - مطابق للتطبيق المحمول
-const AVAILABLE_PERMISSIONS = [
-  'اقفال المرحلة',
-  'اضافة مرحلة فرعية',
-  'إضافة مرحلة رئيسية',
-  'تعديل مرحلة رئيسية',
-  'تشييك الانجازات الفرعية',
-  'إضافة تأخيرات',
-  'انشاء مجلد او تعديله',
-  'انشاء عمليات مالية',
-  'ترتيب المراحل',
-  'إنشاء طلبات',
-  'تشييك الطلبات',
-  'إشعارات المالية',
-];
 
 export default function PermissionsModal({
   isOpen,
   onClose,
   member,
-  onSuccess
+  onSuccess,
+  branchId,
+  type = 0 // Default to 0 for branch permissions (matching mobile app)
 }: PermissionsModalProps) {
   const { user } = useSelector((state: any) => state.user || {});
   const [loading, setLoading] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [availablePermissions, setAvailablePermissions] = useState<string[]>([]);
+  const [originalPermissions, setOriginalPermissions] = useState<string[]>([]); // Track original permissions for comparison
 
   useEffect(() => {
     if (isOpen && member) {
       fetchUserPermissions();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, member]);
 
   if (!isOpen || !member) return null;
@@ -62,53 +53,63 @@ export default function PermissionsModal({
   const fetchUserPermissions = async () => {
     try {
       setLoading(true);
-      // جلب صلاحيات المستخدم الحالية - مطابق للتطبيق المحمول
-      const response = await axiosInstance.get(
-        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=0&type=justuser&number=0&kind_request=all`,
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${user?.accessToken}`
+
+      // مطابق للتطبيق المحمول PageUsers.tsx السطر 284
+      // استخدام البيانات الموجودة في member prop بدلاً من جلبها من API
+      let userPermissions: string[] = [];
+
+      // تحديد الصلاحيات حسب النوع (فرع أو مشروع)
+      const validityData = type === 0 || !Number(type)
+        ? (member as any).ValidityBransh
+        : (member as any).ValidityProject;
+
+      console.log('📊 جلب صلاحيات المستخدم:', {
+        memberId: member.id,
+        memberName: member.userName,
+        type: type,
+        validityData: validityData
+      });
+
+      if (validityData) {
+        try {
+          // Handle both string and array formats
+          let validity = validityData;
+
+          // If it's a string, parse it
+          if (typeof validity === 'string') {
+            validity = JSON.parse(validity);
           }
-        }
-      );
 
-      if (response.data?.data) {
-        const userData = response.data.data.find((u: any) => u.id === member.id);
-        if (userData && userData.Validity) {
-          try {
-            const validity = JSON.parse(userData.Validity);
-
-            // Extract global permissions (idBrinsh === 0) - matching mobile app logic
-            let userPermissions: string[] = [];
-            if (Array.isArray(validity)) {
-              const globalEntry = validity.find((v: any) => parseInt(v.idBrinsh) === 0);
-              if (globalEntry?.Validity && Array.isArray(globalEntry.Validity)) {
-                userPermissions = globalEntry.Validity;
-              }
-            }
-
-            setSelectedPermissions(userPermissions);
-
-            // تحديد الصلاحيات المتاحة (غير المحددة)
-            const available = AVAILABLE_PERMISSIONS.filter(
-              permission => !userPermissions.includes(permission)
-            );
-            setAvailablePermissions(available);
-          } catch (error) {
-            console.error('Error parsing validity:', error);
-            setSelectedPermissions([]);
-            setAvailablePermissions(AVAILABLE_PERMISSIONS);
+          // ValidityBransh/ValidityProject is an array of permissions
+          if (Array.isArray(validity)) {
+            userPermissions = validity;
           }
-        } else {
-          setSelectedPermissions([]);
-          setAvailablePermissions(AVAILABLE_PERMISSIONS);
+        } catch (error) {
+          console.error('❌ خطأ في تحليل الصلاحيات:', error);
         }
       }
+
+      console.log('✅ الصلاحيات الحالية:', userPermissions);
+
+      setSelectedPermissions(userPermissions);
+      setOriginalPermissions(userPermissions); // Store original for comparison
+
+      // تحديد الصلاحيات المتاحة (غير المحددة)
+      const permissionsList = type === 0 || !Number(type)
+        ? BRANCH_PERMISSIONS
+        : PROJECT_PERMISSIONS;
+
+      const available = permissionsList.filter(
+        (permission: PermissionType) => !userPermissions.includes(permission)
+      );
+      setAvailablePermissions(available);
+
+      console.log('📋 الصلاحيات المتاحة:', available);
     } catch (error) {
-      console.error('Error fetching user permissions:', error);
+      console.error('❌ خطأ في جلب الصلاحيات:', error);
       setSelectedPermissions([]);
-      setAvailablePermissions(AVAILABLE_PERMISSIONS);
+      setOriginalPermissions([]);
+      setAvailablePermissions(type === 0 || !Number(type) ? BRANCH_PERMISSIONS : PROJECT_PERMISSIONS);
     } finally {
       setLoading(false);
     }
@@ -131,30 +132,58 @@ export default function PermissionsModal({
   const handleSubmit = async () => {
     setLoading(true);
     try {
-      // تحديث صلاحيات المستخدم - مطابق للتطبيق المحمول
+      // مطابق للتطبيق المحمول PageUsers.tsx السطر 180-204
+      // بناء checkGloblenew مطابق للتطبيق المحمول
+      const checkGloblenew: any = {};
+      const checkGlobleold: any = {};
+
+      // Compare current permissions with original
+      const addedPermissions = selectedPermissions.filter(p => !originalPermissions.includes(p));
+      const removedPermissions = originalPermissions.filter(p => !selectedPermissions.includes(p));
+
+      console.log('📊 تحليل التغييرات:', {
+        original: originalPermissions,
+        current: selectedPermissions,
+        added: addedPermissions,
+        removed: removedPermissions
+      });
+
+      // If there are changes, prepare the data
+      if (addedPermissions.length > 0 || removedPermissions.length > 0) {
+        // Add user to checkGloblenew with updated permissions
+        checkGloblenew[member.id] = {
+          id: member.id,
+          Validity: selectedPermissions
+        };
+      } else {
+        Tostget('لم يتم إجراء أي تغييرات');
+        setLoading(false);
+        return;
+      }
+
+      // مطابق للتطبيق المحمول - استخدام نفس البارامترات
+      // PageUsers.tsx السطر 67: let kind = Number(type) ? 'user' : type;
+      // للفرع: type='user', kind='user'
       const updateData = {
-        id: member.id,
-        userName: member.userName,
-        IDNumber: (member as any).IDNumber || '',
-        PhoneNumber: member.PhoneNumber,
-        Email: member.Email,
-        job: member.job,
-        jobdiscrption: member.jobdiscrption,
-        Validity: JSON.stringify([{
-          idBrinsh: 0, // Global permissions
-          Validity: selectedPermissions,
-          project: []
-        }])
+        idBrinsh: branchId || user?.data?.IDCompanyBransh || 0,
+        type: 'user', // ✅ للفرع 'user' مطابق للتطبيق المحمول
+        checkGloblenew: checkGloblenew,
+        checkGlobleold: checkGlobleold,
+        kind: 'user' // ✅ مطابق للتطبيق المحمول
       };
 
-      const response = await axiosInstance.put('/user/updat', updateData, {
+      console.log('📤 إرسال تحديث الصلاحيات:', updateData);
+
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', updateData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user?.accessToken}`
         }
       });
 
-      if (response.data?.success === 'تمت العملية بنجاح') {
+      console.log('📥 استجابة API:', response.data);
+
+      if (response.data?.success === 'successfuly' || response.data?.success === 'تمت العملية بنجاح') {
         Tostget('تم تحديث الصلاحيات بنجاح');
 
         // If updating current user's permissions, refresh them in Redux
@@ -163,19 +192,20 @@ export default function PermissionsModal({
           try {
             const { fetchUserPermissions } = await import('@/functions/permissions/fetchPermissions');
             await fetchUserPermissions(user.accessToken, user);
-            console.log('✅ Current user permissions refreshed after update');
+            console.log('✅ تم تحديث صلاحيات المستخدم الحالي');
           } catch (error) {
-            console.error('Failed to refresh current user permissions:', error);
+            console.error('فشل في تحديث صلاحيات المستخدم الحالي:', error);
           }
         }
 
         onSuccess();
         onClose();
       } else {
+        console.error('❌ فشل التحديث:', response.data);
         Tostget(response.data?.success || 'فشل في تحديث الصلاحيات');
       }
     } catch (error) {
-      console.error('Error updating permissions:', error);
+      console.error('❌ خطأ في تحديث الصلاحيات:', error);
       Tostget('خطأ في تحديث الصلاحيات');
     } finally {
       setLoading(false);

@@ -5,6 +5,7 @@ import useTemplet from '@/hooks/useTemplet';
 import { useAppSelector } from '@/store';
 import { useRouter } from 'next/navigation';
 import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid, Card } from '@/components/layout/ResponsiveLayout';
+import ExcelUploadModal from '@/components/project/ExcelUploadModal';
 
 export default function TempletPage() {
   const { size } = useAppSelector((s: any) => s.user);
@@ -12,6 +13,7 @@ export default function TempletPage() {
     loading,
     stageHomes,
     hasMoreData,
+    fetchStageTypes,
     fetchStageHomes,
     loadMoreStageHomes,
     createStageHome,
@@ -20,25 +22,62 @@ export default function TempletPage() {
   } = useTemplet();
   const router = useRouter();
 
-  const [type, setType] = useState('عام');
   const [stageName, setStageName] = useState('');
   const [days, setDays] = useState<number>(0);
+  const [ratio, setRatio] = useState<number>(0);
+  const [attached, setAttached] = useState('');
   const [editingStage, setEditingStage] = useState<any>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showExcelUploadModal, setShowExcelUploadModal] = useState(false);
+
+  // Types for filtering list (like mobile app)
+  const [stageTypes, setStageTypes] = useState<any[]>([]);
+  const [selectedType, setSelectedType] = useState<string>('عام');
 
   useEffect(() => {
-    fetchStageHomes(0);
-  }, [fetchStageHomes]);
+    // Load available stage types then fetch list for the first type
+    (async () => {
+      console.log('🔄 Loading stage types...');
+      const types = await fetchStageTypes();
+      console.log('📋 Fetched types:', types);
 
-  const canCreate = useMemo(() => stageName.trim().length > 0 && days >= 0 && type.trim().length > 0, [stageName, days, type]);
+      if (Array.isArray(types) && types.length > 0) {
+        setStageTypes(types);
+        const firstType = types[0]?.Type || 'عام';
+        console.log('✅ Selected first type:', firstType);
+        setSelectedType(firstType);
+        const homes = await fetchStageHomes(firstType, 0);
+        console.log('📋 Fetched homes for type', firstType, ':', homes);
+
+        // Log Stagestype_id values
+        if (homes && homes.length > 0) {
+          homes.forEach((home, i) => {
+            console.log(`  [${i}] StageID=${home.StageID}, Stagestype_id=${home.Stagestype_id} (type: ${typeof home.Stagestype_id})`);
+          });
+        }
+      } else {
+        // fallback
+        console.log('⚠️ No types found, using fallback');
+        setStageTypes([{ id: 0, Type: 'عام' }]);
+        setSelectedType('عام');
+        const homes = await fetchStageHomes('عام', 0);
+        console.log('📋 Fetched homes for fallback type عام:', homes);
+      }
+    })();
+  }, [fetchStageTypes, fetchStageHomes]);
+
+  const canCreate = useMemo(() => stageName.trim().length > 0 && days >= 0 && selectedType.trim().length > 0, [stageName, days, selectedType]);
 
   const handleCreate = async () => {
     if (!canCreate) return;
-    const ok = await createStageHome({ Type: type, StageName: stageName.trim(), Days: days });
+    // Use selectedType instead of type (like mobile app)
+    const ok = await createStageHome({ Type: selectedType, StageName: stageName.trim(), Days: days, Ratio: ratio, attached });
     if (ok) {
       setStageName('');
       setDays(0);
-      await fetchStageHomes(0);
+      setRatio(0);
+      setAttached('');
+      await fetchStageHomes(selectedType, 0);
     }
   };
 
@@ -47,22 +86,35 @@ export default function TempletPage() {
     setShowEditModal(true);
   };
 
-  const handleUpdate = async (updatedData: { Type: string; StageName: string; Days: number }) => {
+  const handleUpdate = async (updatedData: { Type: string; StageName: string; Days: number; Ratio: number; attached: string }) => {
     if (!editingStage) return;
     const ok = await updateStageHome({
-      StageID: editingStage.StageID,
+      StageIDtemplet: editingStage.StageIDtemplet,
       ...updatedData
     });
     if (ok) {
       setShowEditModal(false);
       setEditingStage(null);
-      await fetchStageHomes(0);
+      await fetchStageHomes(selectedType, 0);
     }
   };
 
   return (
     <ResponsiveLayout header={<PageHeader title="قوالب المراحل" backButton={<button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="الرجوع"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg></button>} />}>
       <ContentSection>
+        {/* Excel Upload Button */}
+        <div className="mb-6 flex justify-end">
+          <button
+            onClick={() => setShowExcelUploadModal(true)}
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-ibm-arabic-semibold flex items-center gap-2 shadow-md hover:shadow-lg"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            ارفاق اكسل
+          </button>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 xl:gap-20 2xl:gap-24">
           {/* Create Card */}
           <Card className="h-fit">
@@ -72,20 +124,13 @@ export default function TempletPage() {
                 <p className="text-gray-500 text-sm leading-relaxed">قم بإنشاء قالب مرحلة جديد لاستخدامه في المشاريع</p>
               </div>
               <div className="space-y-4">
-                {/* النوع */}
+                {/* النوع المحدد (عرض فقط) */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">النوع</label>
-                  <select
-                    value={type}
-                    onChange={e => setType(e.target.value)}
-                    className="w-full border-2 border-gray-200 rounded-lg px-3 py-3 text-sm font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
-                  >
-                    <option value="عام">عام</option>
-                    <option value="عظم مع قبو">عظم مع قبو</option>
-                    <option value="عظم بدون قبو">عظم بدون قبو</option>
-                    <option value="تشطيب مع قبو">تشطيب مع قبو</option>
-                    <option value="تشطيب بدون قبو">تشطيب بدون قبو</option>
-                  </select>
+                  <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">النوع المحدد</label>
+                  <div className="w-full border-2 border-blue-200 bg-blue-50 rounded-lg px-3 py-3 text-sm font-ibm-arabic-bold text-blue-700 leading-relaxed">
+                    {selectedType}
+                  </div>
+                  <p className="text-xs text-gray-500 leading-relaxed">يمكنك تغيير النوع من الأزرار في الأعلى</p>
                 </div>
 
                 {/* اسم المرحلة */}
@@ -99,16 +144,43 @@ export default function TempletPage() {
                   />
                 </div>
 
-                {/* عدد الأيام */}
+                {/* عدد الأيام والنسبة التقديرية */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">عدد الأيام</label>
+                    <input
+                      type="number"
+                      value={days}
+                      onChange={e => setDays(Number(e.target.value || 0))}
+                      className="w-full border-2 border-gray-200 rounded-lg px-3 py-3 text-sm font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
+                      placeholder="0"
+                      min="0"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">النسبة التقديرية (%)</label>
+                    <input
+                      type="number"
+                      value={ratio}
+                      onChange={e => setRatio(Number(e.target.value || 0))}
+                      className="w-full border-2 border-gray-200 rounded-lg px-3 py-3 text-sm font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
+                      placeholder="0"
+                      min="0"
+                      max="100"
+                    />
+                  </div>
+                </div>
+
+                {/* دليل خارجي */}
                 <div className="space-y-2">
-                  <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">عدد الأيام</label>
+                  <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-2 leading-relaxed">دليل خارجي (رابط)</label>
                   <input
-                    type="number"
-                    value={days}
-                    onChange={e => setDays(Number(e.target.value || 0))}
+                    type="text"
+                    value={attached}
+                    onChange={e => setAttached(e.target.value)}
                     className="w-full border-2 border-gray-200 rounded-lg px-3 py-3 text-sm font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
-                    placeholder="0"
-                    min="0"
+                    placeholder="رابط خارجي (اختياري)"
                   />
                 </div>
 
@@ -145,6 +217,23 @@ export default function TempletPage() {
                 <h2 className="font-ibm-arabic-bold text-black text-lg mb-2 leading-relaxed">قوالب المراحل المتاحة</h2>
                 <p className="text-gray-500 text-sm leading-relaxed">إدارة وعرض جميع قوالب المراحل الموجودة</p>
               </div>
+
+              {/* Types filter (like mobile app categories) */}
+              <div className="mb-4 flex flex-wrap gap-2">
+                {stageTypes.map((t) => (
+                  <button
+                    key={t.id ?? t.Type}
+                    onClick={async () => {
+                      setSelectedType(t.Type);
+                      await fetchStageHomes(t.Type, 0);
+                    }}
+                    className={`px-3 py-1.5 rounded-full text-sm font-ibm-arabic-medium border ${selectedType === t.Type ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'}`}
+                  >
+                    {t.Type}
+                  </button>
+                ))}
+              </div>
+
             {loading && stageHomes.length === 0 ? (
               <div className="py-12 text-center">
                 <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-4"></div>
@@ -163,7 +252,11 @@ export default function TempletPage() {
             ) : (
               <div className="space-y-4">
                 {stageHomes.map((s, idx) => (
-                  <div key={idx} className="group border-2 border-gray-200 rounded-lg p-4 hover:border-blue-200 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-white to-gray-50/30">
+                  <div
+                    key={idx}
+                    className="group border-2 border-gray-200 rounded-lg p-4 hover:border-blue-200 hover:shadow-md transition-all duration-200 bg-gradient-to-r from-white to-gray-50/30 cursor-pointer"
+                    onClick={() => { if (s.StageID) router.push(`/templet/${s.StageID}?name=${encodeURIComponent(s.StageName || '')}&Stagestype_id=${s.Stagestype_id ?? 0}`); }}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-3 mb-3">
@@ -191,7 +284,7 @@ export default function TempletPage() {
                       </div>
                       <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                         <button
-                          onClick={() => { if (s.StageID) router.push(`/templet/${s.StageID}?name=${encodeURIComponent(s.StageName || '')}`); }}
+                          onClick={(e) => { e.stopPropagation(); if (s.StageID) router.push(`/templet/${s.StageID}?name=${encodeURIComponent(s.StageName || '')}&Stagestype_id=${s.Stagestype_id ?? 0}`); }}
                           className="inline-flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors duration-200 text-sm font-ibm-arabic-medium"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -201,7 +294,7 @@ export default function TempletPage() {
                           عرض الفرعي
                         </button>
                         <button
-                          onClick={() => handleEdit(s)}
+                          onClick={(e) => { e.stopPropagation(); handleEdit(s); }}
                           className="inline-flex items-center gap-2 px-3 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors duration-200 text-sm font-ibm-arabic-medium"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -210,7 +303,7 @@ export default function TempletPage() {
                           تعديل
                         </button>
                         <button
-                          onClick={async () => { if (s.StageID) { const ok = await deleteStageHome(s.StageID); if (ok) await fetchStageHomes(0); } }}
+                          onClick={async (e) => { e.stopPropagation(); if (s.StageID) { const ok = await deleteStageHome(s.StageID); if (ok) await fetchStageHomes(selectedType, 0); } }}
                           className="inline-flex items-center gap-2 px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors duration-200 text-sm font-ibm-arabic-medium"
                         >
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -227,7 +320,7 @@ export default function TempletPage() {
                 {hasMoreData && stageHomes.length > 0 && (
                   <div className="mt-6 pt-6 border-t border-gray-100">
                     <button
-                      onClick={loadMoreStageHomes}
+                      onClick={() => loadMoreStageHomes(selectedType)}
                       disabled={loading}
                       className="w-full bg-gradient-to-r from-gray-50 to-gray-100 text-gray-700 rounded-lg px-4 py-3 font-ibm-arabic-medium text-sm leading-relaxed disabled:opacity-50 disabled:cursor-not-allowed hover:from-gray-100 hover:to-gray-200 transition-all duration-200 border border-gray-200 hover:border-gray-300"
                     >
@@ -252,7 +345,6 @@ export default function TempletPage() {
             </div>
           </Card>
         </div>
-      </ContentSection>
 
       {/* Edit Modal */}
       {showEditModal && editingStage && (
@@ -266,6 +358,19 @@ export default function TempletPage() {
           loading={loading}
         />
       )}
+
+      {/* Excel Upload Modal */}
+      <ExcelUploadModal
+        isOpen={showExcelUploadModal}
+        onClose={() => setShowExcelUploadModal(false)}
+        onSuccess={async () => {
+          // Wait a bit for backend to process
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          // Reload page to see new data (matching mobile app behavior)
+          window.location.reload();
+        }}
+      />
+      </ContentSection>
     </ResponsiveLayout>
   );
 }
@@ -279,17 +384,19 @@ function EditStageModal({
 }: {
   stage: any;
   onClose: () => void;
-  onUpdate: (data: { Type: string; StageName: string; Days: number }) => void;
+  onUpdate: (data: { Type: string; StageName: string; Days: number; Ratio: number; attached: string }) => void;
   loading: boolean;
 }) {
   const [type, setType] = useState(stage.Type || '');
   const [stageName, setStageName] = useState(stage.StageName || '');
   const [days, setDays] = useState(stage.Days || 0);
+  const [ratio, setRatio] = useState(stage.Ratio || 0);
+  const [attached, setAttached] = useState(stage.attached || '');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (stageName.trim() && type.trim()) {
-      onUpdate({ Type: type, StageName: stageName.trim(), Days: days });
+      onUpdate({ Type: type, StageName: stageName.trim(), Days: days, Ratio: ratio, attached });
     }
   };
 
@@ -353,16 +460,43 @@ function EditStageModal({
             />
           </div>
 
-          {/* عدد الأيام */}
+          {/* عدد الأيام والنسبة التقديرية */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-3">
+              <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-3 leading-relaxed">عدد الأيام</label>
+              <input
+                type="number"
+                value={days}
+                onChange={e => setDays(Number(e.target.value || 0))}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-base font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
+                placeholder="0"
+                min="0"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-3 leading-relaxed">النسبة التقديرية (%)</label>
+              <input
+                type="number"
+                value={ratio}
+                onChange={e => setRatio(Number(e.target.value || 0))}
+                className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-base font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
+                placeholder="0"
+                min="0"
+                max="100"
+              />
+            </div>
+          </div>
+
+          {/* دليل خارجي */}
           <div className="space-y-3">
-            <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-3 leading-relaxed">عدد الأيام</label>
+            <label className="block text-sm font-ibm-arabic-semibold text-gray-800 mb-3 leading-relaxed">دليل خارجي (رابط)</label>
             <input
-              type="number"
-              value={days}
-              onChange={e => setDays(Number(e.target.value || 0))}
+              type="text"
+              value={attached}
+              onChange={e => setAttached(e.target.value)}
               className="w-full border-2 border-gray-200 rounded-xl px-4 py-4 text-base font-ibm-arabic-medium leading-relaxed focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 hover:border-gray-300 bg-gray-50 focus:bg-white"
-              placeholder="0"
-              min="0"
+              placeholder="رابط خارجي (اختياري)"
             />
           </div>
 
@@ -395,5 +529,3 @@ function EditStageModal({
     </div>
   );
 }
-
-

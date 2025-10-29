@@ -9,20 +9,16 @@ interface BranchCardProps {
   title: string;
   projectCount: number;
   onPress: () => void;
-  onSettingsPress?: () => void;
-  onEditPress?: () => void;
-  showSettings?: boolean;
-  showEdit?: boolean;
+  onSettingsPress?: () => void; // مطابق للتطبيق المحمول - يفتح modal الإعدادات بـ 6 خيارات
+  showSettings?: boolean; // يظهر فقط للـ Admin
 }
 
-export default function BranchCard({ 
-  title, 
-  projectCount, 
-  onPress, 
+export default function BranchCard({
+  title,
+  projectCount,
+  onPress,
   onSettingsPress,
-  onEditPress,
-  showSettings = false,
-  showEdit = false 
+  showSettings = false
 }: BranchCardProps) {
   const { size, user } = useAppSelector((state: any) => state.user);
   const isEmployee = user?.data?.jobdiscrption === 'موظف';
@@ -86,7 +82,7 @@ export default function BranchCard({
             ${!isEmployee ? 'mt-[8%]' : ''}
           `}
           style={{
-            paddingLeft: showEdit ? '50px' : '0px', // Add padding to avoid overlap with edit button
+            paddingLeft: showSettings ? '50px' : '0px', // Add padding to avoid overlap with settings button
             paddingRight: '10px'
           }}
         >
@@ -145,12 +141,12 @@ export default function BranchCard({
           )}
         </div>
 
-        {/* Edit Button - Single button in top-left corner */}
-        {showEdit && onEditPress && (
+        {/* Settings Button - مطابق للتطبيق المحمول (SettingSvg) */}
+        {showSettings && onSettingsPress && (
           <button
             onClick={(e) => {
               e.stopPropagation();
-              onEditPress();
+              onSettingsPress();
             }}
             className="absolute bg-white hover:bg-blue-50 rounded-full transition-all duration-200 shadow-md hover:shadow-lg border border-gray-100"
             style={{
@@ -159,10 +155,13 @@ export default function BranchCard({
               padding: '8px',
               zIndex: 10
             }}
-            title="تعديل الفرع"
+            title="إعدادات الفرع"
           >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE}>
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            {/* Three dots icon - مطابق للتطبيق المحمول */}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="5" r="2" fill={colors.BLUE} />
+              <circle cx="12" cy="12" r="2" fill={colors.BLUE} />
+              <circle cx="12" cy="19" r="2" fill={colors.BLUE} />
             </svg>
           </button>
         )}

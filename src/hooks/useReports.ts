@@ -74,6 +74,7 @@ export default function useReports() {
   const [branchesLoading, setBranchesLoading] = useState(false);
   const [projectsLoading, setProjectsLoading] = useState(false);
   const [hasMoreProjects, setHasMoreProjects] = useState(true);
+  const [reportLoading, setReportLoading] = useState(false);
 
   // Fetch branches
   const fetchBranches = async (type = 'cache') => {
@@ -84,12 +85,9 @@ export default function useReports() {
     setBranchesLoading(true);
 
     try {
-      const response = await axiosInstance.post(
-        'company/brinsh/bring',
-        {
-          IDCompany: user.data.IDCompany,
-          type: type
-        },
+      // الباك اند الجديد يستخدم GET بدلاً من POST
+      const response = await axiosInstance.get(
+        `company/brinsh/bring?IDCompany=${user.data.IDCompany}&type=${type}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -341,6 +339,108 @@ export default function useReports() {
     setHasMoreProjects(true);
   };
 
+  // Generate Financial Statement Report (PDF)
+  const generateFinancialStatement = async (projectId: number, type: 'all' | 'party') => {
+    if (!user?.accessToken || !projectId) {
+      Tostget('الرجاء اختيار مشروع أولاً');
+      return null;
+    }
+
+    setReportLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `brinshCompany/BringStatmentFinancialforproject?ProjectID=${projectId}&type=${type}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.url) {
+        return response.data.url;
+      } else {
+        Tostget('فشل في إنشاء التقرير المالي');
+        return null;
+      }
+    } catch (error: any) {
+      console.error('Error generating financial statement:', error);
+      Tostget('خطأ في إنشاء التقرير المالي');
+      return null;
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // Generate Requests Report (PDF)
+  const generateRequestsReport = async (projectId: number, type: 'part' | 'all') => {
+    if (!user?.accessToken || !projectId) {
+      Tostget('الرجاء اختيار مشروع أولاً');
+      return null;
+    }
+
+    setReportLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `brinshCompany/BringreportRequessts?id=${projectId}&type=${type}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.namefile) {
+        return response.data.namefile;
+      } else {
+        Tostget(response.data?.success || 'فشل في إنشاء تقرير الطلبات');
+        return null;
+      }
+    } catch (error: any) {
+      console.error('Error generating requests report:', error);
+      Tostget('خطأ في إنشاء تقرير الطلبات');
+      return null;
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
+  // Generate Timeline Report (PDF)
+  const generateTimelineReport = async (projectId: number) => {
+    if (!user?.accessToken || !projectId) {
+      Tostget('الرجاء اختيار مشروع أولاً');
+      return null;
+    }
+
+    setReportLoading(true);
+    try {
+      const response = await axiosInstance.get(
+        `brinshCompany/BringreportTimeline?ProjectID=${projectId}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.namefile) {
+        return response.data.namefile;
+      } else {
+        Tostget('فشل في إنشاء تقرير الجدول الزمني');
+        return null;
+      }
+    } catch (error: any) {
+      console.error('Error generating timeline report:', error);
+      Tostget('خطأ في إنشاء تقرير الجدول الزمني');
+      return null;
+    } finally {
+      setReportLoading(false);
+    }
+  };
+
   // Initialize by fetching branches
   useEffect(() => {
     if (user?.accessToken && user?.data?.IDCompany) {
@@ -358,11 +458,15 @@ export default function useReports() {
     branchesLoading,
     projectsLoading,
     hasMoreProjects,
+    reportLoading,
     fetchBranches,
     fetchProjects,
     selectBranch,
     selectProject,
     loadMoreProjects,
-    resetSelections
+    resetSelections,
+    generateFinancialStatement,
+    generateRequestsReport,
+    generateTimelineReport
   };
 }

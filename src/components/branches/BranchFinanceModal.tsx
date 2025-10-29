@@ -105,21 +105,34 @@ export default function BranchFinanceModal({
   const handleSubmit = async () => {
     try {
       setSubmitting(true);
-      
+
       // تحديد المستخدمين الجدد والمستخدمين المحذوفين
       const newFinanceUsers = selectedUserIds.filter(id => !currentFinanceIds.includes(id));
       const removedFinanceUsers = currentFinanceIds.filter(id => !selectedUserIds.includes(id));
-      
+
       // مطابق للتطبيق المحمول - تحديث الصلاحيات المالية للفرع
+      // Mobile: kind='Acceptingcovenant', type='Acceptingcovenant'
+      // checkGloblenew: object with {id: {id, Validity: []}}
+      // checkGlobleold: object with {id: id}
+      const checkGloblenew = newFinanceUsers.reduce((acc, id) => {
+        acc[id] = { id, Validity: [] };
+        return acc;
+      }, {} as Record<number, any>);
+
+      const checkGlobleold = removedFinanceUsers.reduce((acc, id) => {
+        acc[id] = id;
+        return acc;
+      }, {} as Record<number, number>);
+
       const updateData = {
         idBrinsh: parseInt(branchId),
         type: 'Acceptingcovenant', // نوع خاص للصلاحيات المالية
-        checkGloblenew: newFinanceUsers,
-        checkGlobleold: removedFinanceUsers,
+        checkGloblenew,
+        checkGlobleold,
         kind: 'user'
       };
 
-      const response = await axiosInstance.put('/user/UpdatUserNewUpdatviltay', updateData, {
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', updateData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user?.accessToken}`
@@ -129,7 +142,7 @@ export default function BranchFinanceModal({
       if (response.status === 200) {
         const addedCount = newFinanceUsers.length;
         const removedCount = removedFinanceUsers.length;
-        
+
         let message = 'تم تحديث الصلاحيات المالية بنجاح';
         if (addedCount > 0 && removedCount > 0) {
           message = `تم إضافة صلاحية مالية لـ ${addedCount} وإزالة من ${removedCount} مستخدم`;
@@ -138,7 +151,7 @@ export default function BranchFinanceModal({
         } else if (removedCount > 0) {
           message = `تم إزالة صلاحية مالية من ${removedCount} مستخدم`;
         }
-        
+
         Tostget(message, 'success');
         onSuccess?.();
         onClose();

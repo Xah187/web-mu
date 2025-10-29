@@ -101,6 +101,33 @@ export default function useSubStages() {
     await fetchInitial(projectId, stageId);
   }, [fetchInitial]);
 
+  const uploadStageAchievement = useCallback(async (
+    projectId: number,
+    stageId: number | string,
+    file: File
+  ): Promise<boolean> => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('ProjectID', String(projectId));
+      formData.append('StageID', String(stageId));
+
+      await axiosInstance.post('/brinshCompany/StageCustImage', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${user?.accessToken}`
+        }
+      });
+
+      Tostget('تم رفع إنجاز المرحلة بنجاح');
+      return true;
+    } catch (error) {
+      console.error('Error uploading stage achievement:', error);
+      Tostget('فشل في رفع إنجاز المرحلة');
+      return false;
+    }
+  }, [user?.accessToken]);
+
   return {
     subStages,
     loading,
@@ -110,6 +137,7 @@ export default function useSubStages() {
     loadMore,
     refresh,
     setSubStages,
+    uploadStageAchievement,
   };
 }
 

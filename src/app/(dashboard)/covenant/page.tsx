@@ -65,9 +65,11 @@ function CovenantPage() {
   const [selectedItem, setSelectedItem] = useState<CovenantRequest | null>(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [notificationCount, setNotificationCount] = useState(0);
+  const [exportingPDF, setExportingPDF] = useState(false);
 
   // Get branch ID from URL params
   const IDCompanyBransh = searchParams.get('branchId');
+  const typePage = searchParams.get('type') || 'FinancialCustodyall';
 
   useEffect(() => {
     if (IDCompanyBransh) {
@@ -82,8 +84,10 @@ function CovenantPage() {
     setLoading(prev => ({ ...prev, [requestType]: true }));
 
     try {
+      // Add type parameter to API call - matching mobile app
+      // Mobile app: BringDataFinancialCustody(IDCompanyBransh, kindRequest, IDfinlty, typePage)
       const response = await axiosInstance.get(
-        `company/brinsh/BringDataFinancialCustody?IDCompanySub=${IDCompanyBransh}&kindRequest=${requestType}&LastID=${IDfinlty}`,
+        `company/brinsh/BringDataFinancialCustody?IDCompanySub=${IDCompanyBransh}&kindRequest=${requestType}&LastID=${IDfinlty}&type=${typePage}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -219,6 +223,40 @@ function CovenantPage() {
     }
   };
 
+  // Export Covenant Report as PDF - Matching mobile app
+  const exportCovenantPDF = async () => {
+    if (!IDCompanyBransh) {
+      Tostget('الرجاء اختيار فرع أولاً');
+      return;
+    }
+
+    setExportingPDF(true);
+    try {
+      const response = await axiosInstance.get(
+        `company/BringreportFinancialCustody?IDCompanySub=${IDCompanyBransh}&type=${typePage}`,
+        {
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.accessToken}`
+          }
+        }
+      );
+
+      if (response.status === 200 && response.data?.namefile) {
+        const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
+        window.open(`${baseUrl}/${response.data.namefile}`, '_blank');
+        Tostget('تم إنشاء التقرير بنجاح');
+      } else {
+        Tostget('فشل في إنشاء التقرير');
+      }
+    } catch (error: any) {
+      console.error('Error exporting covenant PDF:', error);
+      Tostget(error.response?.data?.success || 'خطأ في تصدير التقرير');
+    } finally {
+      setExportingPDF(false);
+    }
+  };
+
   const rejectRequest = async () => {
     if (!createRequest.title.trim()) {
       Tostget('يرجى إدخال سبب الرفض');
@@ -347,14 +385,29 @@ function CovenantPage() {
         {/* Spacer */}
         <div style={{ height: '32px' }}></div>
 
-        {/* Create Request Button */}
+        {/* Action Buttons - Matching mobile app */}
         {IDCompanyBransh && (
           <div className="px-6 mb-8">
-            <div className="max-w-sm mx-auto">
+            <div className="flex flex-row gap-4 justify-center items-center">
               <ButtonCreat
                 text="اضافة طلب"
                 onpress={() => setShowCreateModal(true)}
               />
+              <ButtonCreat
+                text="تصدير PDF"
+                onpress={exportCovenantPDF}
+                disabled={exportingPDF}
+                styleButton={{
+                  backgroundColor: exportingPDF ? 'var(--color-surface-secondary)' : 'var(--color-primary)',
+                  opacity: exportingPDF ? 0.6 : 1
+                }}
+              >
+                {exportingPDF && (
+                  <div className="mr-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  </div>
+                )}
+              </ButtonCreat>
             </div>
           </div>
         )}
