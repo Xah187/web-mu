@@ -14,6 +14,7 @@ import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
 import { PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid, Card } from '@/components/layout/ResponsiveLayout';
 
@@ -41,9 +42,10 @@ interface CovenantData {
 function CovenantPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, size } = useAppSelector((state: any) => state.user);
+  const { user, size, language } = useAppSelector((state: any) => state.user);
   const { canManageCovenant } = usePermissionCheck();
   const { Uservalidation } = useValidityUser();
+  const { t } = useTranslation();
 
   const [covenantData, setCovenantData] = useState<CovenantData>({
     arrayOpen: [],
@@ -64,7 +66,6 @@ function CovenantPage() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<CovenantRequest | null>(null);
   const [showUserProfile, setShowUserProfile] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(0);
   const [exportingPDF, setExportingPDF] = useState(false);
 
   // Get branch ID from URL params
@@ -148,12 +149,12 @@ function CovenantPage() {
         }
       );
 
-      Tostget('تم إنشاء الطلب بنجاح');
+      Tostget(t('covenantPage.requestCreatedSuccess'));
       resetCreateRequest();
       await fetchCovenantData();
     } catch (error) {
       console.error('Error creating request:', error);
-      Tostget('خطأ في إنشاء الطلب');
+      Tostget(t('covenantPage.errorCreatingRequest'));
     } finally {
       setLoading(prev => ({ ...prev, create: false }));
     }
@@ -179,12 +180,12 @@ function CovenantPage() {
         }
       );
 
-      Tostget('تم تحديث الطلب بنجاح');
+      Tostget(t('covenantPage.requestUpdatedSuccess'));
       resetCreateRequest();
       await fetchCovenantData();
     } catch (error) {
       console.error('Error updating request:', error);
-      Tostget('خطأ في تحديث الطلب');
+      Tostget(t('covenantPage.errorUpdatingRequest'));
     } finally {
       setLoading(prev => ({ ...prev, update: false }));
     }
@@ -213,11 +214,11 @@ function CovenantPage() {
         }
       );
 
-      Tostget('تم قبول الطلب بنجاح');
+      Tostget(t('covenantPage.requestAcceptedSuccess'));
       await fetchCovenantData();
     } catch (error) {
       console.error('Error accepting request:', error);
-      Tostget('خطأ في قبول الطلب');
+      Tostget(t('covenantPage.errorAcceptingRequest'));
     } finally {
       setLoading(prev => ({ ...prev, [`accept_${id}`]: false }));
     }
@@ -259,7 +260,7 @@ function CovenantPage() {
 
   const rejectRequest = async () => {
     if (!createRequest.title.trim()) {
-      Tostget('يرجى إدخال سبب الرفض');
+      Tostget(t('covenantPage.enterRejectionReason'));
       return;
     }
 
@@ -285,12 +286,12 @@ function CovenantPage() {
         }
       );
 
-      Tostget('تم رفض الطلب');
+      Tostget(t('covenantPage.requestRejectedSuccess'));
       resetCreateRequest();
       await fetchCovenantData();
     } catch (error) {
       console.error('Error rejecting request:', error);
-      Tostget('خطأ في رفض الطلب');
+      Tostget(t('covenantPage.errorRejectingRequest'));
     } finally {
       setLoading(prev => ({ ...prev, reject: false }));
     }
@@ -312,11 +313,11 @@ function CovenantPage() {
         }
       });
 
-      Tostget('تم حذف الطلب بنجاح');
+      Tostget(t('covenantPage.requestDeletedSuccess'));
       await fetchCovenantData();
     } catch (error) {
       console.error('Error deleting request:', error);
-      Tostget('خطأ في حذف الطلب');
+      Tostget(t('covenantPage.errorDeletingRequest'));
     } finally {
       setLoading(prev => ({ ...prev, [`delete_${id}`]: false }));
     }
@@ -347,9 +348,9 @@ function CovenantPage() {
   };
 
   const tabs = [
-    { id: 1, name: 'الطلبات المفتوحة', array: 'arrayOpen' },
-    { id: 2, name: 'الطلبات المغلقة', array: 'arrayClosed' },
-    { id: 3, name: 'الطلبات المرفوضة', array: 'arrayReject' }
+    { id: 1, name: t('covenantPage.openRequests'), array: 'arrayOpen' },
+    { id: 2, name: t('covenantPage.closedRequests'), array: 'arrayClosed' },
+    { id: 3, name: t('covenantPage.rejectedRequests'), array: 'arrayReject' }
   ];
 
   const currentData = covenantData[getArrayKey(activeTab)];
@@ -358,7 +359,7 @@ function CovenantPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="طلبات العهد"
+          title={t('covenantPage.covenantRequests')}
           backButton={
             <button
               onClick={() => router.back()}
@@ -373,7 +374,7 @@ function CovenantPage() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="رجوع"
+              aria-label={language === 'ar' ? 'رجوع' : 'Back'}
             >
               <ArrowIcon size={24} color="var(--color-text-primary)" />
             </button>
@@ -390,11 +391,11 @@ function CovenantPage() {
           <div className="px-6 mb-8">
             <div className="flex flex-row gap-4 justify-center items-center">
               <ButtonCreat
-                text="اضافة طلب"
+                text={t('covenantPage.createNewRequest')}
                 onpress={() => setShowCreateModal(true)}
               />
               <ButtonCreat
-                text="تصدير PDF"
+                text={exportingPDF ? t('covenantPage.exporting') : t('covenantPage.exportPDF')}
                 onpress={exportCovenantPDF}
                 disabled={exportingPDF}
                 styleButton={{
@@ -403,7 +404,7 @@ function CovenantPage() {
                 }}
               >
                 {exportingPDF && (
-                  <div className="mr-2">
+                  <div className={language === 'ar' ? 'mr-2' : 'ml-2'}>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                   </div>
                 )}
@@ -499,7 +500,7 @@ function CovenantPage() {
                             marginBottom: '8px'
                           }}
                         >
-                          عدد الطلبات:
+                          {language === 'ar' ? 'عدد الطلبات:' : 'Requests Count:'}
                         </span>
                         <div
                           className="px-3 py-1 rounded-full text-sm font-bold min-w-[2rem] text-center"
@@ -559,6 +560,7 @@ function CovenantPage() {
                         {currentData.map((item) => (
                           <div
                             key={item.id}
+                            dir={language === 'ar' ? 'rtl' : 'ltr'}
                             className="transition-all duration-200 hover:shadow-md mb-6"
                             style={{
                               backgroundColor: 'var(--color-card-background)',
@@ -596,8 +598,8 @@ function CovenantPage() {
                                                         item.OrderStatus === 'true' ? '#10b981' : '#3b82f6'}`
                                   }}
                                 >
-                                  {item.RejectionStatus === 'true' ? 'مرفوض' :
-                                   item.OrderStatus === 'true' ? 'مقبول' : 'معلق'}
+                                  {item.RejectionStatus === 'true' ? (language === 'ar' ? 'مرفوض' : 'Rejected') :
+                                   item.OrderStatus === 'true' ? (language === 'ar' ? 'مقبول' : 'Accepted') : (language === 'ar' ? 'معلق' : 'Pending')}
                                 </span>
                               </div>
                             </div>
@@ -637,14 +639,14 @@ function CovenantPage() {
                                     fontFamily: fonts.IBMPlexSansArabicRegular,
                                     color: 'var(--color-text-secondary)'
                                   }}>
-                                    المبلغ:
+                                    {t('covenantPage.amount')}:
                                   </span>
                                   <span style={{
                                     fontSize: '14px',
                                     fontFamily: fonts.IBMPlexSansArabicSemiBold,
                                     color: 'var(--color-primary)'
                                   }}>
-                                    {item.Amount.toLocaleString()} ريال
+                                    {item.Amount.toLocaleString()} {language === 'ar' ? 'ريال' : 'SAR'}
                                   </span>
                                 </div>
                               </div>
@@ -656,7 +658,7 @@ function CovenantPage() {
                                   fontFamily: fonts.IBMPlexSansArabicRegular,
                                   color: 'var(--color-text-secondary)'
                                 }}>
-                                  البيان:
+                                  {t('covenantPage.statement')}:
                                 </span>
                                 <span style={{
                                   fontSize: '13px',
@@ -693,7 +695,7 @@ function CovenantPage() {
                                           fontFamily: fonts.IBMPlexSansArabicSemiBold
                                         }}
                                       >
-                                        تفاصيل الرفض
+                                        {language === 'ar' ? 'تفاصيل الرفض' : 'Rejection Details'}
                                       </h4>
                                       <div className="space-y-2 text-sm">
                                         <div
@@ -710,7 +712,7 @@ function CovenantPage() {
                                               fontFamily: fonts.IBMPlexSansArabicMedium
                                             }}
                                           >
-                                            السبب:
+                                            {t('covenantPage.rejectionReason')}:
                                           </span>
                                           <span
                                             className="mr-2 break-words"
@@ -736,10 +738,10 @@ function CovenantPage() {
                                               fontFamily: fonts.IBMPlexSansArabicMedium
                                             }}
                                           >
-                                            القائم بالرفض:
+                                            {t('covenantPage.approver')}:
                                           </span>
                                           <span
-                                            className="mr-2 break-words"
+                                            className={language === 'ar' ? 'mr-2' : 'ml-2'}
                                             style={{
                                               color: 'var(--color-text-primary)',
                                               fontFamily: fonts.IBMPlexSansArabicRegular
@@ -762,10 +764,10 @@ function CovenantPage() {
                                               fontFamily: fonts.IBMPlexSansArabicMedium
                                             }}
                                           >
-                                            تاريخ الرفض:
+                                            {t('covenantPage.rejectionDate')}:
                                           </span>
                                           <span
-                                            className="mr-2"
+                                            className={language === 'ar' ? 'mr-2' : 'ml-2'}
                                             style={{
                                               color: 'var(--color-text-primary)',
                                               fontFamily: fonts.IBMPlexSansArabicRegular
@@ -805,7 +807,7 @@ function CovenantPage() {
                                         {loading[`accept_${item.id}`] ? (
                                           <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
                                         ) : (
-                                          'قبول'
+                                          t('covenantPage.acceptRequest')
                                         )}
                                       </button>
 
@@ -830,7 +832,7 @@ function CovenantPage() {
                                           fontFamily: fonts.IBMPlexSansArabicSemiBold
                                         }}
                                       >
-                                        رفض
+                                        {t('covenantPage.rejectRequest')}
                                       </button>
                                     </>
                                   ) : (
@@ -863,7 +865,7 @@ function CovenantPage() {
                                           <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                           <path d="m18.5 2.5 a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
                                         </svg>
-                                        تعديل
+                                        {t('covenantPage.editRequest')}
                                       </button>
 
                                       <button
@@ -893,7 +895,7 @@ function CovenantPage() {
                                               <polyline points="3,6 5,6 21,6"/>
                                               <path d="m19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"/>
                                             </svg>
-                                            حذف
+                                            {t('covenantPage.deleteRequest')}
                                           </>
                                         )}
                                       </button>
@@ -968,7 +970,7 @@ function CovenantPage() {
                               {isLoading ? (
                                 <>
                                   <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                  جاري التحميل...
+                                  {language === 'ar' ? 'جاري التحميل...' : 'Loading...'}
                                 </>
                               ) : (
                                 <>
@@ -976,7 +978,7 @@ function CovenantPage() {
                                     <path d="M7 13l3 3 7-7"/>
                                     <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.22.45 4.56 1.23"/>
                                   </svg>
-                                  تحميل المزيد
+                                  {t('common.loadMore')}
                                 </>
                               )}
                             </button>
@@ -1005,17 +1007,17 @@ function CovenantPage() {
                               fontFamily: fonts.IBMPlexSansArabicSemiBold
                             }}
                           >
-                            لا توجد طلبات
+                            {language === 'ar' ? 'لا توجد طلبات' : 'No Requests'}
                           </h3>
                           <p
                             className="text-xs leading-relaxed"
                             style={{ color: 'var(--color-text-secondary)' }}
                           >
-                            {tab.name === 'الطلبات المفتوحة'
-                              ? 'لا توجد طلبات مفتوحة حالياً'
-                              : tab.name === 'الطلبات المغلقة'
-                              ? 'لا توجد طلبات مغلقة'
-                              : 'لا توجد طلبات مرفوضة'
+                            {tab.array === 'arrayOpen'
+                              ? t('covenantPage.noOpenRequests')
+                              : tab.array === 'arrayClose'
+                              ? t('covenantPage.noClosedRequests')
+                              : t('covenantPage.noRejectedRequests')
                             }
                           </p>
                         </div>
@@ -1033,6 +1035,7 @@ function CovenantPage() {
       {showCreateModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
+            dir={language === 'ar' ? 'rtl' : 'ltr'}
             className="w-full max-w-md shadow-2xl"
             style={{
               backgroundColor: 'var(--color-card-background)',
@@ -1077,7 +1080,7 @@ function CovenantPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  {createRequest.Edit ? 'تعديل الطلب' : 'إنشاء طلب جديد'}
+                  {createRequest.Edit ? t('covenantPage.editRequest') : t('covenantPage.createNewRequest')}
                 </h2>
               </div>
             </div>
@@ -1095,7 +1098,7 @@ function CovenantPage() {
                         color: 'var(--color-text-secondary)'
                       }}
                     >
-                      المبلغ
+                      {t('covenantPage.amount')}
                     </label>
                     <input
                       type="number"
@@ -1114,7 +1117,7 @@ function CovenantPage() {
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         color: 'var(--color-text-primary)'
                       }}
-                      placeholder="أدخل المبلغ"
+                      placeholder={t('covenantPage.enterAmount')}
                     />
                   </div>
                 )}
@@ -1128,7 +1131,7 @@ function CovenantPage() {
                       color: 'var(--color-text-secondary)'
                     }}
                   >
-                    البيان
+                    {t('covenantPage.statement')}
                   </label>
                   <textarea
                     value={createRequest.title}
@@ -1148,7 +1151,7 @@ function CovenantPage() {
                       minHeight: '100px'
                     }}
                     rows={4}
-                    placeholder="اكتب تفاصيل الطلب"
+                    placeholder={t('covenantPage.enterStatement')}
                   />
                 </div>
               </div>
@@ -1176,7 +1179,7 @@ function CovenantPage() {
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                إلغاء
+                {t('covenantPage.cancel')}
               </button>
               <button
                 onClick={createRequest.Edit ? updateRequest : createNewRequest}
@@ -1194,7 +1197,7 @@ function CovenantPage() {
                 {loading.create || loading.update ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  createRequest.Edit ? 'تحديث' : 'إرسال'
+                  createRequest.Edit ? (language === 'ar' ? 'تحديث' : 'Update') : t('covenantPage.send')
                 )}
               </button>
             </div>
@@ -1206,6 +1209,7 @@ function CovenantPage() {
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div
+            dir={language === 'ar' ? 'rtl' : 'ltr'}
             className="w-full max-w-md shadow-2xl"
             style={{
               backgroundColor: 'var(--color-card-background)',
@@ -1248,7 +1252,7 @@ function CovenantPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  {createRequest.Edit ? 'تعديل سبب الرفض' : 'سبب الرفض'}
+                  {createRequest.Edit ? (language === 'ar' ? 'تعديل سبب الرفض' : 'Edit Rejection Reason') : t('covenantPage.rejectionReason')}
                 </h2>
               </div>
             </div>
@@ -1264,7 +1268,7 @@ function CovenantPage() {
                     color: 'var(--color-text-secondary)'
                   }}
                 >
-                  اذكر السبب
+                  {language === 'ar' ? 'اذكر السبب' : 'Mention the Reason'}
                 </label>
                 <textarea
                   value={createRequest.title}
@@ -1284,7 +1288,7 @@ function CovenantPage() {
                     minHeight: '100px'
                   }}
                   rows={4}
-                  placeholder="اكتب سبب رفض الطلب"
+                  placeholder={language === 'ar' ? 'اكتب سبب رفض الطلب' : 'Write the reason for rejection'}
                 />
               </div>
             </div>
@@ -1311,7 +1315,7 @@ function CovenantPage() {
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                إلغاء
+                {t('covenantPage.cancel')}
               </button>
               <button
                 onClick={createRequest.Edit ? updateRequest : rejectRequest}
@@ -1329,7 +1333,7 @@ function CovenantPage() {
                 {loading.reject || loading.update ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  createRequest.Edit ? 'تحديث' : 'رفض'
+                  createRequest.Edit ? (language === 'ar' ? 'تحديث' : 'Update') : (language === 'ar' ? 'رفض' : 'Reject')
                 )}
               </button>
             </div>
@@ -1340,11 +1344,11 @@ function CovenantPage() {
       {/* Confirm Accept Modal */}
       {showConfirmModal && selectedItem && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-md p-6">
-            <h2 className="text-lg font-bold mb-4 text-center">تأكيد القبول</h2>
+          <div dir={language === 'ar' ? 'rtl' : 'ltr'} className="bg-white rounded-lg w-full max-w-md p-6">
+            <h2 className="text-lg font-bold mb-4 text-center">{t('covenantPage.confirmAccept')}</h2>
 
             <p className="text-center text-gray-600 mb-6">
-              هل ترغب بالفعل بقبول الطلب؟
+              {t('covenantPage.acceptRequestConfirmMessage')}
             </p>
 
             <div className="flex gap-3">
@@ -1355,7 +1359,7 @@ function CovenantPage() {
                 }}
                 className="flex-1 bg-gray-300 text-gray-700 py-2 rounded-lg hover:bg-gray-400 transition-colors"
               >
-                لا
+                {language === 'ar' ? 'لا' : 'No'}
               </button>
               <button
                 onClick={() => {
@@ -1371,7 +1375,7 @@ function CovenantPage() {
                 {selectedItem && loading[`accept_${selectedItem.id}`] ? (
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto" />
                 ) : (
-                  'نعم'
+                  language === 'ar' ? 'نعم' : 'Yes'
                 )}
               </button>
             </div>
@@ -1390,6 +1394,9 @@ function CovenantPage() {
 
 // Wrap the component with permission check to match mobile app behavior
 function CovenantPageWrapper() {
+  const { language } = useAppSelector((state: any) => state.user);
+  const { t } = useTranslation();
+
   return (
     <PermissionBasedVisibility
       permission="covenant"
@@ -1397,10 +1404,10 @@ function CovenantPageWrapper() {
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-xl font-ibm-arabic-bold text-gray-900 mb-2">
-              غير مصرح لك بالوصول
+              {language === 'ar' ? 'غير مصرح لك بالوصول' : 'Access Denied'}
             </h2>
             <p className="text-gray-600 font-ibm-arabic-regular">
-              تحتاج صلاحية العهد للوصول لهذه الصفحة
+              {language === 'ar' ? 'تحتاج صلاحية العهد للوصول لهذه الصفحة' : 'You need covenant permission to access this page'}
             </p>
           </div>
         </div>

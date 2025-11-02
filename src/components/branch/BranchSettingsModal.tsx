@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import useValidityUser from '@/hooks/useValidityUser';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchSettingsModalProps {
   isOpen: boolean;
@@ -25,6 +26,7 @@ export default function BranchSettingsModal({
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
+  const { t, isRTL, dir } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -51,16 +53,21 @@ export default function BranchSettingsModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <h3 className="text-lg font-ibm-arabic-bold text-gray-600 mb-6 text-center">
-          الاعدادات
+          {t('branchSettingsModal.title')}
         </h3>
-        
+
         <div className="space-y-3">
           {/* Edit Branch Data */}
           <button
             onClick={handleEditBranchData}
-            className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
+            className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center gap-3"
+            style={{
+              textAlign: isRTL ? 'right' : 'left',
+              flexDirection: isRTL ? 'row' : 'row',
+              justifyContent: 'flex-start'
+            }}
             disabled={loading.editData}
           >
             {loading.editData ? (
@@ -72,26 +79,36 @@ export default function BranchSettingsModal({
                 <path d="M14 22H22"/>
               </svg>
             )}
-            <span className="font-ibm-arabic-semibold text-gray-900">تعديل البيانات</span>
+            <span className="font-ibm-arabic-semibold text-gray-900">{t('branchSettingsModal.editBranchData')}</span>
           </button>
-          
+
           {/* Closed Projects */}
           <button
             onClick={handleClosedProjects}
-            className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
+            className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center gap-3"
+            style={{
+              textAlign: isRTL ? 'right' : 'left',
+              flexDirection: isRTL ? 'row' : 'row',
+              justifyContent: 'flex-start'
+            }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
               <path d="M9 12l2 2 4-4"/>
               <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.2.45 4.53 1.23"/>
               <path d="M16 3v4l4-2"/>
             </svg>
-            <span className="font-ibm-arabic-semibold text-gray-900">المشاريع المغلقة</span>
+            <span className="font-ibm-arabic-semibold text-gray-900">{t('branchSettingsModal.closedProjects')}</span>
           </button>
-          
+
           {/* Branch Members */}
           <button
             onClick={handleBranchMembers}
-            className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
+            className="w-full p-4 bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center gap-3"
+            style={{
+              textAlign: isRTL ? 'right' : 'left',
+              flexDirection: isRTL ? 'row' : 'row',
+              justifyContent: 'flex-start'
+            }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-600">
               <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
@@ -99,15 +116,15 @@ export default function BranchSettingsModal({
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            <span className="font-ibm-arabic-semibold text-gray-900">اعضاء الفرع</span>
+            <span className="font-ibm-arabic-semibold text-gray-900">{t('branchSettingsModal.branchMembers')}</span>
           </button>
         </div>
-        
+
         <button
           onClick={onClose}
           className="w-full mt-6 bg-gray-200 text-gray-800 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
         >
-          إغلاق
+          {t('branchSettingsModal.close')}
         </button>
       </div>
     </div>

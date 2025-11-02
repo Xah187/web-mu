@@ -10,6 +10,7 @@ import ButtonLong from '@/components/design/ButtonLong';
 import Combobox from '@/components/design/Combobox';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AddMemberModalProps {
   onClose: () => void;
@@ -54,18 +55,28 @@ const jobDescriptions = [
 const convertArabicToEnglish = (input: string | number | null | undefined): string => {
   // تحويل المدخل إلى نص أولاً
   const str = String(input || '');
-  
+
   const arabicNumerals = '٠١٢٣٤٥٦٧٨٩';
   const englishNumerals = '0123456789';
-  
+
   return str.split('').map(char => {
     const index = arabicNumerals.indexOf(char);
     return index !== -1 ? englishNumerals[index] : char;
   }).join('');
 };
 
+// Helper function to normalize phone number (same as backend)
+const normalizePhone = (raw: string | number | null | undefined): string => {
+  // يدعم 05XXXXXXXX أو 9665XXXXXXXX → 5XXXXXXXX
+  let d = convertArabicToEnglish(raw).replace(/\D/g, "");
+  if (d.startsWith("966")) d = d.slice(3);
+  if (d.startsWith("0")) d = d.slice(1);
+  return d; // نتوقع 9 أرقام محلية
+};
+
 export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalProps) {
   const { user, size } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [loading, setLoading] = useState(false);
   
   // TODO: ربط صلاحيات افتراضية لاحقاً (محاذاة مع الموبايل)
@@ -104,46 +115,58 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
-    
-    if (!formData.userName || !String(formData.userName).trim()) {
-      newErrors.userName = 'اسم العضو مطلوب';
+
+    // اسم العضو: 2-100 حرف
+    const nameStr = String(formData.userName || '').trim();
+    if (!nameStr || nameStr.length < 2 || nameStr.length > 100) {
+      newErrors.userName = t('members.memberNameRequired');
     }
-    
-    if (!formData.IDNumber || !String(formData.IDNumber).trim()) {
-      newErrors.IDNumber = 'رقم البطاقة مطلوب';
+
+    // رقم الهوية: 10-15 رقم
+    const idNumberStr = convertArabicToEnglish(formData.IDNumber).replace(/\D/g, '');
+    if (!idNumberStr || !/^\d{10,15}$/.test(idNumberStr)) {
+      newErrors.IDNumber = t('members.idNumberInvalid');
     }
-    
-    if (!formData.PhoneNumber || !String(formData.PhoneNumber).trim()) {
-      newErrors.PhoneNumber = 'رقم الجوال مطلوب';
-    } else if (String(formData.PhoneNumber).length < 9) {
-      newErrors.PhoneNumber = 'رقم الجوال غير صحيح';
+
+    // رقم الجوال: 9 أرقام بعد التطبيع
+    const phoneNormalized = normalizePhone(formData.PhoneNumber);
+    if (!/^\d{9}$/.test(phoneNormalized)) {
+      newErrors.PhoneNumber = t('members.phoneNumberInvalid');
     }
-    
-    if (!formData.job || !String(formData.job).trim()) {
-      newErrors.job = 'الوظيفة مطلوبة';
+
+    // الوظيفة: 2-100 حرف
+    const jobStr = String(formData.job || '').trim();
+    if (!jobStr || jobStr.length < 2 || jobStr.length > 100) {
+      newErrors.job = t('members.jobRequired');
     }
-    
-    if (!formData.jobdiscrption || !String(formData.jobdiscrption).trim()) {
-      newErrors.jobdiscrption = 'صفة المستخدم مطلوبة';
+
+    // صفة المستخدم: 2-500 حرف
+    const jobDescStr = String(formData.jobdiscrption || '').trim();
+    if (!jobDescStr || jobDescStr.length < 2 || jobDescStr.length > 500) {
+      newErrors.jobdiscrption = t('members.jobDescriptionRequired');
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Tostget('يجب إكمال جميع البيانات المطلوبة');
+      Tostget(t('members.fillAllFieldsCorrectly'));
       return;
     }
 
     setLoading(true);
     try {
+      // تطبيع البيانات بنفس طريقة الباك اند
+      const idNumberStr = convertArabicToEnglish(formData.IDNumber).replace(/\D/g, '');
+      const phoneNormalized = normalizePhone(formData.PhoneNumber);
+
       const dataToSend = {
         IDCompany: user?.data?.IDCompany,
         userName: String(formData.userName || '').trim(),
-        IDNumber: convertArabicToEnglish(formData.IDNumber),
-        PhoneNumber: convertArabicToEnglish(formData.PhoneNumber),
+        IDNumber: idNumberStr,
+        PhoneNumber: phoneNormalized,
         job: String(formData.job || '').trim(),
         jobdiscrption: String(formData.jobdiscrption || '').trim(),
       };
@@ -160,47 +183,55 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
 
       if (response.status === 200) {
         if (response.data?.success || response.data?.message === 'تمت العملية بنجاح' || response.data === 'تمت العملية بنجاح') {
-          Tostget('تمت إضافة العضو بنجاح');
+          Tostget(t('members.addSuccess'));
           onSuccess();
         } else {
-          Tostget(response.data?.message || response.data || 'فشل في إضافة العضو');
+          Tostget(response.data?.message || response.data || t('members.addError'));
         }
       } else {
-        Tostget('حدث خطأ في الخادم');
+        Tostget(t('members.serverError'));
       }
     } catch (error: any) {
       console.error('Error adding member:', error);
-      Tostget(error.response?.data?.message || 'خطأ في إضافة العضو');
+
+      // عرض رسالة الخطأ من الباك اند إذا كانت موجودة
+      if (error.response?.data?.errors) {
+        const errors = error.response.data.errors;
+        const errorMessages = Object.values(errors).join('\n');
+        Tostget(errorMessages);
+      } else {
+        Tostget(error.response?.data?.message || t('members.addError'));
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+        <div className={`sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
-          
-          <h2 
+
+          <h2
             className="font-bold text-lg"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -208,9 +239,9 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               color: colors.BLACK
             }}
           >
-            إضافة عضو جديد
+            {t('members.addNewMember')}
           </h2>
-          
+
           <div className="w-10" />
         </div>
 
@@ -226,7 +257,7 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
           {/* User Name */}
           <div>
             <Input
-              name="اسم العضو"
+              name={t('members.memberName')}
               value={formData.userName}
               onChange={(value: string) => handleInputChange('userName', value)}
               type="text"
@@ -238,9 +269,13 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
           {/* ID Number */}
           <div>
             <Input
-              name="رقم البطاقة"
+              name={t('members.idNumber')}
               value={formData.IDNumber}
-              onChange={(value: string) => handleInputChange('IDNumber', convertArabicToEnglish(value))}
+              onChange={(value: string) => {
+                // تحويل الأرقام العربية وإزالة أي حروف
+                const cleaned = convertArabicToEnglish(value).replace(/\D/g, '');
+                handleInputChange('IDNumber', cleaned);
+              }}
               type="tel"
               error={errors.IDNumber}
               marginBottom={0}
@@ -250,9 +285,13 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
           {/* Phone Number */}
           <div>
             <Input
-              name="رقم الجوال"
+              name={t('members.phoneNumber')}
               value={formData.PhoneNumber}
-              onChange={(value: string) => handleInputChange('PhoneNumber', convertArabicToEnglish(value))}
+              onChange={(value: string) => {
+                // تحويل الأرقام العربية وإزالة أي حروف
+                const cleaned = convertArabicToEnglish(value).replace(/\D/g, '');
+                handleInputChange('PhoneNumber', cleaned);
+              }}
               type="tel"
               error={errors.PhoneNumber}
               marginBottom={0}
@@ -262,15 +301,15 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
           {/* Job */}
           <div>
             <Combobox
-              label="الوظيفة"
+              label={t('members.job')}
               value={formData.job}
               onChange={(value: string) => handleInputChange('job', value)}
               options={getAvailableJobs()}
-              placeholder="اختر الوظيفة"
+              placeholder={t('members.selectJob')}
             />
             {errors.job && (
               <p
-                className="text-red-500 text-right"
+                className={`text-red-500 ${isRTL ? 'text-right' : 'text-left'}`}
                 style={{
                   fontSize: `${scale(12 + size)}px`,
                   fontFamily: fonts.IBMPlexSansArabicMedium,
@@ -286,20 +325,20 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
           {/* Job Description */}
           <div>
             <Combobox
-              label="صفة المستخدم"
+              label={t('members.jobDescription')}
               value={formData.jobdiscrption}
               onChange={(value: string) => handleInputChange('jobdiscrption', value)}
               options={jobDescriptions}
-              placeholder="اختر صفة المستخدم"
+              placeholder={t('members.selectJobDescription')}
             />
             {errors.jobdiscrption && (
-              <p className="text-red-500 text-sm mt-1">{errors.jobdiscrption}</p>
+              <p className={`text-red-500 text-sm mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{errors.jobdiscrption}</p>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3">
+        <div className={`sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
           <button
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
@@ -308,11 +347,11 @@ export default function AddMemberModal({ onClose, onSuccess }: AddMemberModalPro
               fontSize: 14 + size
             }}
           >
-            إلغاء
+            {t('members.cancel')}
           </button>
-          
+
           <ButtonLong
-            text={loading ? 'جاري الإضافة...' : 'إضافة العضو'}
+            text={loading ? t('members.adding') : t('members.addMember')}
             Press={handleSubmit}
             disabled={loading}
             styleButton={{ flex: 1 }}

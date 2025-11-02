@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import { useCreateProject } from '@/hooks/useCreateProject';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Helper function for scaling (matching mobile app)
 const scale = (size: number) => size;
@@ -29,6 +30,7 @@ const CreateProjectPage = () => {
   const branchId = parseInt(searchParams.get('branchId') || '0');
 
   const { user } = useSelector((state: any) => state.user || {});
+  const { t, isRTL, dir } = useTranslation();
   const { createProject, getContractTypes, loading, error, clearError } = useCreateProject();
   const [activeField, setActiveField] = useState<number>(0);
   const [contractTypes, setContractTypes] = useState<Array<{id: number, Type: string}>>([]);
@@ -48,10 +50,10 @@ const CreateProjectPage = () => {
   });
 
   const formFields = [
-    { id: 1, name: 'اسم المشروع', key: 'Nameproject', type: 'text' },
-    { id: 2, name: 'اسم فرعي', key: 'Note', type: 'text' },
-    { id: 3, name: 'الموقع', key: 'LocationProject', type: 'text' },
-    { id: 4, name: 'الحارس', key: 'GuardNumber', type: 'text' },
+    { id: 1, name: t('createProject.projectName'), key: 'Nameproject', type: 'text' },
+    { id: 2, name: t('createProject.subName'), key: 'Note', type: 'text' },
+    { id: 3, name: t('createProject.location'), key: 'LocationProject', type: 'text' },
+    { id: 4, name: t('createProject.guard'), key: 'GuardNumber', type: 'text' },
   ];
 
   // مطابق للتطبيق المحمول - جلب أنواع العقود عند تحميل الصفحة
@@ -96,7 +98,7 @@ const CreateProjectPage = () => {
     const success = await createProject(formData);
 
     if (success) {
-      alert('تم إنشاء المشروع بنجاح');
+      alert(t('createProject.success'));
       router.back();
     } else if (error) {
       alert(error);
@@ -107,10 +109,10 @@ const CreateProjectPage = () => {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="إنشاء مشروع جديد"
+          title={t('createProject.title')}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none">
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t('common.back')}>
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}>
                 <path d="M15 18L9 12L15 6" stroke="#2117FB" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </button>
@@ -135,13 +137,19 @@ const CreateProjectPage = () => {
                   onChange={(e) => handleInputChange(field.key, e.target.value)}
                   onFocus={() => setActiveField(field.id)}
                   onBlur={() => setActiveField(0)}
-                  className="w-full h-full px-4 pt-6 pb-2 bg-transparent text-right font-ibm-arabic-medium text-gray-900 outline-none"
-                  style={{ fontSize: scale(14) }}
+                  className="w-full h-full px-4 pt-6 pb-2 bg-transparent font-ibm-arabic-medium text-gray-900 outline-none"
+                  style={{
+                    fontSize: scale(14),
+                    textAlign: isRTL ? 'right' : 'left'
+                  }}
+                  dir={dir as 'rtl' | 'ltr'}
                 />
 
                 {/* Floating Label */}
                 <label
-                  className={`absolute right-4 transition-all duration-200 pointer-events-none font-ibm-arabic-medium ${
+                  className={`absolute transition-all duration-200 pointer-events-none font-ibm-arabic-medium ${
+                    isRTL ? 'right-4' : 'left-4'
+                  } ${
                     activeField === field.id || String(formData[field.key as keyof ProjectFormData] || '')
                       ? 'top-2 text-xs text-blue-600'
                       : 'top-1/2 transform -translate-y-1/2 text-gray-500'
@@ -160,10 +168,10 @@ const CreateProjectPage = () => {
         </div>
 
         {/* Cost per Square Meter & Project Space - مطابق للتطبيق المحمول */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" dir={dir as 'rtl' | 'ltr'}>
           <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
-            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
-              تكلفة المتر المربع
+            <label className="block font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12), textAlign: isRTL ? 'right' : 'left' }}>
+              {t('createProject.costPerMeter')}
             </label>
             <input
               type="text"
@@ -173,12 +181,13 @@ const CreateProjectPage = () => {
               className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
               style={{ fontSize: scale(16) }}
               placeholder="0"
+              dir={dir as 'rtl' | 'ltr'}
             />
           </div>
 
           <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
-            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
-              مساحة المشروع
+            <label className="block font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12), textAlign: isRTL ? 'right' : 'left' }}>
+              {t('createProject.projectSpace')}
             </label>
             <input
               type="text"
@@ -188,15 +197,16 @@ const CreateProjectPage = () => {
               className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
               style={{ fontSize: scale(16) }}
               placeholder="0"
+              dir={dir as 'rtl' | 'ltr'}
             />
           </div>
         </div>
 
         {/* Building Count & Reference Number - مطابق للتطبيق المحمول */}
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4" dir={dir as 'rtl' | 'ltr'}>
           <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
-            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
-              عدد الفلل
+            <label className="block font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12), textAlign: isRTL ? 'right' : 'left' }}>
+              {t('createProject.buildingCount')}
             </label>
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
@@ -221,8 +231,8 @@ const CreateProjectPage = () => {
           </div>
 
           <div className="bg-white rounded-xl p-4 border-2 border-gray-200">
-            <label className="block text-right font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12) }}>
-              الرقم المرجعي
+            <label className="block font-ibm-arabic-medium text-gray-600 mb-2" style={{ fontSize: scale(12), textAlign: isRTL ? 'right' : 'left' }}>
+              {t('createProject.referenceNumber')}
             </label>
             <input
               type="text"
@@ -232,16 +242,18 @@ const CreateProjectPage = () => {
               className="w-full text-center font-ibm-arabic-semibold text-gray-900 outline-none bg-transparent"
               style={{ fontSize: scale(16) }}
               placeholder="0"
+              dir={dir as 'rtl' | 'ltr'}
             />
           </div>
         </div>
 
         {/* Contract Type Dropdown - مطابق للتطبيق المحمول */}
-        <div className="relative bg-white rounded-xl border-2 border-gray-200">
+        <div className="relative bg-white rounded-xl border-2 border-gray-200" dir={dir as 'rtl' | 'ltr'}>
           <button
             type="button"
             onClick={() => setShowContractDropdown(!showContractDropdown)}
-            className="w-full p-4 text-right flex items-center justify-between"
+            className="w-full p-4 flex items-center justify-between"
+            style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}
           >
             <svg
               className={`w-5 h-5 text-gray-400 transition-transform ${showContractDropdown ? 'rotate-180' : ''}`}
@@ -251,14 +263,14 @@ const CreateProjectPage = () => {
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
-            <div className="flex-1 text-right">
+            <div className="flex-1" style={{ textAlign: isRTL ? 'right' : 'left' }}>
               {formData.TypeOFContract ? (
                 <span className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(14) }}>
                   {formData.TypeOFContract}
                 </span>
               ) : (
                 <span className="font-ibm-arabic-medium text-gray-500" style={{ fontSize: scale(14) }}>
-                  اختار نوع العقد
+                  {t('createProject.selectContractType')}
                 </span>
               )}
             </div>
@@ -274,7 +286,8 @@ const CreateProjectPage = () => {
                     setFormData(prev => ({ ...prev, TypeOFContract: type.Type }));
                     setShowContractDropdown(false);
                   }}
-                  className="w-full p-4 text-right hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                  className="w-full p-4 hover:bg-blue-50 transition-colors border-b border-gray-100 last:border-b-0"
+                  style={{ textAlign: isRTL ? 'right' : 'left' }}
                 >
                   <span className="font-ibm-arabic-medium text-gray-900" style={{ fontSize: scale(14) }}>
                     {type.Type}
@@ -296,14 +309,14 @@ const CreateProjectPage = () => {
             {loading ? (
               <>
                 <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                <span>جاري الإنشاء...</span>
+                <span>{t('createProject.creating')}</span>
               </>
             ) : (
               <>
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" className="text-white">
                   <path d="M12 2L2 7V10C2 16 6 20.5 12 22C18 20.5 22 16 22 10V7L12 2Z" stroke="currentColor" strokeWidth="2" fill="currentColor"/>
                 </svg>
-                <span>إنشاء المشروع</span>
+                <span>{t('createProject.create')}</span>
               </>
             )}
           </button>

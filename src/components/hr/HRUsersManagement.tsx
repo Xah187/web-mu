@@ -7,6 +7,7 @@ import { scale } from '@/utils/responsiveSize';
 import ButtonCreat from '@/components/design/ButtonCreat';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface User {
   id: number;
@@ -31,6 +32,7 @@ interface HRUsersManagementProps {
  * This controls who can access preparation features
  */
 export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersManagementProps) {
+  const { t, isRTL, dir } = useTranslation();
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [hrUsers, setHrUsers] = useState<number[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<number[]>([]);
@@ -73,7 +75,7 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
   const loadUsers = async () => {
     try {
       setLoading(true);
-      setLoadingProgress('تحميل قائمة المستخدمين...');
+      setLoadingProgress(t('preparationPage.hrManagement.loadingUsers'));
       console.log('🔄 تحميل قائمة المستخدمين...');
 
       let allUsersData: any[] = [];
@@ -85,7 +87,7 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
       // Load users in batches exactly like mobile app using getUserPrepare API
       while (hasMoreData && currentBatch < maxBatches) {
         try {
-          setLoadingProgress(`جلب دفعة ${currentBatch + 1} من المستخدمين...`);
+          setLoadingProgress(t('preparationPage.hrManagement.loadingBatch', { batch: currentBatch + 1 }));
           console.log(`📡 جلب دفعة ${currentBatch + 1} - آخر ID: ${lastUserId}`);
 
           // استخدام نفس API التطبيق المحمول - getUserPrepare
@@ -160,14 +162,14 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
       console.log(`🔐 إجمالي المستخدمين الذين لديهم صلاحيات HR: ${usersWithHRPermissions.length}`);
       console.log(`📋 قائمة IDs للمستخدمين الذين لديهم صلاحيات:`, hrUserIds);
 
-      setLoadingProgress(`تم تحميل ${allUsersData.length} مستخدم بنجاح`);
+      setLoadingProgress(t('preparationPage.hrManagement.usersLoaded', { count: allUsersData.length }));
       setAllUsers(allUsersData);
       setHrUsers(hrUserIds);
       setSelectedUsers(hrUserIds);
 
     } catch (error) {
       console.error('❌ خطأ في تحميل المستخدمين:', error);
-      Tostget('فشل في تحميل قائمة المستخدمين', 'error');
+      Tostget(t('preparationPage.hrManagement.errors.loadingUsers'), 'error');
       setAllUsers([]);
       setHrUsers([]);
       setSelectedUsers([]);
@@ -228,7 +230,7 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
 
       if (operations.length === 0) {
         console.log('⚠️ لا توجد تغييرات للحفظ');
-        Tostget('لا توجد تغييرات للحفظ');
+        Tostget(t('preparationPage.hrManagement.noChanges'));
         return;
       }
 
@@ -246,29 +248,17 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
       console.log('📡 استجابة الخادم:', response.data);
 
       if (response.data?.success) {
-        const addedCount = usersToAdd.length;
-        const removedCount = usersToRemove.length;
-
-        let message = 'تم تحديث صلاحيات التحضير بنجاح';
-        if (addedCount > 0 && removedCount > 0) {
-          message = `تم إضافة ${addedCount} وإزالة ${removedCount} من صلاحيات التحضير`;
-        } else if (addedCount > 0) {
-          message = `تم إضافة ${addedCount} مستخدم لصلاحيات التحضير`;
-        } else if (removedCount > 0) {
-          message = `تم إزالة ${removedCount} مستخدم من صلاحيات التحضير`;
-        }
-
-        console.log('✅ نجح الحفظ:', message);
-        Tostget(message, 'success');
+        console.log('✅ نجح الحفظ');
+        Tostget(t('preparationPage.hrManagement.success.changesSaved'), 'success');
         setHrUsers(selectedUsers);
         onUserUpdate();
       } else {
         console.log('❌ فشل الحفظ:', response.data?.message);
-        throw new Error(response.data?.message || 'فشل في التحديث');
+        throw new Error(response.data?.message || t('preparationPage.hrManagement.errors.savingChanges'));
       }
     } catch (error: any) {
       console.error('Error updating HR users:', error);
-      Tostget(error.response?.data?.message || 'فشل في تحديث صلاحيات التحضير', 'error');
+      Tostget(error.response?.data?.message || t('preparationPage.hrManagement.errors.savingChanges'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -284,17 +274,17 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           style={{ borderColor: 'var(--color-primary)' }}
         ></div>
         <span
-          className="mr-3"
-          style={{ color: 'var(--color-text-secondary)' }}
+          className={isRTL ? 'mr-3' : 'ml-3'}
+          style={{ color: 'var(--color-text-secondary)', direction: dir as 'rtl' | 'ltr' }}
         >
-          جاري تحميل المستخدمين...
+          {t('preparationPage.hrManagement.loadingUsers')}
         </span>
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-8">
+    <div className="p-6 space-y-8" style={{ direction: dir as 'rtl' | 'ltr' }}>
       <div className="mb-10">
         <p
           style={{
@@ -302,10 +292,12 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
             fontFamily: fonts.IBMPlexSansArabicMedium,
             color: 'var(--color-text-secondary)',
             lineHeight: 1.5,
-            marginBottom: '24px'
+            marginBottom: '24px',
+            direction: dir as 'rtl' | 'ltr'
           }}
+          className={isRTL ? 'text-right' : 'text-left'}
         >
-          اختر المستخدمين الذين يمكنهم الوصول لميزات التحضير
+          {t('preparationPage.hrManagement.title')}
         </p>
 
         {/* Statistics - same as mobile app with debugging info */}
@@ -386,35 +378,37 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           id="hr-user-search"
           name="hr-user-search"
           type="text"
-          placeholder="البحث عن مستخدم..."
+          placeholder={t('preparationPage.hrManagement.searchPlaceholder')}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full p-4 rounded-lg focus:outline-none focus:ring-2"
+          className={`w-full p-4 rounded-lg focus:outline-none focus:ring-2 ${isRTL ? 'text-right' : 'text-left'}`}
           style={{
             fontSize: scale(14 + size),
             border: '1px solid var(--color-border)',
             backgroundColor: 'var(--color-surface)',
-            color: 'var(--color-text-primary)'
+            color: 'var(--color-text-primary)',
+            direction: dir as 'rtl' | 'ltr'
           }}
         />
       </div>
 
       {/* Filter Toggle */}
-      <div className="mb-6 flex items-center gap-4">
-        <label className="flex items-center cursor-pointer">
+      <div className={`mb-6 flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+        <label className={`flex items-center cursor-pointer ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
           <input
             id="show-employees-only"
             name="show-employees-only"
             type="checkbox"
             checked={showEmployeesOnly}
             onChange={(e) => setShowEmployeesOnly(e.target.checked)}
-            className="ml-2"
+            className={isRTL ? 'mr-2' : 'ml-2'}
           />
           <span style={{
             fontSize: scale(12 + size),
-            color: 'var(--color-text-secondary)'
+            color: 'var(--color-text-secondary)',
+            direction: dir as 'rtl' | 'ltr'
           }}>
-            عرض الموظفين فقط
+            {t('preparationPage.hrManagement.showEmployeesOnly')}
           </span>
         </label>
       </div>
@@ -432,10 +426,11 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
           <p
             style={{
               fontSize: scale(14 + size),
-              color: 'var(--color-text-secondary)'
+              color: 'var(--color-text-secondary)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
-            {loadingProgress || 'جاري تحميل المستخدمين...'}
+            {loadingProgress || t('preparationPage.hrManagement.loadingUsers')}
           </p>
         </div>
       )}
@@ -474,9 +469,10 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
               </div>
               <p style={{
                 fontSize: scale(14 + size),
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-secondary)',
+                direction: dir as 'rtl' | 'ltr'
               }}>
-                {searchQuery ? 'لا توجد نتائج للبحث' : showEmployeesOnly ? 'لا يوجد موظفين' : 'لا يوجد مستخدمين'}
+                {t('preparationPage.hrManagement.noUsers')}
               </p>
             </div>
           ) : (
@@ -596,15 +592,16 @@ export default function HRUsersManagement({ user, size, onUserUpdate }: HRUsersM
       <div style={{ height: '20px' }}></div>
 
       {/* Action Buttons */}
-      <div className="flex gap-4">
+      <div className={`flex gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
         <ButtonCreat
-          text={submitting ? 'جاري الحفظ...' : 'حفظ التغييرات'}
+          text={submitting ? t('preparationPage.hrManagement.saving') : t('preparationPage.hrManagement.save')}
           onpress={handleSave}
           disabled={submitting || !hasChanges}
           styleButton={{
             backgroundColor: hasChanges ? 'var(--color-primary)' : 'var(--color-text-secondary)',
             color: colors.WHITE,
             padding: `${scale(14)}px ${scale(28)}px`,
+            direction: dir as 'rtl' | 'ltr',
             fontSize: scale(14 + size),
             fontFamily: fonts.IBMPlexSansArabicSemiBold,
             borderRadius: `${scale(8)}px`,

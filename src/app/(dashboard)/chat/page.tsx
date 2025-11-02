@@ -8,6 +8,7 @@ import socketService from '@/lib/socket/socketService';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import AttachmentDropdown from '@/components/chat/AttachmentDropdown';
@@ -45,10 +46,11 @@ export default function ChatPage() {
   const router = useRouter();
   const search = useSearchParams();
   const { user, size } = useAppSelector((state: any) => state.user || {});
+  const { t, isRTL, dir } = useTranslation();
 
   const ProjectID = search.get('ProjectID') || '';
   const typess = search.get('typess') || '';
-  const nameRoom = search.get('nameRoom') || typess || 'الدردشة';
+  const nameRoom = search.get('nameRoom') || typess || t('chat.defaultRoomName');
   const nameProject = search.get('nameProject') || '';
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -626,16 +628,17 @@ export default function ChatPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title={nameRoom || 'الدردشة'}
+          title={nameRoom || t('chat.defaultRoomName')}
           subtitle={nameProject || undefined}
           backButton={
             <button onClick={() => router.back()} className="p-2 rounded-lg transition-colors"
                     style={{
-                      color: 'var(--color-text-secondary)'
+                      color: 'var(--color-text-secondary)',
+                      transform: isRTL ? 'none' : 'rotate(180deg)'
                     }}
                     onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
                     onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
-                    aria-label="رجوع">
+                    aria-label={isRTL ? 'رجوع' : 'Back'}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>
@@ -646,11 +649,11 @@ export default function ChatPage() {
     >
       <ContentSection className="p-0">
       {uploading && (
-        <div className="fixed bottom-20 right-4 shadow-lg rounded-xl p-3 theme-card" style={{ backgroundColor: 'var(--color-card-background)', borderColor: 'var(--color-border)' }}>
+        <div className="fixed bottom-20 shadow-lg rounded-xl p-3 theme-card" style={{ backgroundColor: 'var(--color-card-background)', borderColor: 'var(--color-border)', [isRTL ? 'right' : 'left']: '1rem' }}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full border-4 animate-spin" style={{ borderColor: 'var(--color-primary)' + '30', borderTopColor: 'var(--color-primary)' }}></div>
             <div>
-              <div className="text-sm font-ibm-arabic-semibold" style={{ color: 'var(--color-text-primary)' }}>جاري الرفع...</div>
+              <div className="text-sm font-ibm-arabic-semibold" style={{ color: 'var(--color-text-primary)' }}>{t('common.uploading')}</div>
               <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{uploading.progress.toFixed(0)}%</div>
             </div>
           </div>
@@ -661,6 +664,7 @@ export default function ChatPage() {
       {/* Messages */}
       <div
         className="overflow-y-auto"
+        dir={dir}
         style={{
           padding: `${scale(20)}px`,
           paddingBottom: `${scale(200)}px`,
@@ -680,20 +684,9 @@ export default function ChatPage() {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-      {uploading && (
-        <div className="fixed bottom-20 right-4 bg-white shadow-lg border border-gray-200 rounded-xl p-3">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full border-4 border-blue-200 border-t-blue animate-spin"></div>
-            <div>
-              <div className="text-sm font-ibm-arabic-semibold text-gray-800">جاري الرفع...</div>
-              <div className="text-xs text-gray-600">{uploading.progress.toFixed(0)}%</div>
-            </div>
-          </div>
-        </div>
-      )}
 
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">لا توجد رسائل بعد</h3>
-            <p className="text-gray-600">ابدأ المحادثة الآن</p>
+            <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--color-text-primary)' }}>{t('chat.noMessages')}</h3>
+            <p style={{ color: 'var(--color-text-secondary)' }}>{t('chat.startConversation')}</p>
           </div>
         ) : (
           (messages || []).filter(Boolean).map((m, idx) => {
@@ -899,7 +892,7 @@ export default function ChatPage() {
                   color: 'var(--color-primary)'
                 }}
               >
-                رد على: {(replyToMessage as any).Sender || (replyToMessage as any).userName || 'غير معروف'}
+                {t('chat.replyingTo')}: {(replyToMessage as any).Sender || (replyToMessage as any).userName || t('common.unknown')}
               </div>
               <button
                 onClick={() => setReplyToMessage(null)}
@@ -912,7 +905,7 @@ export default function ChatPage() {
                 }}
                 onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-primary-dark)'}
                 onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
-                title="إلغاء الرد"
+                title={t('chat.cancelReply')}
               >
 
 
@@ -927,7 +920,7 @@ export default function ChatPage() {
                 color: 'var(--color-text-secondary)'
               }}
             >
-              {(replyToMessage as any).message || (replyToMessage as any).text || 'رسالة'}
+              {(replyToMessage as any).message || (replyToMessage as any).text || t('chat.message')}
             </div>
           </div>
         )}
@@ -964,7 +957,7 @@ export default function ChatPage() {
             onChange={onTextChange}
             onKeyDown={handleKeyDown}
             rows={1}
-            placeholder="اكتب رسالة..."
+            placeholder={t('chat.typeMessage')}
             className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200"
             style={{
               fontFamily: fonts.IBMPlexSansArabicRegular,
@@ -976,7 +969,8 @@ export default function ChatPage() {
               lineHeight: 1.5,
               backgroundColor: 'var(--color-input-background)',
               color: 'var(--color-input-text)',
-
+              direction: dir as 'ltr' | 'rtl',
+              textAlign: isRTL ? 'right' : 'left'
             }}
           />
 
@@ -993,10 +987,10 @@ export default function ChatPage() {
             }}
             onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'}
             onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary)'}
-            aria-label="إرسال"
-            title="إرسال"
+            aria-label={t('chat.send')}
+            title={t('chat.send')}
           >
-            إرسال
+            {t('chat.send')}
           </button>
         </div>
         </div>
@@ -1007,7 +1001,7 @@ export default function ChatPage() {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50" onClick={() => setPreview(null)}>
           <div className="max-w-4xl max-h-[85vh] p-2" onClick={(e) => e.stopPropagation()}>
             {preview.type === 'image' ? (
-              <img src={preview.url} alt="معاينة الصورة" className="max-h-[80vh] max-w-full rounded-xl" />
+              <img src={preview.url} alt={t('chat.imagePreview')} className="max-h-[80vh] max-w-full rounded-xl" />
             ) : (
               <video src={preview.url} controls autoPlay className="max-h-[80vh] max-w-full rounded-xl" />
             )}

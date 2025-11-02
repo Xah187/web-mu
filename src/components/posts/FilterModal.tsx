@@ -8,6 +8,7 @@ import { FilterData } from '@/hooks/usePosts';
 import Input from '@/components/design/Input';
 import ButtonLong from '@/components/design/ButtonLong';
 import Combobox from '@/components/design/Combobox';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface FilterModalProps {
   isOpen: boolean;
@@ -30,17 +31,18 @@ export default function FilterModal({
   loading = false,
   onFetchBranches
 }: FilterModalProps) {
+  const { t, isRTL } = useTranslation();
   const [filterData, setFilterData] = useState<Partial<FilterData>>({});
   const [dateStart, setDateStart] = useState('');
   const [dateEnd, setDateEnd] = useState('');
 
   // Filter types exactly like mobile app
   const filterTypes = [
-    { id: '4', name: 'بحسب التاريخ' },
-    { id: '1', name: 'بحسب المشروع والتاريخ' },
-    { id: '2', name: 'بحسب المستخدم والتاريخ' },
-    { id: '3', name: 'بحسب المشروع والمستخدم والتاريخ' },
-    { id: '5', name: 'بحسب الفرع' }
+    { id: '4', name: t('publications.filterModal.byDate') },
+    { id: '1', name: t('publications.filterModal.byProjectAndDate') },
+    { id: '2', name: t('publications.filterModal.byUserAndDate') },
+    { id: '3', name: t('publications.filterModal.byProjectUserDate') },
+    { id: '5', name: t('publications.filterModal.byBranch') }
   ];
 
   // Branch options
@@ -54,7 +56,7 @@ export default function FilterModal({
   useEffect(() => {
     if (isOpen) {
       // Initialize with current filter or default
-      const currentType = currentFilter.type || 'بحسب التاريخ';
+      const currentType = currentFilter.type || t('publications.filterModal.byDate');
       setFilterData({
         type: currentType,
         nameProject: currentFilter.nameProject || '',
@@ -83,9 +85,9 @@ export default function FilterModal({
 
   const handleTypeChange = (typeName: string) => {
     setFilterData(prev => ({ ...prev, type: typeName }));
-    
+
     // If "بحسب الفرع" is selected, fetch branches
-    if (typeName === 'بحسب الفرع') {
+    if (typeName === t('publications.filterModal.byBranch')) {
       onFetchBranches();
     }
   };
@@ -102,7 +104,7 @@ export default function FilterModal({
   };
 
   const handleClear = () => {
-    setFilterData({ type: 'بحسب التاريخ' });
+    setFilterData({ type: t('publications.filterModal.byDate') });
     setDateStart('');
     setDateEnd('');
     onClear();
@@ -110,7 +112,7 @@ export default function FilterModal({
 
   if (!isOpen) return null;
 
-  const selectedType = filterData.type || 'بحسب التاريخ';
+  const selectedType = filterData.type || t('publications.filterModal.byDate');
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 sm:p-6">
@@ -154,7 +156,7 @@ export default function FilterModal({
                 fontFamily: fonts.IBMPlexSansArabicBold
               }}
             >
-              فلتر اليوميات
+              {t('publications.filterModal.title')}
             </h2>
           </div>
           <button
@@ -194,7 +196,7 @@ export default function FilterModal({
                   fontFamily: fonts.IBMPlexSansArabicSemiBold
                 }}
               >
-                نوع الفلتر
+                {t('publications.filterModal.filterType')}
               </label>
             </div>
             <div className="space-y-5">
@@ -262,7 +264,7 @@ export default function FilterModal({
                           </svg>
                         </div>
                       )}
-                      {loading && type.name === 'بحسب الفرع' && selectedType === type.name && (
+                      {loading && type.name === t('publications.filterModal.byBranch') && selectedType === type.name && (
                         <div
                           className="border-2 border-current border-t-transparent rounded-full animate-spin opacity-70"
                           style={{
@@ -279,7 +281,7 @@ export default function FilterModal({
           </div>
 
           {/* Project Name Input */}
-          {selectedType.includes('المشروع') && (
+          {selectedType.includes(t('publications.filterModal.project')) && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
@@ -299,13 +301,13 @@ export default function FilterModal({
                     fontFamily: fonts.IBMPlexSansArabicSemiBold
                   }}
                 >
-                  اسم المشروع
+                  {t('publications.filterModal.projectName')}
                 </label>
               </div>
               <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
                 <Input
                   name="nameProject"
-                  placeholder="ادخل اسم المشروع"
+                  placeholder={t('publications.filterModal.enterProjectName')}
                   value={filterData.nameProject || ''}
                   onChange={(text) => setFilterData(prev => ({ ...prev, nameProject: text }))}
                 />
@@ -314,7 +316,7 @@ export default function FilterModal({
           )}
 
           {/* User Name Input */}
-          {selectedType.includes('المستخدم') && (
+          {selectedType.includes(t('publications.filterModal.user')) && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
@@ -334,13 +336,13 @@ export default function FilterModal({
                     fontFamily: fonts.IBMPlexSansArabicSemiBold
                   }}
                 >
-                  اسم المستخدم
+                  {t('publications.filterModal.userName')}
                 </label>
               </div>
               <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
                 <Input
                   name="userName"
-                  placeholder="ادخل اسم المستخدم"
+                  placeholder={t('publications.filterModal.enterUserName')}
                   value={filterData.userName || ''}
                   onChange={(text) => setFilterData(prev => ({ ...prev, userName: text }))}
                 />
@@ -349,7 +351,7 @@ export default function FilterModal({
           )}
 
           {/* Branch Selection */}
-          {selectedType === 'بحسب الفرع' && (
+          {selectedType === t('publications.filterModal.byBranch') && (
             <div className="space-y-4">
               <div className="flex items-center gap-3">
                 <div
@@ -369,7 +371,7 @@ export default function FilterModal({
                     fontFamily: fonts.IBMPlexSansArabicSemiBold
                   }}
                 >
-                  الفرع
+                  {t('publications.filterModal.branch')}
                 </label>
               </div>
               <div style={{ paddingRight: scale(36), paddingTop: scale(8) }}>
@@ -396,7 +398,7 @@ export default function FilterModal({
                         marginRight: scale(12)
                       }}
                     >
-                      جاري تحميل الفروع...
+                      {t('publications.filterModal.loadingBranches')}
                     </span>
                   </div>
                 ) : branchOptions.length > 0 ? (
@@ -404,7 +406,7 @@ export default function FilterModal({
                     options={branchOptions}
                     value={filterData.branch || ''}
                     onChange={(value) => setFilterData(prev => ({ ...prev, branch: value }))}
-                    placeholder="اختر فرع"
+                    placeholder={t('publications.filterModal.selectBranch')}
                   />
                 ) : (
                   <div
@@ -445,7 +447,7 @@ export default function FilterModal({
                   fontFamily: fonts.IBMPlexSansArabicSemiBold
                 }}
               >
-                نطاق التاريخ
+                {t('publications.filterModal.dateRange')}
               </label>
             </div>
             <div
@@ -467,7 +469,7 @@ export default function FilterModal({
                     paddingRight: scale(4)
                   }}
                 >
-                  من تاريخ
+                  {t('publications.filterModal.startDate')}
                 </label>
                 <input
                   type="date"
@@ -495,7 +497,7 @@ export default function FilterModal({
                     paddingRight: scale(4)
                   }}
                 >
-                  إلى تاريخ
+                  {t('publications.filterModal.endDate')}
                 </label>
                 <input
                   type="date"
@@ -559,7 +561,7 @@ export default function FilterModal({
                   style={{ width: scale(16), height: scale(16) }}
                 />
               ) : (
-                '🔍 تطبيق الفلتر'
+                `🔍 ${t('publications.filterModal.apply')}`
               )}
             </button>
 
@@ -581,7 +583,7 @@ export default function FilterModal({
                 boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
               }}
             >
-              🗑️ مسح الفلاتر
+              🗑️ {t('publications.filterModal.clear')}
             </button>
           </div>
 

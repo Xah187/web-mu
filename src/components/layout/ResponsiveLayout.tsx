@@ -4,6 +4,7 @@ import React from 'react';
 import { usePathname } from 'next/navigation';
 import SidebarToggle from '@/components/ui/SidebarToggle';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ResponsiveLayoutProps {
   children: React.ReactNode;
@@ -62,22 +63,24 @@ interface PageHeaderProps {
   className?: string;
 }
 
-export function PageHeader({ 
-  title, 
-  subtitle, 
-  actions, 
+export function PageHeader({
+  title,
+  subtitle,
+  actions,
   backButton,
-  className = '' 
+  className = ''
 }: PageHeaderProps) {
+  const { isRTL } = useTranslation();
+
   return (
-    <div className={`flex items-center justify-between w-full ${className}`}>
-      {/* Left Side - Sidebar Toggle + Back Button + Title */}
-      <div className="flex items-center gap-3 flex-1 min-w-0">
+    <div className={`flex items-center justify-between w-full ${className}`} dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Start Side - Sidebar Toggle + Back Button + Title */}
+      <div className={`flex items-center gap-3 flex-1 min-w-0 ${isRTL ? 'flex-row' : 'flex-row'}`}>
         <SidebarToggle />
         {backButton}
         <div className="min-w-0 flex-1">
           <h1
-            className="text-lg font-semibold text-gray-900 truncate"
+            className={`text-lg font-semibold text-gray-900 truncate ${isRTL ? 'text-right' : 'text-left'}`}
             style={{
               fontSize: 'var(--font-size-lg)',
               lineHeight: 'var(--line-height-tight)'
@@ -87,7 +90,7 @@ export function PageHeader({
           </h1>
           {subtitle && (
             <p
-              className="text-sm text-gray-600 truncate mt-1"
+              className={`text-sm text-gray-600 truncate mt-1 ${isRTL ? 'text-right' : 'text-left'}`}
               style={{
                 fontSize: 'var(--font-size-sm)',
                 lineHeight: 'var(--line-height-normal)'
@@ -99,8 +102,8 @@ export function PageHeader({
         </div>
       </div>
 
-      {/* Right Side - Actions */}
-      <div className="flex items-center gap-2 ml-3">
+      {/* End Side - Actions */}
+      <div className={`flex items-center gap-2 ${isRTL ? 'mr-3' : 'ml-3'}`}>
         <ThemeToggle size="sm" />
         {actions}
       </div>

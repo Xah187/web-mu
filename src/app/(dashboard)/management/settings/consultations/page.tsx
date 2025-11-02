@@ -6,6 +6,7 @@ import { useAppSelector } from '@/store';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 
 // This page represents the "استشارات" section from mobile app
@@ -16,6 +17,7 @@ import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layou
 export default function ConsultationsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   const [loading, setLoading] = useState(true);
 
@@ -48,7 +50,7 @@ export default function ConsultationsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="استشارات"
+          title={t('management.consultationsPage.title')}
           backButton={
             <button
               onClick={() => router.push('/management')}
@@ -63,9 +65,17 @@ export default function ConsultationsPage() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="رجوع"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+              >
                 <polyline points="15,18 9,12 15,6" />
               </svg>
             </button>
@@ -76,7 +86,7 @@ export default function ConsultationsPage() {
       <ContentSection className="p-4">
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4" dir={dir}>
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -105,7 +115,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(16 + size)
                       }}
                     >
-                      دردشة الاستشارات
+                      {t('management.consultationsPage.title')}
                     </h3>
                     <p
                       className="text-gray-600 text-sm"
@@ -114,11 +124,20 @@ export default function ConsultationsPage() {
                         fontSize: scale(12 + size)
                       }}
                     >
-                      دردشة الاستشارات على مستوى الشركة
+                      {t('management.consultationsPage.description')}
                     </p>
                   </div>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-gray-400"
+                  style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+                >
                   <polyline points="9,18 15,12 9,6" />
                 </svg>
               </div>
@@ -133,7 +152,7 @@ export default function ConsultationsPage() {
                   fontSize: scale(16 + size)
                 }}
               >
-                مميزات دردشة الاستشارات
+                {t('management.consultationsPage.featuresTitle')}
               </h2>
 
               <div className="space-y-3">
@@ -152,7 +171,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(14 + size)
                       }}
                     >
-                      طلب المشورة والنصائح
+                      {t('management.consultationsPage.feature1Title')}
                     </h4>
                     <p
                       className="text-gray-600 text-sm"
@@ -161,7 +180,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(12 + size)
                       }}
                     >
-                      احصل على المشورة من زملائك في العمل والخبراء
+                      {t('management.consultationsPage.feature1Description')}
                     </p>
                   </div>
                 </div>
@@ -183,7 +202,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(14 + size)
                       }}
                     >
-                      تبادل الخبرات
+                      {t('management.consultationsPage.feature2Title')}
                     </h4>
                     <p
                       className="text-gray-600 text-sm"
@@ -192,7 +211,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(12 + size)
                       }}
                     >
-                      شارك خبراتك واستفد من خبرات الآخرين
+                      {t('management.consultationsPage.feature2Description')}
                     </p>
                   </div>
                 </div>
@@ -213,7 +232,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(14 + size)
                       }}
                     >
-                      نقاشات مفتوحة
+                      {t('management.consultationsPage.feature3Title')}
                     </h4>
                     <p
                       className="text-gray-600 text-sm"
@@ -222,7 +241,7 @@ export default function ConsultationsPage() {
                         fontSize: scale(12 + size)
                       }}
                     >
-                      مناقشات مفتوحة حول مختلف المواضيع المهنية
+                      {t('management.consultationsPage.feature3Description')}
                     </p>
                   </div>
                 </div>
@@ -247,7 +266,7 @@ export default function ConsultationsPage() {
                       fontSize: scale(14 + size)
                     }}
                   >
-                    دردشة الاستشارات
+                    {t('management.consultationsPage.infoTitle')}
                   </h4>
                   <p
                     className="text-blue-800 text-sm leading-relaxed"
@@ -256,7 +275,7 @@ export default function ConsultationsPage() {
                       fontSize: scale(12 + size)
                     }}
                   >
-                    هذا القسم مخصص لطلب الاستشارات ومشاركة الخبرات على مستوى الشركة. يمكن لجميع الموظفين المشاركة والاستفادة من بعضهم البعض.
+                    {t('management.consultationsPage.infoDescription')}
                   </p>
                 </div>
               </div>

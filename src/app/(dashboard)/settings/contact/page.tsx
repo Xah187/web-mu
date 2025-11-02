@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // This page represents the "تواصل معنا" section from mobile app
 // It provides contact information and ways to reach support
@@ -16,15 +17,16 @@ import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layou
 export default function ContactPage() {
   const router = useRouter();
   const { size } = useAppSelector(state => state.user);
-  
+  const { t, isRTL, dir } = useTranslation();
+
   const [selectedContact, setSelectedContact] = useState<string | null>(null);
 
   // Contact information matching mobile app
   const contactMethods = [
     {
       id: 'whatsapp',
-      title: 'واتساب',
-      description: 'تواصل معنا عبر الواتساب',
+      title: t('settings.contact.whatsapp'),
+      description: t('settings.contact.whatsappDesc'),
       value: '0571506060',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -33,13 +35,13 @@ export default function ContactPage() {
       ),
       action: () => {
         window.open('https://wa.me/966571506060', '_blank');
-        Tostget('سيتم فتح الواتساب');
+        Tostget(t('settings.contact.whatsappToast'));
       }
     },
     {
       id: 'phone',
-      title: 'الهاتف',
-      description: 'اتصل بنا مباشرة',
+      title: t('settings.contact.phone'),
+      description: t('settings.contact.phoneDesc'),
       value: '0571506060',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2">
@@ -48,13 +50,13 @@ export default function ContactPage() {
       ),
       action: () => {
         window.open('tel:0571506060', '_self');
-        Tostget('سيتم الاتصال');
+        Tostget(t('settings.contact.phoneToast'));
       }
     },
     {
       id: 'email',
-      title: 'البريد الإلكتروني',
-      description: 'راسلنا عبر البريد الإلكتروني',
+      title: t('settings.contact.email'),
+      description: t('settings.contact.emailDesc'),
       value: 'info@mushrf.com',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2">
@@ -64,13 +66,13 @@ export default function ContactPage() {
       ),
       action: () => {
         window.open('mailto:info@mushrf.com', '_self');
-        Tostget('سيتم فتح البريد الإلكتروني');
+        Tostget(t('settings.contact.emailToast'));
       }
     },
     {
       id: 'website',
-      title: 'الموقع الإلكتروني',
-      description: 'زيارة موقعنا الإلكتروني',
+      title: t('settings.contact.website'),
+      description: t('settings.contact.websiteDesc'),
       value: 'mushrf.com',
       icon: (
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2">
@@ -81,7 +83,7 @@ export default function ContactPage() {
       ),
       action: () => {
         window.open('https://mushrf.com/', '_blank');
-        Tostget('سيتم فتح الموقع الإلكتروني');
+        Tostget(t('settings.contact.websiteToast'));
       }
     }
   ];
@@ -92,9 +94,14 @@ export default function ContactPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="تواصل معنا"
+          title={t('settings.contact.title')}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
+              style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+            >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>
@@ -106,17 +113,17 @@ export default function ContactPage() {
       <ContentSection className="p-4">
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4" dir={dir}>
         {/* Contact Methods */}
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
-          <h2 
+          <h2
             className="font-semibold text-gray-900 mb-4"
-            style={{ 
+            style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(16 + size) 
+              fontSize: scale(16 + size)
             }}
           >
-            طرق التواصل
+            {t('settings.contact.contactMethods')}
           </h2>
           
           <div className="space-y-4">
@@ -166,7 +173,16 @@ export default function ContactPage() {
                       {method.value}
                     </p>
                   </div>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="text-gray-400"
+                    style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+                  >
                     <polyline points="9,18 15,12 9,6" />
                   </svg>
                 </div>
@@ -190,23 +206,23 @@ export default function ContactPage() {
               </svg>
             </div>
             <div>
-              <h4 
+              <h4
                 className="font-medium text-blue-900 mb-1"
-                style={{ 
+                style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: scale(14 + size) 
+                  fontSize: scale(14 + size)
                 }}
               >
-                نحن هنا لمساعدتك
+                {t('settings.contact.helpTitle')}
               </h4>
-              <p 
+              <p
                 className="text-blue-800 text-sm leading-relaxed"
-                style={{ 
+                style={{
                   fontFamily: fonts.IBMPlexSansArabicRegular,
-                  fontSize: scale(12 + size) 
+                  fontSize: scale(12 + size)
                 }}
               >
-                فريق الدعم الفني متاح لمساعدتك في أي استفسار أو مشكلة تواجهها. لا تتردد في التواصل معنا.
+                {t('settings.contact.helpDesc')}
               </p>
             </div>
           </div>

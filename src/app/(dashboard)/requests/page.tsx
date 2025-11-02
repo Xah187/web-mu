@@ -10,6 +10,7 @@ import useValidityUser from '@/hooks/useValidityUser';
 import Image from 'next/image';
 import { EmployeeOnly, PermissionBasedVisibility, RequestsPermissionGuard } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Types
 interface Request {
@@ -49,14 +50,7 @@ interface RequestCount {
   Close: number;
 }
 
-// Request Types - matching mobile app exactly
-const REQUEST_TYPES = [
-  { key: 'arrayLight', name: 'مواد خفيفة', color: 'bg-blue-100 text-blue-800' },
-  { key: 'arrayHeavy', name: 'مواد ثقيلة', color: 'bg-green-100 text-green-800' },
-  { key: 'arrayElectrical', name: 'كهربائي', color: 'bg-yellow-100 text-yellow-800' },
-  { key: 'arrayPlumber', name: 'سباك', color: 'bg-purple-100 text-purple-800' },
-  { key: 'arrayBlacksmith', name: 'حداد', color: 'bg-red-100 text-red-800' }
-];
+// Request Types will be defined inside component to use translations
 
 // Request Card Component - matching mobile app exactly
 const RequestCard = ({
@@ -69,7 +63,10 @@ const RequestCard = ({
   onConfirm,
   onChat,
   loading,
-  isClosed = false
+  isClosed = false,
+  t,
+  isRTL,
+  dir
 }: {
   request: Request;
   index: number;
@@ -81,6 +78,9 @@ const RequestCard = ({
   onChat?: (request: Request) => void;
   loading: {[key: string]: boolean};
   isClosed?: boolean;
+  t: any;
+  isRTL: boolean;
+  dir: string;
 }) => {
   return (
     <div
@@ -88,7 +88,8 @@ const RequestCard = ({
       style={{
         backgroundColor: 'var(--color-card-background)',
         border: '1px solid var(--color-border)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)'
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
+        direction: dir as 'rtl' | 'ltr'
       }}
     >
       <div className="flex items-start justify-between mb-3">
@@ -246,7 +247,7 @@ const RequestCard = ({
               fontFamily: 'var(--font-ibm-arabic-semibold)'
             }}
           >
-            {loading[`confirm_${request.RequestsID}`] ? 'جاري التأكيد...' : 'تأكيد الوصول'}
+            {loading[`confirm_${request.RequestsID}`] ? t('requests.confirming') : t('requests.confirmArrival')}
           </button>
         </div>
       )}
@@ -291,7 +292,10 @@ const RequestSection = ({
   onConfirm,
   onChat,
   loading,
-  isClosed = false
+  isClosed = false,
+  t,
+  isRTL,
+  dir
 }: {
   type: { key: string; name: string; color: string };
   requests: Request[];
@@ -306,6 +310,9 @@ const RequestSection = ({
   onChat: (request: Request) => void;
   loading: {[key: string]: boolean};
   isClosed?: boolean;
+  t: any;
+  isRTL: boolean;
+  dir: string;
 }) => {
   // Always show section header - matching mobile app behavior
   return (
@@ -314,7 +321,8 @@ const RequestSection = ({
       style={{
         backgroundColor: 'var(--color-card-background)',
         border: '2px solid var(--color-border)',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)'
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+        direction: dir as 'rtl' | 'ltr'
       }}
     >
       {/* Section Header */}
@@ -323,7 +331,8 @@ const RequestSection = ({
         className="w-full flex items-center justify-between p-4 rounded-xl transition-all duration-200 hover:scale-[1.01]"
         style={{
           backgroundColor: 'var(--color-surface-secondary)',
-          border: '1px solid var(--color-border)'
+          border: '1px solid var(--color-border)',
+          direction: dir as 'rtl' | 'ltr'
         }}
       >
         <div className="flex items-center gap-3">
@@ -342,7 +351,7 @@ const RequestSection = ({
               fontFamily: 'var(--font-ibm-arabic-medium)'
             }}
           >
-            {sectionState.isExpanded ? `${requests.length} طلب` : 'اضغط للعرض'}
+            {sectionState.isExpanded ? `${requests.length} ${isRTL ? 'طلب' : 'order'}` : t('requests.clickToView')}
           </span>
         </div>
 
@@ -389,6 +398,9 @@ const RequestSection = ({
                     onChat={onChat}
                     loading={loading}
                     isClosed={isClosed}
+                    t={t}
+                    isRTL={isRTL}
+                    dir={dir}
                   />
                 ))}
               </div>
@@ -407,7 +419,7 @@ const RequestSection = ({
                       fontFamily: 'var(--font-ibm-arabic-medium)'
                     }}
                   >
-                    {sectionState.loading ? 'جاري التحميل...' : 'عرض المزيد'}
+                    {sectionState.loading ? t('requests.loading') : t('requests.loadMore')}
                   </button>
                 </div>
               )}
@@ -458,9 +470,19 @@ export default function RequestsPage() {
   const idProject = searchParams.get('idProject');
   const typepage = searchParams.get('typepage') || 'all';
   const nameproject = searchParams.get('nameproject') || '';
-  
+
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
+
+  // Request Types - matching mobile app exactly with translations
+  const REQUEST_TYPES = [
+    { key: 'arrayLight', value: 'مواد خفيفة', name: t('requests.lightMaterials'), color: 'bg-blue-100 text-blue-800' },
+    { key: 'arrayHeavy', value: 'مواد ثقيلة', name: t('requests.heavyMaterials'), color: 'bg-green-100 text-green-800' },
+    { key: 'arrayElectrical', value: 'كهربائي', name: t('requests.electrical'), color: 'bg-yellow-100 text-yellow-800' },
+    { key: 'arrayPlumber', value: 'سباك', name: t('requests.plumber'), color: 'bg-purple-100 text-purple-800' },
+    { key: 'arrayBlacksmith', value: 'حداد', name: t('requests.blacksmith'), color: 'bg-red-100 text-red-800' }
+  ];
 
   const [requestsData, setRequestsData] = useState<RequestsData>({
     arrayLight: [],
@@ -655,7 +677,7 @@ export default function RequestsPage() {
   // typepage can be 'all' (branch requests) or 'part' (project requests)
   const exportRequestsPDF = async () => {
     if (!idProject) {
-      Tostget('معرف المشروع غير صحيح');
+      Tostget(t('requests.invalidProjectId'));
       return;
     }
 
@@ -674,13 +696,13 @@ export default function RequestsPage() {
       if (response.status === 200 && response.data?.namefile) {
         const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
         window.open(`${baseUrl}/${response.data.namefile}`, '_blank');
-        Tostget('تم إنشاء التقرير بنجاح');
+        Tostget(t('requests.reportCreated'));
       } else {
-        Tostget(response.data?.success || 'فشل في إنشاء التقرير');
+        Tostget(response.data?.success || t('requests.reportFailed'));
       }
     } catch (error: any) {
       console.error('Error exporting requests PDF:', error);
-      Tostget(error.response?.data?.success || 'خطأ في تصدير التقرير');
+      Tostget(error.response?.data?.success || t('requests.exportError'));
     } finally {
       setExportingPDF(false);
     }
@@ -688,7 +710,7 @@ export default function RequestsPage() {
 
   const createNewRequest = async () => {
     if (!createRequest.data.trim()) {
-      Tostget('يرجى ملء جميع الحقول');
+      Tostget(t('requests.fillAllFields'));
       return;
     }
 
@@ -719,11 +741,11 @@ export default function RequestsPage() {
         }
       });
 
-      Tostget('تم إنشاء الطلب بنجاح');
+      Tostget(t('requests.requestCreated'));
       resetCreateRequest();
       await fetchRequestCounts();
       // Refresh the specific section if it's expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === createRequest.type)?.key;
+      const typeKey = REQUEST_TYPES.find(t => t.value === createRequest.type)?.key;
       if (typeKey) {
         const sectionKey = `${typeKey}-open`;
         if (sectionStates[sectionKey]?.isExpanded) {
@@ -732,7 +754,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error('Error creating request:', error);
-      Tostget('خطأ في إنشاء الطلب');
+      Tostget(t('requests.requestCreateError'));
     } finally {
       setLoading(prev => ({ ...prev, create: false }));
     }
@@ -740,7 +762,7 @@ export default function RequestsPage() {
 
   const updateRequest = async () => {
     if (!createRequest.data.trim()) {
-      Tostget('يرجى ملء جميع الحقول');
+      Tostget(t('requests.fillAllFields'));
       return;
     }
 
@@ -765,10 +787,10 @@ export default function RequestsPage() {
         }
       });
 
-      Tostget('تم تحديث الطلب بنجاح');
+      Tostget(t('requests.requestUpdated'));
       resetCreateRequest();
       // Refresh the specific section if it's expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === createRequest.type)?.key;
+      const typeKey = REQUEST_TYPES.find(t => t.value === createRequest.type)?.key;
       if (typeKey) {
         const sectionKey = `${typeKey}-open`;
         if (sectionStates[sectionKey]?.isExpanded) {
@@ -777,7 +799,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error('Error updating request:', error);
-      Tostget('خطأ في تحديث الطلب');
+      Tostget(t('requests.requestUpdateError'));
     } finally {
       setLoading(prev => ({ ...prev, update: false }));
     }
@@ -816,11 +838,11 @@ export default function RequestsPage() {
         }
       );
 
-      Tostget('تمت العملية بنجاح');
+      Tostget(t('requests.operationSuccess'));
       await fetchRequestCounts();
 
       // Refresh both open and closed sections if expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === type)?.key;
+      const typeKey = REQUEST_TYPES.find(t => t.value === type)?.key;
       if (typeKey) {
         const openSectionKey = `${typeKey}-open`;
         const closedSectionKey = `${typeKey}-closed`;
@@ -834,7 +856,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error('Error closing request:', error);
-      Tostget('خطأ في العملية');
+      Tostget(t('requests.operationError'));
     } finally {
       setLoading(prev => ({ ...prev, [`close_${requestId}`]: false }));
     }
@@ -843,7 +865,7 @@ export default function RequestsPage() {
   // Confirm Request Arrival - matching mobile app exactly
   const confirmRequest = async (request: Request) => {
     if (request.InsertBy !== user?.data?.userName) {
-      Tostget('لست المسؤل على تاكيد الطلب');
+      Tostget(t('requests.notResponsibleForConfirmation'));
       return;
     }
 
@@ -857,9 +879,9 @@ export default function RequestsPage() {
         }
       );
 
-      Tostget('تم تأكيد الطلب');
+      Tostget(t('requests.requestConfirmed'));
       // Refresh the closed section if expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === request.Type)?.key;
+      const typeKey = REQUEST_TYPES.find(t => t.value === request.Type)?.key;
       if (typeKey) {
         const sectionKey = `${typeKey}-closed`;
         if (sectionStates[sectionKey]?.isExpanded) {
@@ -868,7 +890,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error('Error confirming request:', error);
-      Tostget('خطأ في تأكيد الطلب');
+      Tostget(t('requests.confirmError'));
     } finally {
       setLoading(prev => ({ ...prev, [`confirm_${request.RequestsID}`]: false }));
     }
@@ -904,11 +926,11 @@ export default function RequestsPage() {
         }
       );
 
-      Tostget('تم حذف الطلب بنجاح');
+      Tostget(t('requests.requestDeleted'));
       await fetchRequestCounts();
 
       // Refresh the specific section if expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === request.Type)?.key;
+      const typeKey = REQUEST_TYPES.find(t => t.value === request.Type)?.key;
       if (typeKey) {
         const isRequestDone = request.Done === 'true';
         const sectionKey = `${typeKey}-${isRequestDone ? 'closed' : 'open'}`;
@@ -918,7 +940,7 @@ export default function RequestsPage() {
       }
     } catch (error) {
       console.error('Error deleting request:', error);
-      Tostget('خطأ في حذف الطلب');
+      Tostget(t('requests.requestDeleteError'));
     } finally {
       setLoading(prev => ({ ...prev, [`delete_${request.RequestsID}`]: false }));
     }
@@ -934,13 +956,13 @@ export default function RequestsPage() {
   const copyRequestText = (request: Request) => {
     const text = `${request.Nameproject || ''} ${request.Data}`;
     navigator.clipboard.writeText(text);
-    Tostget('تم نسخ النص');
+    Tostget(t('requests.textCopied'));
   };
 
   // Send Note - matching mobile app exactly
   const sendNote = async () => {
     if (!noteText.trim() || !selectedRequest) {
-      Tostget('يرجى كتابة الملاحظة');
+      Tostget(t('requests.writeNote'));
       return;
     }
 
@@ -964,13 +986,13 @@ export default function RequestsPage() {
       //   }
       // });
 
-      Tostget('تم إرسال الملاحظة بنجاح');
+      Tostget(t('requests.noteSent'));
       setNoteText('');
       setShowNoteModal(false);
       setSelectedRequest(null);
     } catch (error) {
       console.error('Error sending note:', error);
-      Tostget('خطأ في إرسال الملاحظة');
+      Tostget(t('requests.noteSendError'));
     } finally {
       setLoading(prev => ({ ...prev, sendNote: false }));
     }
@@ -1023,10 +1045,10 @@ export default function RequestsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="الطلبات"
+          title={t('requests.title')}
           subtitle={nameproject || undefined}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label={t('requests.back')} style={{ direction: dir as 'rtl' | 'ltr' }}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -1039,7 +1061,7 @@ export default function RequestsPage() {
                 onClick={exportRequestsPDF}
                 disabled={exportingPDF}
                 className="inline-flex items-center gap-2 text-red-600 hover:underline font-ibm-arabic-semibold bg-transparent p-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="تصدير PDF"
+                title={t('requests.exportPDF')}
               >
                 {exportingPDF ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
@@ -1052,7 +1074,7 @@ export default function RequestsPage() {
                     <polyline points="10 9 9 9 8 9"/>
                   </svg>
                 )}
-                <span className="hidden sm:inline">تصدير PDF</span>
+                <span className="hidden sm:inline">{t('requests.exportPDF')}</span>
               </button>
 
               {/* Chat Button - Only for branch requests (typepage='all') */}
@@ -1060,8 +1082,8 @@ export default function RequestsPage() {
                 <button
                   onClick={() => router.push(`/chat?typess=طلبات&ProjectID=${idProject}&nameRoom=الطلبات`)}
                   className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-                  aria-label="دردشة الطلبات"
-                  title="دردشة الطلبات"
+                  aria-label={t('requests.requestChat')}
+                  title={t('requests.requestChat')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
@@ -1075,7 +1097,7 @@ export default function RequestsPage() {
     >
       <ContentSection className="p-0">
         {/* Counts */}
-        <div className="px-4 pt-4 pb-2">
+        <div className="px-4 pt-4 pb-2" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div className="flex justify-center gap-4">
             <div
               className="text-center p-4 rounded-xl flex-1 max-w-32 transition-all duration-200 hover:scale-105"
@@ -1100,7 +1122,7 @@ export default function RequestsPage() {
                   color: '#10b981'
                 }}
               >
-                مفتوحة
+                {t('requests.open')}
               </div>
             </div>
             <div
@@ -1126,14 +1148,14 @@ export default function RequestsPage() {
                   color: 'var(--color-text-secondary)'
                 }}
               >
-                مغلقة
+                {t('requests.closed')}
               </div>
             </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-4 py-4">
+        <div className="px-4 py-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Create Request Button - Only for 'part' type and employees like mobile app */}
         {typepage === 'part' && (
           <EmployeeOnly>
@@ -1146,13 +1168,14 @@ export default function RequestsPage() {
                     backgroundColor: '#3b82f6',
                     color: 'white',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M12 5v14m-7-7h14"/>
                   </svg>
-                  اضافة طلب
+                  {t('requests.addRequest')}
                 </button>
               </div>
             </RequestsPermissionGuard>
@@ -1165,7 +1188,8 @@ export default function RequestsPage() {
             className="text-center mb-6 p-4 rounded-xl"
             style={{
               backgroundColor: 'var(--color-surface-secondary)',
-              border: '1px solid var(--color-border)'
+              border: '1px solid var(--color-border)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
             <h2
@@ -1182,7 +1206,7 @@ export default function RequestsPage() {
                 <line x1="16" y1="17" x2="8" y2="17"/>
                 <polyline points="10,9 9,9 8,9"/>
               </svg>
-              الطلبات المفتوحة ({requestCounts.Close})
+              {t('requests.openRequests')} ({requestCounts.Close})
             </h2>
           </div>
 
@@ -1199,13 +1223,16 @@ export default function RequestsPage() {
                 sectionState={sectionState}
                 typepage={typepage}
                 doneValue="false"
-                onToggle={() => toggleSection(type.key, type.name, 'false')}
-                onLoadMore={() => loadMoreSectionData(type.key, type.name, 'false')}
+                onToggle={() => toggleSection(type.key, type.value, 'false')}
+                onLoadMore={() => loadMoreSectionData(type.key, type.value, 'false')}
                 onClose={closeRequest}
                 onOptions={openOptionsModal}
                 onConfirm={confirmRequest}
                 onChat={openRequestChat}
                 loading={loading}
+                t={t}
+                isRTL={isRTL}
+                dir={dir}
               />
             );
           })}
@@ -1248,7 +1275,8 @@ export default function RequestsPage() {
             className="text-center mb-6 p-4 rounded-xl"
             style={{
               backgroundColor: 'var(--color-surface-secondary)',
-              border: '1px solid var(--color-border)'
+              border: '1px solid var(--color-border)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
             <h2
@@ -1262,7 +1290,7 @@ export default function RequestsPage() {
                 <path d="M9 12l2 2 4-4"/>
                 <circle cx="12" cy="12" r="10"/>
               </svg>
-              الطلبات المغلقة ({requestCounts.Open})
+              {t('requests.closedRequests')} ({requestCounts.Open})
             </h2>
           </div>
 
@@ -1279,14 +1307,17 @@ export default function RequestsPage() {
                 sectionState={sectionState}
                 typepage={typepage}
                 doneValue="true"
-                onToggle={() => toggleSection(type.key, type.name, 'true')}
-                onLoadMore={() => loadMoreSectionData(type.key, type.name, 'true')}
+                onToggle={() => toggleSection(type.key, type.value, 'true')}
+                onLoadMore={() => loadMoreSectionData(type.key, type.value, 'true')}
                 onClose={closeRequest}
                 onOptions={openOptionsModal}
                 onConfirm={confirmRequest}
                 onChat={openRequestChat}
                 loading={loading}
                 isClosed={true}
+                t={t}
+                isRTL={isRTL}
+                dir={dir}
               />
             );
           })}
@@ -1302,7 +1333,8 @@ export default function RequestsPage() {
               backgroundColor: 'var(--color-card-background)',
               border: '1px solid var(--color-border)',
               borderRadius: '20px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
             {/* Header */}
@@ -1344,7 +1376,7 @@ export default function RequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  {createRequest.isEdit ? 'تعديل الطلب' : 'إنشاء طلب جديد'}
+                  {createRequest.isEdit ? t('requests.editRequestTitle') : t('requests.addNewRequest')}
                 </h3>
               </div>
             </div>
@@ -1358,10 +1390,11 @@ export default function RequestsPage() {
                   style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  نوع الطلب
+                  {t('requests.requestType')}
                 </label>
                 <select
                   value={createRequest.type}
@@ -1374,11 +1407,12 @@ export default function RequestsPage() {
                     padding: '12px 16px',
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
                   {REQUEST_TYPES.map((type) => (
-                    <option key={type.key} value={type.name}>
+                    <option key={type.key} value={type.value}>
                       {type.name}
                     </option>
                   ))}
@@ -1392,15 +1426,16 @@ export default function RequestsPage() {
                   style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  وصف الطلب
+                  {t('requests.requestDetails')}
                 </label>
                 <textarea
                   value={createRequest.data}
                   onChange={(e) => setCreateRequest(prev => ({ ...prev, data: e.target.value }))}
-                  placeholder="اكتب وصف الطلب هنا..."
+                  placeholder={t('requests.requestDetailsPlaceholder')}
                   className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
                   style={{
                     backgroundColor: 'var(--color-surface)',
@@ -1410,7 +1445,9 @@ export default function RequestsPage() {
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
                     color: 'var(--color-text-primary)',
-                    minHeight: '100px'
+                    minHeight: '100px',
+                    direction: dir as 'rtl' | 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                   rows={4}
                 />
@@ -1424,7 +1461,8 @@ export default function RequestsPage() {
                 paddingLeft: '24px',
                 paddingRight: '24px',
                 paddingTop: '16px',
-                paddingBottom: '24px'
+                paddingBottom: '24px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
               }}
             >
               <button
@@ -1440,7 +1478,7 @@ export default function RequestsPage() {
                 }}
                 disabled={loading.create || loading.update}
               >
-                إلغاء
+                {t('requests.cancel')}
               </button>
               <button
                 onClick={createNewRequest}
@@ -1456,8 +1494,8 @@ export default function RequestsPage() {
                 disabled={loading.create || loading.update}
               >
                 {loading.create || loading.update
-                  ? (createRequest.isEdit ? 'جاري التحديث...' : 'جاري الإنشاء...')
-                  : (createRequest.isEdit ? 'تحديث الطلب' : 'إنشاء الطلب')
+                  ? (createRequest.isEdit ? t('requests.updating') : t('requests.creating'))
+                  : (createRequest.isEdit ? t('requests.update') : t('requests.create'))
                 }
               </button>
             </div>
@@ -1474,7 +1512,8 @@ export default function RequestsPage() {
               backgroundColor: 'var(--color-card-background)',
               border: '1px solid var(--color-border)',
               borderRadius: '20px',
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
             {/* Header */}
@@ -1510,7 +1549,7 @@ export default function RequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  الاعدادات
+                  {t('requests.settings')}
                 </h3>
               </div>
             </div>

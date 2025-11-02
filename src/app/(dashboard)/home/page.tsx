@@ -14,9 +14,9 @@ import { Tostget } from '@/components/ui/Toast';
 import BranchEditModal from '@/components/branches/BranchEditModal';
 import useBranchOperations from '@/hooks/useBranchOperations';
 
-import BellIcon from '@/components/icons/BellIcon';
 import UserProfileModal from '@/components/user/UserProfileModal';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Import responsive layout components
 import ResponsiveLayout, {
@@ -33,6 +33,7 @@ export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAppSelector((state: any) => state.user);
+  const { t, isRTL } = useTranslation();
 
   // Use the new company data hook
   const { homeData, loading, refreshData, fetchCompanyData } = useCompanyData();
@@ -49,10 +50,6 @@ export default function HomePage() {
 
   // DataHome hook for saving branch data
   const { saveBranchData } = useDataHome();
-
-  // Local state
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [refreshing, setRefreshing] = useState(false);
 
   // Branch edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -76,7 +73,6 @@ export default function HomePage() {
 
   useEffect(() => {
     // Initial data load is handled by the hook
-    fetchNotifications();
   }, []);
 
   // Listen for refresh parameter to update data after changes
@@ -117,28 +113,7 @@ export default function HomePage() {
     }
   }, [searchParams, refreshData]);
 
-  const fetchNotifications = async () => {
-    try {
-      // Implement notification fetching logic here
-      setNotifications([]);
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
 
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    try {
-      await refreshData();
-      await fetchNotifications();
-      Tostget('تم تحديث البيانات');
-    } catch (error) {
-      console.error('Error refreshing data:', error);
-      Tostget('خطأ في تحديث البيانات');
-    } finally {
-      setRefreshing(false);
-    }
-  };
 
   // Handle edit company data with fetching - matches mobile app exactly
   const handleEditCompany = async () => {
@@ -283,18 +258,11 @@ export default function HomePage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title={`مرحباً، ${user?.data?.userName || 'المستخدم'}`}
-          subtitle={user?.data?.job || 'الوظيفة'}
+          title={`${t('home.welcome')}، ${user?.data?.userName || t('home.user')}`}
+          subtitle={user?.data?.job || t('home.job')}
           actions={
             <div className="flex items-center gap-3">
               <SettingsDropdown showLabel={false} />
-              {/* Notifications */}
-              <button
-                className="p-2 rounded-full hover:bg-gray-100 transition-colors focus-ring"
-                style={{ color: 'var(--color-text-secondary)' }}
-              >
-                <BellIcon size={20} />
-              </button>
 
               {/* User Profile */}
               <button
@@ -322,27 +290,27 @@ export default function HomePage() {
       <ContentSection>
         {/* Company Info Card */}
         <Card className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className={`flex items-center justify-between mb-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
             <div className="flex-1">
               <h2
-                className="font-semibold mb-2"
+                className={`font-semibold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}
                 style={{
                   fontSize: 'var(--font-size-xl)',
                   color: 'var(--color-text-primary)'
                 }}
               >
-                {homeData?.nameCompany || user?.data?.CompanyName || 'اسم الشركة'}
+                {homeData?.nameCompany || user?.data?.CompanyName || t('home.companyName')}
               </h2>
               <p
-                className="text-sm"
+                className={`text-sm ${isRTL ? 'text-right' : 'text-left'}`}
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                <span>رقم السجل التجاري: </span>
+                <span>{t('home.commercialRegistrationNumber')}: </span>
                 <span
                   className="font-semibold"
                   style={{ color: 'var(--color-primary)' }}
                 >
-                  {homeData?.CommercialRegistrationNumber || user?.data?.CommercialRegistrationNumber || 'غير محدد'}
+                  {homeData?.CommercialRegistrationNumber || user?.data?.CommercialRegistrationNumber || t('home.notSpecified')}
                 </span>
               </p>
             </div>
@@ -356,7 +324,7 @@ export default function HomePage() {
                   cursor: loading ? 'not-allowed' : 'pointer'
                 }}
                 disabled={loading}
-                title="تعديل بيانات الشركة"
+                title={t('home.editCompany') || 'تعديل بيانات الشركة'}
               >
                 {loading ? (
                   <div
@@ -376,20 +344,20 @@ export default function HomePage() {
         {/* Action Buttons */}
         <Card className="mb-6">
           <h3
-            className="font-semibold mb-4"
+            className={`font-semibold mb-4 ${isRTL ? 'text-right' : 'text-left'}`}
             style={{
               fontSize: 'var(--font-size-lg)',
               color: 'var(--color-text-primary)'
             }}
           >
-            الإجراءات السريعة
+            {t('home.quickActions')}
           </h3>
 
-          <div className="action-buttons-container">
+          <div className={`action-buttons-container ${isRTL ? 'rtl' : 'ltr'}`}>
             {/* Create Branch - requires Admin permission check */}
             <AdminGuard>
               <ButtonCreat
-                text="إنشاء فرع"
+                text={t('home.createBranch')}
                 onpress={handleCreateBranch}
                 className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
               />
@@ -398,7 +366,7 @@ export default function HomePage() {
             {/* Members - Admin can manage all members */}
             <AdminGuard>
               <ButtonCreat
-                text="الأعضاء"
+                text={t('home.members')}
                 onpress={handleMembers}
                 className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
               />
@@ -409,7 +377,7 @@ export default function HomePage() {
             {/* Note: مالية is treated as Admin (job = 'مالية' ? 'Admin' : job) */}
             <AdminGuard>
               <ButtonCreat
-                text="العهد"
+                text={t('home.covenant')}
                 number={homeData?.Covenantnumber || user?.data?.Covenantnumber || 0}
                 onpress={handleCovenant}
                 className="px-4 py-2.5 text-center text-sm whitespace-nowrap"
@@ -422,13 +390,13 @@ export default function HomePage() {
       {/* Branches Section */}
       <ContentSection>
         <h3
-          className="font-semibold mb-4"
+          className={`font-semibold mb-4 ${isRTL ? 'text-right' : 'text-left'}`}
           style={{
             fontSize: 'var(--font-size-lg)',
             color: 'var(--color-text-primary)'
           }}
         >
-          الفروع ({homeData?.data?.length || 0})
+          {t('home.branches')} ({homeData?.data?.length || 0})
         </h3>
 
         {homeData?.data && Array.isArray(homeData.data) && homeData.data.length > 0 ? (
@@ -477,28 +445,28 @@ export default function HomePage() {
               </svg>
             </div>
             <h3
-              className="font-semibold mb-2"
+              className={`font-semibold mb-2 ${isRTL ? 'text-right' : 'text-left'}`}
               style={{
                 fontSize: 'var(--font-size-lg)',
                 color: 'var(--color-text-primary)'
               }}
             >
-              لا توجد فروع
+              {t('home.branches')} (0)
             </h3>
             <p
-              className="mb-6 max-w-sm mx-auto"
+              className={`mb-6 max-w-sm mx-auto ${isRTL ? 'text-right' : 'text-left'}`}
               style={{
                 color: 'var(--color-text-secondary)',
                 fontSize: 'var(--font-size-sm)'
               }}
             >
-              لم يتم إنشاء أي فروع بعد. ابدأ بإنشاء فرع جديد لإدارة مشاريعك.
+              {t('home.noBranchesMessage')}
             </p>
 
             {/* Create Branch Button for empty state - only if admin */}
             {isAdmin && (
               <ButtonCreat
-                text="إنشاء أول فرع"
+                text={t('home.createFirstBranch')}
                 onpress={handleCreateBranch}
               />
             )}

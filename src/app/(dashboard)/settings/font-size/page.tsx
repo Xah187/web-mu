@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -17,16 +18,17 @@ export default function FontSizePage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   const [selectedSize, setSelectedSize] = useState(size);
 
   const fontSizeOptions = [
-    { value: -2, label: 'صغير جداً', description: 'للنصوص الصغيرة' },
-    { value: -1, label: 'صغير', description: 'أصغر من المعتاد' },
-    { value: 0, label: 'عادي', description: 'الحجم الافتراضي' },
-    { value: 1, label: 'كبير', description: 'أكبر من المعتاد' },
-    { value: 2, label: 'كبير جداً', description: 'للنصوص الكبيرة' },
-    { value: 3, label: 'ضخم', description: 'الحد الأقصى' }
+    { value: -2, label: t('settings.fontSize.verySmall'), description: t('settings.fontSize.verySmallDesc') },
+    { value: -1, label: t('settings.fontSize.small'), description: t('settings.fontSize.smallDesc') },
+    { value: 0, label: t('settings.fontSize.normal'), description: t('settings.fontSize.normalDesc') },
+    { value: 1, label: t('settings.fontSize.large'), description: t('settings.fontSize.largeDesc') },
+    { value: 2, label: t('settings.fontSize.veryLarge'), description: t('settings.fontSize.veryLargeDesc') },
+    { value: 3, label: t('settings.fontSize.huge'), description: t('settings.fontSize.hugeDesc') }
   ];
 
   const handleSizeChange = (newSize: number) => {
@@ -35,7 +37,7 @@ export default function FontSizePage() {
 
   const handleSave = () => {
     dispatch(setFontSize(selectedSize));
-    Tostget('تم حفظ حجم الخط بنجاح');
+    Tostget(t('settings.fontSize.savedSuccess'));
     localStorage.setItem('fontSizePreference', selectedSize.toString());
   };
 
@@ -43,7 +45,7 @@ export default function FontSizePage() {
     setSelectedSize(0);
     dispatch(setFontSize(0));
     localStorage.removeItem('fontSizePreference');
-    Tostget('تم إعادة تعيين حجم الخط إلى الافتراضي');
+    Tostget(t('settings.fontSize.resetSuccess'));
   };
 
   const getSampleText = (sizeValue: number) => {
@@ -57,9 +59,14 @@ export default function FontSizePage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="حجم الخط"
+          title={t('settings.fontSize.title')}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+            <button
+              onClick={() => router.back()}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
+              style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+            >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>
@@ -69,7 +76,7 @@ export default function FontSizePage() {
       }
     >
       <ContentSection className="p-4">
-      <div className="p-4">
+      <div className="p-4" dir={dir}>
         <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
           <h2
             className="font-semibold text-gray-900 mb-4"
@@ -78,14 +85,14 @@ export default function FontSizePage() {
               fontSize: scale(16 + size)
             }}
           >
-            معاينة النص الحالي
+            {t('settings.fontSize.currentPreview')}
           </h2>
           <div className="bg-gray-50 rounded-lg p-4">
             <p
               className="text-gray-800 leading-relaxed"
               style={getSampleText(selectedSize)}
             >
-              هذا نص تجريبي لمعاينة حجم الخط المختار. يمكنك رؤية كيف سيظهر النص في التطبيق بالحجم الجديد.
+              {t('settings.fontSize.sampleText')}
             </p>
           </div>
         </div>
@@ -98,7 +105,7 @@ export default function FontSizePage() {
               fontSize: scale(16 + size)
             }}
           >
-            اختر حجم الخط
+            {t('settings.fontSize.selectSize')}
           </h2>
 
           <div className="space-y-3">
@@ -149,7 +156,7 @@ export default function FontSizePage() {
                       className="text-gray-800"
                       style={getSampleText(option.value)}
                     >
-                      نص تجريبي بهذا الحجم
+                      {t('settings.fontSize.sampleSize')}
                     </p>
                   </div>
                 </div>
@@ -167,7 +174,7 @@ export default function FontSizePage() {
               fontSize: scale(14 + size)
             }}
           >
-            إعادة تعيين
+            {t('common.reset')}
           </button>
           <button
             onClick={handleSave}
@@ -177,7 +184,7 @@ export default function FontSizePage() {
               fontSize: scale(14 + size)
             }}
           >
-            حفظ التغييرات
+            {t('common.saveChanges')}
           </button>
         </div>
 
@@ -198,7 +205,7 @@ export default function FontSizePage() {
                   fontSize: scale(14 + size)
                 }}
               >
-                ملاحظة مهمة
+                {t('settings.fontSize.importantNote')}
               </h4>
               <p
                 className="text-blue-800 text-sm leading-relaxed"
@@ -207,7 +214,7 @@ export default function FontSizePage() {
                   fontSize: scale(12 + size)
                 }}
               >
-                سيتم تطبيق حجم الخط المختار على جميع النصوص في التطبيق. يمكنك تغيير الحجم في أي وقت من هذه الصفحة.
+                {t('settings.fontSize.noteDescription')}
               </p>
             </div>
             </div>

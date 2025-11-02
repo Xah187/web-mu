@@ -81,7 +81,14 @@ export default function AddMultipleProjectsModal({
       }
 
       const number = reset ? 0 : lastProjectId;
-      
+
+      console.log('🔍 جلب المشاريع:', {
+        memberPhoneNumber,
+        branchId,
+        number,
+        reset
+      });
+
       // مطابق للتطبيق المحمول - GET /user/BringvalidityuserinBransh
       const response = await axiosInstance.get(
         `/user/BringvalidityuserinBransh?PhoneNumber=${memberPhoneNumber}&idBrinsh=${branchId}&number=${number}`,
@@ -93,17 +100,31 @@ export default function AddMultipleProjectsModal({
         }
       );
 
-      console.log('📊 المشاريع المتاحة:', response.data);
+      console.log('📊 المشاريع المتاحة:', {
+        status: response.status,
+        hasData: !!response.data,
+        dataType: typeof response.data,
+        hasDataArray: !!response.data?.data,
+        dataLength: response.data?.data?.length,
+        firstProject: response.data?.data?.[0]
+      });
 
       if (response.data?.data && Array.isArray(response.data.data)) {
         const newProjects = response.data.data;
-        
+
+        console.log('✅ تم جلب المشاريع:', {
+          count: newProjects.length,
+          projects: newProjects.map((p: Project) => ({ id: p.id, name: p.Nameproject, cheack: p.cheack }))
+        });
+
         if (reset) {
           setProjects(newProjects);
           // تحديد المشاريع الموجودة مسبقاً
           const existingProjects = newProjects
             .filter((p: Project) => p.cheack === 'true')
             .map((p: Project) => p.id);
+
+          console.log('📌 المشاريع الموجودة مسبقاً:', existingProjects);
           setSelectedProjects(existingProjects);
         } else {
           setProjects(prev => [...prev, ...newProjects]);
@@ -114,6 +135,10 @@ export default function AddMultipleProjectsModal({
         }
 
         setHasMore(newProjects.length >= 10);
+      } else {
+        console.log('⚠️ لا توجد مشاريع في الاستجابة');
+        setProjects([]);
+        setHasMore(false);
       }
     } catch (error) {
       console.error('Error fetching projects:', error);
@@ -157,6 +182,13 @@ export default function AddMultipleProjectsModal({
 
     setLoading(true);
     try {
+      console.log('📤 إرسال طلب إضافة مشاريع:', {
+        ProjectesNew: selectedProjects,
+        Validitynew: selectedPermissions,
+        idBrinsh: branchId,
+        PhoneNumber: memberPhoneNumber
+      });
+
       // مطابق للتطبيق المحمول - PUT /user/InsertmultipleProjecsinvalidity
       const response = await axiosInstance.put('/user/InsertmultipleProjecsinvalidity', {
         ProjectesNew: selectedProjects,
@@ -170,16 +202,19 @@ export default function AddMultipleProjectsModal({
         }
       });
 
-      if (response.data?.success === 'تمت العملية بنجاح') {
+      console.log('📊 استجابة إضافة المشاريع:', response.data);
+
+      if (response.data?.success === 'تمت العملية بنجاح' || response.status === 200) {
         Tostget('تم إضافة المشاريع بنجاح');
         onSuccess();
         onClose();
       } else {
         Tostget(response.data?.success || 'فشل في إضافة المشاريع');
       }
-    } catch (error) {
-      console.error('Error adding projects:', error);
-      Tostget('خطأ في إضافة المشاريع');
+    } catch (error: any) {
+      console.error('❌ خطأ في إضافة المشاريع:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'خطأ في إضافة المشاريع';
+      Tostget(errorMessage);
     } finally {
       setLoading(false);
     }

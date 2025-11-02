@@ -11,6 +11,7 @@ import ButtonLong from '@/components/design/ButtonLong';
 import Input from '@/components/design/Input';
 import { useCompanyData, type CompanyData } from '@/hooks/useCompanyData';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -29,6 +30,7 @@ export default function CompanyInfoPage() {
   const router = useRouter();
   const { user, size } = useAppSelector((state: any) => state.user);
   const { companyData, updateCompanyData, loading } = useCompanyData();
+  const { t, isRTL, dir } = useTranslation();
 
   const [formData, setFormData] = useState<Partial<CompanyData>>({
     NameCompany: '',
@@ -113,7 +115,7 @@ export default function CompanyInfoPage() {
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Tostget('يرجى ملء جميع الحقول المطلوبة');
+      Tostget(t('editCompany.fillAllFields'));
       return;
     }
 
@@ -144,12 +146,13 @@ export default function CompanyInfoPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="تعديل بيانات الشركة"
+          title={t('editCompany.title')}
           backButton={
             <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="رجوع"
+              aria-label={t('editCompany.back')}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
               <ArrowIcon size={24} color={colors.BLACK} />
             </button>
@@ -160,14 +163,14 @@ export default function CompanyInfoPage() {
       <ContentSection>
 
       {/* Form Content */}
-      <div className="flex justify-center px-4 py-6 sm:px-6 lg:px-8">
+      <div className="flex justify-center px-4 py-6 sm:px-6 lg:px-8" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <div className="w-full max-w-4xl">
 
           {/* Loading indicator for company data */}
           {loading && !companyData && (
-            <div className="flex items-center justify-center py-8">
+            <div className={`flex items-center justify-center py-8 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <div className="animate-spin w-8 h-8 border-2 border-blue border-t-transparent rounded-full"></div>
-              <span className="mr-3 text-gray-600">جاري تحميل بيانات الشركة...</span>
+              <span className={`${isRTL ? 'mr-3' : 'ml-3'} text-gray-600`}>{t('editCompany.loading')}</span>
             </div>
           )}
 
@@ -176,7 +179,7 @@ export default function CompanyInfoPage() {
           {/* Company Name - Full Width */}
           <div className="mb-6">
             <Input
-              name="اسم الشركة"
+              name={t('editCompany.companyName')}
               value={formData.NameCompany || ''}
               onChange={(value: string) => handleInputChange('NameCompany', value)}
               type="text"
@@ -186,7 +189,7 @@ export default function CompanyInfoPage() {
           {/* Commercial Registration Number - Full Width */}
           <div className="mb-6">
             <Input
-              name="رقم السجل التجاري"
+              name={t('editCompany.commercialRegistrationNumber')}
               value={formData.CommercialRegistrationNumber || ''}
               onChange={(value: string) => handleInputChange('CommercialRegistrationNumber', convertArabicToEnglish(value))}
               type="tel"
@@ -198,7 +201,7 @@ export default function CompanyInfoPage() {
 
             {/* Building Number */}
             <Input
-              name="رقم المبنى"
+              name={t('editCompany.buildingNumber')}
               value={formData.BuildingNumber || ''}
               onChange={(value: string) => handleInputChange('BuildingNumber', convertArabicToEnglish(value))}
 
@@ -207,7 +210,7 @@ export default function CompanyInfoPage() {
 
             {/* Street Name */}
             <Input
-              name="اسم الشارع"
+              name={t('editCompany.streetName')}
               value={formData.StreetName || ''}
               onChange={(value: string) => handleInputChange('StreetName', value)}
               type="text"
@@ -215,7 +218,7 @@ export default function CompanyInfoPage() {
 
             {/* Neighborhood Name */}
             <Input
-              name="اسم الحي"
+              name={t('editCompany.neighborhoodName')}
               value={formData.NeighborhoodName || ''}
               onChange={(value: string) => handleInputChange('NeighborhoodName', value)}
               type="text"
@@ -223,7 +226,7 @@ export default function CompanyInfoPage() {
 
             {/* Postal Code */}
             <Input
-              name="الرمز البريدي"
+              name={t('editCompany.postalCode')}
               value={formData.PostalCode || ''}
               onChange={(value: string) => handleInputChange('PostalCode', convertArabicToEnglish(value))}
               type="tel"
@@ -231,7 +234,7 @@ export default function CompanyInfoPage() {
 
             {/* City */}
             <Input
-              name="المدينة"
+              name={t('editCompany.city')}
               value={formData.City || ''}
               onChange={(value: string) => handleInputChange('City', value)}
               type="text"
@@ -239,7 +242,7 @@ export default function CompanyInfoPage() {
 
             {/* Country */}
             <Input
-              name="البلد"
+              name={t('editCompany.country')}
               value={formData.Country || ''}
               onChange={(value: string) => handleInputChange('Country', value)}
               type="text"
@@ -247,7 +250,7 @@ export default function CompanyInfoPage() {
 
             {/* Tax Number */}
             <Input
-              name="الرقم الضريبي"
+              name={t('editCompany.taxNumber')}
               value={formData.TaxNumber || ''}
               onChange={(value: string) => handleInputChange('TaxNumber', convertArabicToEnglish(value))}
               type="tel"
@@ -255,7 +258,7 @@ export default function CompanyInfoPage() {
 
             {/* Daily Cost */}
             <Input
-              name="التكلفة اليومية على الشركة"
+              name={t('editCompany.dailyCost')}
               value={formData.Cost || ''}
               onChange={(value: string) => handleInputChange('Cost', convertArabicToEnglish(value))}
               type="tel"
@@ -265,7 +268,7 @@ export default function CompanyInfoPage() {
           {/* Submit Button */}
           <div className="mt-8">
             <ButtonLong
-              text={isSubmitting ? 'جاري الحفظ...' : 'تعديل'}
+              text={isSubmitting ? t('editCompany.saving') : t('editCompany.edit')}
               onPress={handleSubmit}
               disabled={isSubmitting || loading}
             />

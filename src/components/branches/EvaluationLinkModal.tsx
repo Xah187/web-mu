@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { verticalScale, scale } from '@/utils/responsiveSize';
 import Input from '@/components/design/Input';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface EvaluationLinkModalProps {
   isOpen: boolean;
@@ -97,7 +98,8 @@ export default function EvaluationLinkModal({
   loading = false,
   initialLink = ''
 }: EvaluationLinkModalProps) {
-  const { size } = useAppSelector((state: any) => state.user);
+  const { size, language } = useAppSelector((state: any) => state.user);
+  const { t } = useTranslation();
   
   const [evaluationLink, setEvaluationLink] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -120,7 +122,7 @@ export default function EvaluationLinkModal({
   const handleSave = async () => {
     try {
       if (!evaluationLink.trim()) {
-        Tostget('يرجى إدخال رابط التقييم');
+        Tostget(t('branchSettings.pleaseEnterEvaluationLink'));
         return;
       }
 
@@ -128,16 +130,16 @@ export default function EvaluationLinkModal({
       try {
         new URL(evaluationLink);
       } catch {
-        Tostget('يرجى إدخال رابط صالح');
+        Tostget(t('branchSettings.pleaseEnterValidLink'));
         return;
       }
 
       await onSave(evaluationLink);
-      Tostget('تم حفظ رابط التقييم بنجاح', 'success');
+      Tostget(t('branchSettings.evaluationLinkSavedSuccess'), 'success');
       onClose();
     } catch (error: any) {
       console.error('Error saving evaluation link:', error);
-      Tostget(error.message || 'فشل في حفظ رابط التقييم', 'error');
+      Tostget(error.message || t('branchSettings.evaluationLinkSavedError'), 'error');
     }
   };
 
@@ -160,7 +162,8 @@ export default function EvaluationLinkModal({
           fontFamily: fonts.IBMPlexSansArabicSemiBold,
           transform: keyboardVisible ? `translateY(${scale(-224)}px)` : 'translateY(0)',
           transition: 'transform 0.3s ease',
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          direction: language === 'ar' ? 'rtl' : 'ltr'
         }}
       >
         {/* Header */}
@@ -181,7 +184,8 @@ export default function EvaluationLinkModal({
             onClick={onClose}
             style={{
               position: 'absolute',
-              left: verticalScale(16),
+              left: language === 'ar' ? verticalScale(16) : 'auto',
+              right: language === 'en' ? verticalScale(16) : 'auto',
               top: verticalScale(16),
               background: 'none',
               border: 'none',
@@ -192,6 +196,7 @@ export default function EvaluationLinkModal({
             }}
             onMouseOver={(e) => e.currentTarget.style.color = '#6b7280'}
             onMouseOut={(e) => e.currentTarget.style.color = '#9ca3af'}
+            aria-label={language === 'ar' ? 'إغلاق' : 'Close'}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -199,7 +204,7 @@ export default function EvaluationLinkModal({
           </button>
 
           {/* Centered title */}
-          <h2 
+          <h2
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: verticalScale(16 + size),
@@ -209,7 +214,7 @@ export default function EvaluationLinkModal({
               margin: 0
             }}
           >
-            رابط التقييم
+            {t('branchSettings.evaluationLink')}
           </h2>
         </div>
 
@@ -233,7 +238,7 @@ export default function EvaluationLinkModal({
             <InputField
               value={evaluationLink}
               onChange={setEvaluationLink}
-              placeholder="أدخل رابط التقييم (مثال: https://forms.google.com/...)"
+              placeholder={t('branchSettings.enterEvaluationLink')}
               onFocus={handleFocus}
             />
           </div>
@@ -258,14 +263,14 @@ export default function EvaluationLinkModal({
                   maxWidth: '400px'
                 }}
               >
-                <p style={{ 
+                <p style={{
                   fontSize: verticalScale(12 + size),
                   color: '#0369a1',
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   margin: 0,
                   textAlign: 'center'
                 }}>
-                  <strong>معاينة الرابط:</strong>{' '}
+                  <strong>{t('branchSettings.linkPreview')}</strong>{' '}
                   <a 
                     href={evaluationLink} 
                     target="_blank" 
@@ -309,7 +314,7 @@ export default function EvaluationLinkModal({
                   fontWeight: '600'
                 }}
               >
-                {loading ? 'جاري الحفظ...' : 'إضافة'}
+                {loading ? t('branchSettings.saving') : t('branchSettings.add')}
               </span>
             </div>
           </ButtonLong>

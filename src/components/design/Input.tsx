@@ -53,8 +53,9 @@ export default function Input({
   error,
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const { size } = useAppSelector(state => state.user);
+  const { size, language } = useAppSelector(state => state.user);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const isRTL = language === 'ar';
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const newValue = e.target.value;
@@ -101,13 +102,13 @@ export default function Input({
       {/* External Label */}
       {(label || name) && !placeholder && (
         <label
-          className="block text-gray-700 text-right"
+          className={`block text-gray-700 ${isRTL ? 'text-right' : 'text-left'}`}
           style={{
             fontSize: `${scale(14 + size)}px`,
             fontFamily: fonts.IBMPlexSansArabicMedium,
             marginBottom: `${scale(8)}px`,
             fontWeight: 500,
-            color: error ? '#ef4444' : '#374151'
+            color: error ? '#ef4444' : 'var(--theme-text-primary)'
           }}
         >
           {label || name}
@@ -138,7 +139,7 @@ export default function Input({
           disabled={disabled}
           placeholder={placeholder || (label || name ? undefined : `أدخل ${name}`)}
           className={`
-            w-full bg-transparent outline-none text-black text-right
+            w-full bg-transparent outline-none ${isRTL ? 'text-right' : 'text-left'}
             ${multiline ? 'resize-none' : ''}
             ${disabled ? 'cursor-not-allowed' : ''}
           `}
@@ -150,6 +151,8 @@ export default function Input({
             padding: `${scale(16)}px ${scale(16)}px`,
             paddingTop: (value && value.length > 0) || placeholder ? `${scale(20)}px` : `${scale(16)}px`,
             paddingBottom: (value && value.length > 0) || placeholder ? `${scale(8)}px` : `${scale(16)}px`,
+            color: 'var(--theme-text-primary)',
+            direction: isRTL ? 'rtl' : 'ltr'
           }}
         />
 
@@ -157,7 +160,7 @@ export default function Input({
         {!label && !placeholder && (
           <label
             className={`
-              absolute right-4 px-2 pointer-events-none
+              absolute ${isRTL ? 'right-4' : 'left-4'} px-2 pointer-events-none
               transition-all duration-200 z-10
               ${(value && String(value).trim().length > 0) || isFocused
                 ? '-top-2 text-xs font-medium'
@@ -168,8 +171,8 @@ export default function Input({
               fontSize: (value && String(value).trim().length > 0) || isFocused ? `${scale(11 + size)}px` : `${scale(14 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium,
               lineHeight: '1.2',
-              color: (value && String(value).trim().length > 0) || isFocused ? 'var(--color-primary)' : 'var(--color-text-secondary)',
-              backgroundColor: 'var(--color-card-background)'
+              color: (value && String(value).trim().length > 0) || isFocused ? 'var(--theme-primary)' : 'var(--theme-text-secondary)',
+              backgroundColor: 'var(--theme-card-background)'
             }}
           >
             {name}
@@ -193,10 +196,10 @@ export default function Input({
                   }
                 }
               } catch (err) {
-                console.error('Failed to read clipboard');
+                // Silently fail
               }
             }}
-            className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-xs rounded-md hover:bg-bluedark transition-colors duration-200"
+            className={`absolute ${isRTL ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 text-white text-xs rounded-md hover:bg-bluedark transition-colors duration-200`}
             style={{
               fontSize: `${scale(11 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium,
@@ -205,7 +208,7 @@ export default function Input({
               backgroundColor: colors.BLUE
             }}
           >
-            لصق
+            {isRTL ? 'لصق' : 'Paste'}
           </button>
         )}
       </div>
@@ -213,7 +216,7 @@ export default function Input({
       {/* Error Message */}
       {error && (
         <p
-          className="text-red-500 text-right"
+          className={`text-red-500 ${isRTL ? 'text-right' : 'text-left'}`}
           style={{
             fontSize: `${scale(12 + size)}px`,
             fontFamily: fonts.IBMPlexSansArabicMedium,

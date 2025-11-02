@@ -9,8 +9,8 @@ import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layou
 import useValidityUser from '@/hooks/useValidityUser';
 import EditMemberModal from '@/components/members/EditMemberModal';
 import DeleteMemberModal from '@/components/members/DeleteMemberModal';
-import AddMultipleProjectsModal from '@/components/branch/AddMultipleProjectsModal';
 import ProjectPermissionsModal from '@/components/project/ProjectPermissionsModal';
+import AddProjectUsersModal from '@/components/project/AddProjectUsersModal';
 
 // مطابق للتطبيق المحمول PageUsers.tsx
 interface ProjectMember {
@@ -23,6 +23,7 @@ interface ProjectMember {
   image?: string;
   Date: string;
   is_in_ProjectID?: string; // "true" or "false"
+  original_is_in?: string; // القيمة الأصلية - مطابق للتطبيق المحمول
   ValidityProject?: string[]; // صلاحيات المستخدم في المشروع
 }
 
@@ -45,7 +46,7 @@ export default function ProjectMembersPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [showPermissionsModal, setShowPermissionsModal] = useState(false);
-  const [showMultipleProjectsModal, setShowMultipleProjectsModal] = useState(false);
+  const [showAddUsersModal, setShowAddUsersModal] = useState(false); // مودال إضافة أعضاء - مطابق للتطبيق
   const [filter, setFilter] = useState('all');
   const [showFilterModal, setShowFilterModal] = useState(false);
 
@@ -63,6 +64,8 @@ export default function ProjectMembersPage() {
     try {
       setLoading(true);
 
+      console.log('🔍 Fetching project members for project:', projectId, 'branch:', branchId);
+
       // مطابق للتطبيق المحمول: استخدام BringUserCompanyinv2 بدلاً من BringUserCompanyBrinsh
       // type = رقم المشروع، selectuser = "project"
       const response = await axiosInstance.get(
@@ -75,16 +78,33 @@ export default function ProjectMembersPage() {
         }
       );
 
+      console.log('📊 Project members API response:', response.data);
+
       if (response.data?.data) {
-        const newMembers = response.data.data;
+        const allMembers = response.data.data;
+
+        console.log('👥 All members from API:', allMembers.length);
+        console.log('📋 Sample member:', allMembers[0]);
+
+        // إضافة original_is_in لكل عضو - مطابق للتطبيق المحمول
+        const membersWithOriginal = allMembers.map((member: any) => ({
+          ...member,
+          original_is_in: member.is_in_ProjectID || 'false'
+        }));
+
+        console.log('✅ Members with original_is_in:', membersWithOriginal.slice(0, 2));
 
         if (lastId === 0) {
-          setMembers(newMembers);
+          setMembers(membersWithOriginal);
         } else {
-          setMembers(prev => [...prev, ...newMembers]);
+          setMembers(prev => {
+            const existingIds = new Set(prev.map((m: any) => m.id));
+            const newMembers = membersWithOriginal.filter((m: any) => !existingIds.has(m.id));
+            return [...prev, ...newMembers];
+          });
         }
 
-        setHasMore(newMembers.length >= 10);
+        setHasMore(allMembers.length >= 10);
       }
     } catch (error) {
       console.error('Error fetching project members:', error);
@@ -106,33 +126,55 @@ export default function ProjectMembersPage() {
     const updatedMembers = members.map(m =>
       m.id === memberId ? { ...m, is_in_ProjectID: isInProjectValue } : m
     );
-    setMembers(updatedMembers);
 
     const member = members.find(m => m.id === memberId);
     if (!member) return;
 
-    if (isInProjectValue === 'true') {
-      // إضافة للمشروع
-      setCheckGloblenew(prev => ({
-        ...prev,
-        [memberId]: { id: memberId, Validity: member.ValidityProject || [] }
-      }));
-      // إزالة من قائمة الحذف إذا كان موجوداً
-      setCheckGlobledelete(prev => {
-        const newState = { ...prev };
-        delete newState[memberId];
-        return newState;
-      });
+    const original = member.original_is_in; // "true" | "false"
+
+    console.log('🔄 تغيير حالة العضو في المشروع:', {
+      memberId,
+      memberName: member.userName,
+      original,
+      newValue: isInProjectValue
+    });
+
+    // بناء القوائم الجديدة - مطابق للتطبيق المحمول
+    const nextNew = { ...checkGloblenew };
+    const nextDel = { ...checkGlobledelete };
+
+    if (isInProjectValue !== original) {
+      if (isInProjectValue === 'true') {
+        // إضافة عضو جديد للمشروع
+        nextNew[memberId] = { id: memberId, Validity: member.ValidityProject || [] };
+        delete nextDel[memberId];
+        console.log('➕ إضافة عضو جديد للمشروع:', memberId);
+      } else {
+        // إزالة عضو من المشروع
+        delete nextNew[memberId];
+        if (original === 'true') {
+          nextDel[memberId] = memberId;
+          console.log('➖ إزالة عضو موجود من المشروع:', memberId);
+        } else {
+          delete nextDel[memberId];
+          console.log('🔙 إلغاء إضافة عضو للمشروع:', memberId);
+        }
+      }
     } else {
-      // إزالة من المشروع
-      setCheckGlobledelete(prev => ({ ...prev, [memberId]: memberId }));
-      // إزالة من قائمة الإضافة إذا كان موجوداً
-      setCheckGloblenew(prev => {
-        const newState = { ...prev };
-        delete newState[memberId];
-        return newState;
-      });
+      // العودة للحالة الأصلية
+      delete nextNew[memberId];
+      delete nextDel[memberId];
+      console.log('↩️ العودة للحالة الأصلية:', memberId);
     }
+
+    console.log('📊 القوائم المحدثة:', {
+      checkGloblenew: nextNew,
+      checkGlobledelete: nextDel
+    });
+
+    setMembers(updatedMembers);
+    setCheckGloblenew(nextNew);
+    setCheckGlobledelete(nextDel);
   };
 
   // حفظ التغييرات - مطابق للتطبيق المحمول
@@ -140,59 +182,71 @@ export default function ProjectMembersPage() {
     try {
       setActionLoading({ save: true });
 
-      // إضافة الأعضاء الجدد
-      if (Object.keys(checkGloblenew).length > 0) {
-        const response = await axiosInstance.put(
-          '/user/updat/userBrinshv2',
-          {
-            IDCompanySub: branchId,
-            type: projectId,
-            checkGloble: checkGloblenew
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.accessToken}`
-            }
-          }
-        );
+      console.log('💾 حفظ التغييرات للمشروع:', {
+        projectId,
+        branchId,
+        newMembers: checkGloblenew,
+        deletedMembers: checkGlobledelete
+      });
 
-        if (response.data?.success) {
-          Tostget('تم إضافة الأعضاء بنجاح');
-        }
+      // التحقق من وجود تغييرات
+      const hasNewMembers = Object.keys(checkGloblenew).length > 0;
+      const hasDeletedMembers = Object.keys(checkGlobledelete).length > 0;
+
+      if (!hasNewMembers && !hasDeletedMembers) {
+        Tostget('لم يتم إجراء أي تغييرات');
+        setActionLoading({ save: false });
+        return;
       }
 
-      // حذف الأعضاء
-      if (Object.keys(checkGlobledelete).length > 0) {
-        const response = await axiosInstance.put(
-          '/user/updat/userBrinshv2',
-          {
-            IDCompanySub: branchId,
-            type: projectId,
-            checkGloble: {},
-            checkGlobledelete: checkGlobledelete
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.accessToken}`
-            }
-          }
-        );
+      // إرسال طلب واحد مع كل التغييرات - مطابق للتطبيق المحمول
+      const requestData = {
+        idBrinsh: branchId,
+        type: projectId,
+        checkGloblenew: checkGloblenew,
+        checkGlobleold: checkGlobledelete,
+        kind: 'user'
+      };
 
-        if (response.data?.success) {
-          Tostget('تم إزالة الأعضاء بنجاح');
+      console.log('📤 إرسال الطلب:', requestData);
+
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.accessToken}`
         }
+      });
+
+      console.log('📊 API Response:', {
+        status: response.status,
+        data: response.data
+      });
+
+      // التحقق من النجاح - مطابق للباك اند
+      if (response.data?.success === true || response.data?.message === 'successfuly' || response.status === 200) {
+        const addedCount = Object.keys(checkGloblenew).length;
+        const removedCount = Object.keys(checkGlobledelete).length;
+
+        if (addedCount > 0 && removedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} وحذف ${removedCount} من أعضاء المشروع`);
+        } else if (addedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} عضو للمشروع`);
+        } else if (removedCount > 0) {
+          Tostget(`تم حذف ${removedCount} عضو من المشروع`);
+        }
+
+        // إعادة تحميل البيانات
+        setCheckGloblenew({});
+        setCheckGlobledelete({});
+        await fetchProjectMembers(0);
+      } else {
+        Tostget(response.data?.message || 'فشل في حفظ التغييرات');
       }
 
-      // إعادة تحميل البيانات
-      setCheckGloblenew({});
-      setCheckGlobledelete({});
-      await fetchProjectMembers(0);
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving changes:', error);
-      Tostget('خطأ في حفظ التغييرات');
+      const errorMessage = error.response?.data?.message || error.message || 'خطأ في حفظ التغييرات';
+      Tostget(errorMessage);
     } finally {
       setActionLoading({ save: false });
     }
@@ -243,14 +297,16 @@ export default function ProjectMembersPage() {
     }
   };
 
-  const handleAddMultipleProjects = async (member: ProjectMember) => {
-    if (user?.data?.job === 'Admin' && branchId) {
-      setSelectedMember(member);
-      setShowMultipleProjectsModal(true);
-    } else {
-      Tostget('ليس في نطاق صلاحياتك');
-    }
-  };
+  // ملاحظة: هذه الدالة غير مستخدمة في صفحة أعضاء المشروع
+  // لأن خيار "إضافة عدة مشاريع" لا يظهر هنا (مطابق للتطبيق المحمول)
+  // const handleAddMultipleProjects = async (member: ProjectMember) => {
+  //   if (user?.data?.job === 'Admin' && branchId) {
+  //     setSelectedMember(member);
+  //     setShowMultipleProjectsModal(true);
+  //   } else {
+  //     Tostget('ليس في نطاق صلاحياتك');
+  //   }
+  // };
 
   const getJobDisplay = (member: ProjectMember) => {
     const job = member.job || '';
@@ -307,22 +363,40 @@ export default function ProjectMembersPage() {
       <ContentSection>
         {/* Filter and Actions Bar */}
         <div className="flex items-center justify-between mb-4 px-4">
-          <button
-            onClick={() => setShowFilterModal(true)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <line x1="4" y1="21" x2="4" y2="14"></line>
-              <line x1="4" y1="10" x2="4" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="12"></line>
-              <line x1="12" y1="8" x2="12" y2="3"></line>
-              <line x1="20" y1="21" x2="20" y2="16"></line>
-              <line x1="20" y1="12" x2="20" y2="3"></line>
-              <line x1="1" y1="14" x2="7" y2="14"></line>
-              <line x1="9" y1="8" x2="15" y2="8"></line>
-              <line x1="17" y1="16" x2="23" y2="16"></line>
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowFilterModal(true)}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="4" y1="21" x2="4" y2="14"></line>
+                <line x1="4" y1="10" x2="4" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12" y2="3"></line>
+                <line x1="20" y1="21" x2="20" y2="16"></line>
+                <line x1="20" y1="12" x2="20" y2="3"></line>
+                <line x1="1" y1="14" x2="7" y2="14"></line>
+                <line x1="9" y1="8" x2="15" y2="8"></line>
+                <line x1="17" y1="16" x2="23" y2="16"></line>
+              </svg>
+            </button>
+
+            {/* زر إضافة أعضاء - مطابق للتطبيق المحمول */}
+            {user?.data?.job === 'Admin' && (
+              <button
+                onClick={() => setShowAddUsersModal(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-semibold"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <line x1="19" y1="8" x2="19" y2="14"/>
+                  <line x1="22" y1="11" x2="16" y2="11"/>
+                </svg>
+                <span>إضافة أعضاء</span>
+              </button>
+            )}
+          </div>
 
           {hasChanges && (
             <div className="flex gap-2">
@@ -461,23 +535,13 @@ export default function ProjectMembersPage() {
                   </button>
                 )}
 
-                {/* 4. إضافة عدة مشاريع - يظهر فقط إذا كان في فرع */}
-                {branchId && user?.data?.job === 'Admin' && (
-                  <button
-                    onClick={() => {
-                      setShowOptionsModal(false);
-                      handleAddMultipleProjects(selectedMember);
-                    }}
-                    className="w-full p-4 text-right bg-gray-50 hover:bg-gray-100 rounded-2xl transition-colors flex items-center justify-start gap-3"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-purple-600">
-                      <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-                      <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-                      <line x1="12" y1="22.08" x2="12" y2="12"/>
-                    </svg>
-                    <span className="font-ibm-arabic-semibold text-gray-900">إضافة عدة مشاريع</span>
-                  </button>
-                )}
+                {/*
+                  ملاحظة: خيار "إضافة عدة مشاريع" لا يظهر في صفحة أعضاء المشروع
+                  مطابق للتطبيق المحمول OpreationUser.tsx السطر 68:
+                  display: Number(idBransh) && !Number(type) ? 'flex' : 'none'
+                  أي يظهر فقط في صفحة أعضاء الفرع (type = 'Home' أو غير رقم)
+                  ولا يظهر في صفحة أعضاء المشروع (type = رقم المشروع)
+                */}
               </div>
 
               <button
@@ -578,21 +642,15 @@ export default function ProjectMembersPage() {
           />
         )}
 
-        {/* Add Multiple Projects Modal */}
-        {showMultipleProjectsModal && selectedMember && branchId && (
-          <AddMultipleProjectsModal
-            isOpen={showMultipleProjectsModal}
-            onClose={() => {
-              setShowMultipleProjectsModal(false);
-              setSelectedMember(null);
-            }}
-            branchId={parseInt(branchId)}
-            memberPhoneNumber={selectedMember.PhoneNumber}
-            memberName={selectedMember.userName}
-            onSuccess={() => {
-              fetchProjectMembers(0);
-              setShowMultipleProjectsModal(false);
-              setSelectedMember(null);
+        {/* Add Users Modal - مطابق للتطبيق المحمول */}
+        {showAddUsersModal && (
+          <AddProjectUsersModal
+            isOpen={showAddUsersModal}
+            onClose={() => setShowAddUsersModal(false)}
+            projectId={parseInt(projectId)}
+            branchId={branchId ? parseInt(branchId) : undefined}
+            onSaved={async () => {
+              await fetchProjectMembers(0);
             }}
           />
         )}

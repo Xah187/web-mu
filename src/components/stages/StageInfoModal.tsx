@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface StageInfoModalProps {
   isOpen: boolean;
@@ -32,11 +33,12 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
   onProceedToClose,
   stage
 }) => {
+  const { t } = useTranslation();
   const isStageCompleted = stage.Done === 'true';
   const hasNotes = stage.NoteOpen !== null || stage.NoteClosed !== null;
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'لم يحدد';
+    if (!dateString) return t('stageInfoModal.notSpecified');
 
     try {
       const date = new Date(dateString);
@@ -48,7 +50,7 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
       const minutes = String(date.getMinutes()).padStart(2, '0');
       return `${year}-${month}-${day} ${hours}:${minutes}`;
     } catch {
-      return 'تاريخ غير صحيح';
+      return t('stageInfoModal.invalidDate');
     }
   };
 
@@ -118,7 +120,7 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                       lineHeight: 1.4
                     }}
                   >
-                    تفاصيل المرحلة
+                    {t('stageInfoModal.title')}
                   </h2>
                 </div>
                 <button
@@ -169,11 +171,11 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                           </>
                         )}
                       </svg>
-                      <span 
+                      <span
                         className="font-ibm-arabic-semibold"
                         style={{ fontSize: scale(14) }}
                       >
-                        {isStageCompleted ? 'مرحلة مقفلة' : 'مرحلة مفتوحة'}
+                        {isStageCompleted ? t('stageInfoModal.stageClosed') : t('stageInfoModal.stageOpen')}
                       </span>
                     </div>
                   </div>
@@ -204,11 +206,11 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                   {/* End Date */}
                   {stage.EndDate && (
                     <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <span 
+                      <span
                         className="text-gray-600 font-ibm-arabic-medium"
                         style={{ fontSize: scale(14) }}
                       >
-                        تاريخ الانتهاء المتوقع:
+                        {t('stageInfoModal.expectedEndDate')}
                       </span>
                       <span 
                         className="text-gray-900 font-ibm-arabic-semibold"
@@ -223,13 +225,13 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                   {isStageCompleted && stage.CloseDate && (
                     <>
                       <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                        <span 
+                        <span
                           className="text-red-600 font-ibm-arabic-medium"
                           style={{ fontSize: scale(14) }}
                         >
-                          تاريخ الإغلاق:
+                          {t('stageInfoModal.closeDate')}
                         </span>
-                        <span 
+                        <span
                           className="text-red-900 font-ibm-arabic-semibold"
                           style={{ fontSize: scale(14) }}
                         >
@@ -239,30 +241,30 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
 
                       {stage.Difference !== undefined && (
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span 
+                          <span
                             className="text-gray-600 font-ibm-arabic-medium"
                             style={{ fontSize: scale(14) }}
                           >
-                            الفارق:
+                            {t('stageInfoModal.difference')}
                           </span>
-                          <span 
+                          <span
                             className={`font-ibm-arabic-semibold ${
                               stage.Difference > 0 ? 'text-green-600' : stage.Difference < 0 ? 'text-red-600' : 'text-gray-900'
                             }`}
                             style={{ fontSize: scale(14) }}
                           >
-                            {stage.Difference} يوم
+                            {stage.Difference} {t('stageInfoModal.days')}
                           </span>
                         </div>
                       )}
 
                       {stage.ClosedBy && (
                         <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <span 
+                          <span
                             className="text-gray-600 font-ibm-arabic-medium"
                             style={{ fontSize: scale(14) }}
                           >
-                            أغلقت بواسطة:
+                            {t('stageInfoModal.closedBy')}
                           </span>
                           <span 
                             className="text-gray-900 font-ibm-arabic-semibold"
@@ -282,23 +284,23 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                         </svg>
-                        <span 
+                        <span
                           className="text-yellow-700 font-ibm-arabic-semibold"
                           style={{ fontSize: scale(14) }}
                         >
-                          ملاحظات المرحلة
+                          {t('stageInfoModal.stageNotes')}
                         </span>
                       </div>
-                      
+
                       {stage.NoteClosed && (
                         <div className="mb-2">
-                          <span 
+                          <span
                             className="text-yellow-600 font-ibm-arabic-medium text-sm"
                             style={{ fontSize: scale(12) }}
                           >
-                            ملاحظة الإغلاق:
+                            {t('stageInfoModal.closeNote')}
                           </span>
-                          <p 
+                          <p
                             className="text-yellow-800 font-ibm-arabic-regular mt-1"
                             style={{ fontSize: scale(13) }}
                           >
@@ -306,14 +308,14 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                           </p>
                         </div>
                       )}
-                      
+
                       {stage.NoteOpen && (
                         <div>
-                          <span 
+                          <span
                             className="text-yellow-600 font-ibm-arabic-medium text-sm"
                             style={{ fontSize: scale(12) }}
                           >
-                            ملاحظة الفتح:
+                            {t('stageInfoModal.openNote')}
                           </span>
                           <p 
                             className="text-yellow-800 font-ibm-arabic-regular mt-1"
@@ -334,19 +336,19 @@ const StageInfoModal: React.FC<StageInfoModalProps> = ({
                     className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-ibm-arabic-semibold hover:bg-gray-200 transition-colors"
                     style={{ fontSize: scale(14) }}
                   >
-                    إغلاق
+                    {t('stageInfoModal.close')}
                   </button>
-                  
+
                   <button
                     onClick={onProceedToClose}
                     className={`flex-1 px-4 py-3 text-white rounded-lg font-ibm-arabic-semibold transition-colors ${
-                      isStageCompleted 
-                        ? 'bg-green-600 hover:bg-green-700' 
+                      isStageCompleted
+                        ? 'bg-green-600 hover:bg-green-700'
                         : 'bg-red-600 hover:bg-red-700'
                     }`}
                     style={{ fontSize: scale(14) }}
                   >
-                    {isStageCompleted ? 'فتح المرحلة' : 'إغلاق المرحلة'}
+                    {isStageCompleted ? t('stageInfoModal.openStage') : t('stageInfoModal.closeStage')}
                   </button>
                 </div>
               </div>

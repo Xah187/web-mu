@@ -6,6 +6,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 import ArrowIcon from '@/components/icons/ArrowIcon';
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
@@ -14,53 +15,54 @@ import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layou
 export default function AboutPage() {
   const router = useRouter();
   const { size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [expandedFeature, setExpandedFeature] = useState(0);
 
   const features = [
     {
       id: 1,
-      name: "* إشراف ومتابعة إلكترونية",
-      description: "تسهّل المنصة عملية التواصل بين جميع الأطراف المرتبطة بالمشروع، مما يضمن شفافية العمل وسرعة اتخاذ القرارات."
+      name: t('settings.about.feature1Name'),
+      description: t('settings.about.feature1Desc')
     },
     {
       id: 2,
-      name: "* توثيق وتسجيل تلقائي",
-      description: "تم تسجيل كافة العمليات والتحديثات إلكترونيًا، مما يسهم في أرشفة البيانات وسهولة الرجوع إليها عند الحاجة."
+      name: t('settings.about.feature2Name'),
+      description: t('settings.about.feature2Desc')
     },
     {
       id: 3,
-      name: "* إدارة مالية دقيقة",
-      description: "تساعد المنصة في مراقبة التكاليف والمصروفات، مما يعزز الرقابة المالية ويضمن تحقيق أعلى مستويات الكفاءة."
+      name: t('settings.about.feature3Name'),
+      description: t('settings.about.feature3Desc')
     },
     {
       id: 4,
-      name: "* تقارير لحظية",
-      description: "توفر المنصة إمكانية استدعاء التقارير الفنية والمالية في أي وقت، مما يسهل عملية التحليل واتخاذ القرارات المناسبة."
+      name: t('settings.about.feature4Name'),
+      description: t('settings.about.feature4Desc')
     },
     {
       id: 5,
-      name: "* تكامل بين الأطراف",
-      description: "تربط المنصة بين الملاك والمشرفين والمقاولين، مما يضمن سير العمل بانتظام وفق الجدول الزمني المخطط له."
+      name: t('settings.about.feature5Name'),
+      description: t('settings.about.feature5Desc')
     },
     {
       id: 6,
-      name: "* تنبيهات وإشعارات ذكية",
-      description: "تُمكّن المستخدمين من تلقي إشعارات فورية حول تقدم المشروع أو أي تحديثات ضرورية."
+      name: t('settings.about.feature6Name'),
+      description: t('settings.about.feature6Desc')
     },
     {
       id: 7,
-      name: "* إدارة العقود والمستندات",
-      description: "توفر المنصة نظامًا رقميًا لحفظ العقود والمستندات، مما يضمن سهولة الوصول إليها في أي وقت."
+      name: t('settings.about.feature7Name'),
+      description: t('settings.about.feature7Desc')
     },
     {
       id: 8,
-      name: "* ️طلب المواد والكميات",
-      description: "تتيح المنصة تسجيل التوريد وضمان توفر المواد في الوقت المناسب."
+      name: t('settings.about.feature8Name'),
+      description: t('settings.about.feature8Desc')
     },
     {
       id: 9,
-      name: "* أمان وخصوصية",
-      description: "تعتمد المنصة على تقنيات متقدمة لحماية بيانات المستخدمين وضمان سرية المعلومات."
+      name: t('settings.about.feature9Name'),
+      description: t('settings.about.feature9Desc')
     }
   ];
 
@@ -81,14 +83,15 @@ export default function AboutPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="حول منصة مشرف"
+          title={t('settings.about.title')}
           backButton={
             <button
               onClick={() => router.push('/home')}
               className="p-2 rounded-lg transition-colors"
               style={{
                 backgroundColor: 'transparent',
-                color: 'var(--color-text-primary)'
+                color: 'var(--color-text-primary)',
+                transform: isRTL ? 'none' : 'rotate(180deg)'
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
@@ -96,7 +99,7 @@ export default function AboutPage() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="رجوع"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
             >
               <ArrowIcon size={24} color="var(--color-text-primary)" />
             </button>
@@ -107,37 +110,32 @@ export default function AboutPage() {
       <ContentSection>
 
       {/* Content */}
-      <div className="flex-1 p-5" style={{ backgroundColor: 'var(--color-background-primary)' }}>
+      <div className="flex-1 p-5" dir={dir} style={{ backgroundColor: 'var(--color-background-primary)' }}>
         {/* Introduction Section */}
         <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
-          <p className="text-right" style={textStyle}>
-            منصة مشرف هي الحل الرقمي المتكامل لإدارة المشاريع والأنشطة المتعلقة
-            بالمقاولات والإشراف الفني والمالي للمباني، حيث توفر تجربة ذكية
-            ومتطورة تساهم في تحسين الأداء وتسريع تنفيذ المشاريع بجودة وكفاءة
-            عالية.
+          <p style={textStyle}>
+            {t('settings.about.introduction')}
           </p>
         </div>
 
         {/* Why Moshrif Section */}
-        <p style={subHeaderStyle}>لماذا منصة مشرف؟</p>
+        <p style={subHeaderStyle}>{t('settings.about.whyMoshrif')}</p>
         <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
-          <p className="text-right" style={textStyle}>
-            في ظل التطور التكنولوجي المتسارع، أصبح من الضروري الاعتماد على حلول
-            رقمية تسهّل عمليات البناء والإشراف وتضمن تحقيق الأهداف بأعلى
-            المعايير. تقدم منصة مشرف أدوات متقدمة تُمكّن المستخدمين من إدارة
-            مشاريعهم بكفاءة، بدءًا من التخطيط وحتى التسليم النهائي.
+          <p style={textStyle}>
+            {t('settings.about.whyMoshrifDesc')}
           </p>
         </div>
 
         {/* Features Section */}
-        <p style={subHeaderStyle}>مميزات منصة مشرف:</p>
+        <p style={subHeaderStyle}>{t('settings.about.features')}</p>
         {features.map((feature) => (
           <button
             key={feature.id}
             onClick={() => setExpandedFeature(expandedFeature === feature.id ? 0 : feature.id)}
-            className="w-full p-5 rounded-3xl mb-5 text-right transition-colors"
+            className="w-full p-5 rounded-3xl mb-5 transition-colors"
             style={{
               backgroundColor: 'var(--color-card-background)',
+              textAlign: isRTL ? 'right' : 'left'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.backgroundColor = 'var(--color-hover-background)';
@@ -156,32 +154,32 @@ export default function AboutPage() {
         ))}
 
         {/* How it Works Section */}
-        <p style={subHeaderStyle}>كيف تعمل منصة مشرف؟</p>
+        <p style={subHeaderStyle}>{t('settings.about.howItWorks')}</p>
         <div className="p-5 rounded-3xl mb-5" style={{ backgroundColor: 'var(--color-card-background)' }}>
           <div className="space-y-3">
             <div>
-              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- تسجيل المشروع</p>
-              <p style={textStyle}>يقوم المالك أو المقاول بإدخال بيانات المشروع وتفاصيله عبر المنصة.</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>{t('settings.about.step1Title')}</p>
+              <p style={textStyle}>{t('settings.about.step1Desc')}</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- إضافة الفرق والأدوار</p>
-              <p style={textStyle}>يتم تحديد المشرفين والمهندسين المسؤولين عن التنفيذ والمتابعة.</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>{t('settings.about.step2Title')}</p>
+              <p style={textStyle}>{t('settings.about.step2Desc')}</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- تحديث مستمر</p>
-              <p style={textStyle}>يتم تسجيل مراحل المشروع خطوة بخطوة مع توثيق كافة العمليات إلكترونيًا.</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>{t('settings.about.step3Title')}</p>
+              <p style={textStyle}>{t('settings.about.step3Desc')}</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- إصدار التقارير</p>
-              <p style={textStyle}>يمكن استخراج التقارير المالية والفنية بدقة عالية عند الحاجة.</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>{t('settings.about.step4Title')}</p>
+              <p style={textStyle}>{t('settings.about.step4Desc')}</p>
             </div>
 
             <div>
-              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>- التواصل الفعّال</p>
-              <p style={textStyle}>تتيح المنصة قنوات اتصال مباشرة بين جميع الأطراف لضمان تحقيق الأهداف.</p>
+              <p style={{ ...textStyle, color: 'var(--color-primary)' }}>{t('settings.about.step5Title')}</p>
+              <p style={textStyle}>{t('settings.about.step5Desc')}</p>
             </div>
           </div>
         </div>
@@ -213,7 +211,7 @@ export default function AboutPage() {
               fontSize: verticalScale(14 + size),
             }}
           >
-            رقم الاصدار (1.0.0)
+            {t('settings.about.version')}
           </p>
         </div>
       </div>

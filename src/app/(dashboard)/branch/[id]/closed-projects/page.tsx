@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
-import useValidityUser from '@/hooks/useValidityUser';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Types
 interface ClosedProject {
-  id: number;
+  ProjectID: number; // Matching mobile app field name
   Nameproject: string;
   Note: string;
   TypeOFContract: string;
@@ -26,16 +26,15 @@ export default function ClosedProjectsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t, dir } = useTranslation();
 
   const branchId = parseInt(params.id as string);
-  const branchName = searchParams.get('branchName') || 'الفرع';
+  const branchName = searchParams.get('branchName') || t('closedProjectsPage.branch');
 
   const { user } = useSelector((state: any) => state.user || {});
-  const { Uservalidation } = useValidityUser();
 
   const [projects, setProjects] = useState<ClosedProject[]>([]);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   // Responsive grid like Home/Projects pages
   const [screenWidth, setScreenWidth] = useState(
     typeof window !== 'undefined' ? window.innerWidth : 1024
@@ -48,15 +47,11 @@ export default function ClosedProjectsPage() {
 
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
 
-  useEffect(() => {
-    fetchClosedProjects();
-  }, [branchId]);
-
-  const fetchClosedProjects = async (lastId = 0) => {
+  const fetchClosedProjects = useCallback(async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get(
-        `/brinshCompany/BringDataprojectClosed?IDCompanySub=${branchId}&IDfinlty=${lastId}`,
+        `/brinshCompany/BringDataprojectClosed?IDCompanySub=${branchId}&IDfinlty=0`,
         {
           headers: { Authorization: `Bearer ${user?.accessToken}` }
         }
@@ -64,55 +59,43 @@ export default function ClosedProjectsPage() {
 
       if (response.data?.data) {
         const newProjects = response.data.data;
-        if (lastId === 0) {
-          setProjects(newProjects);
-        } else {
-          setProjects(prev => [...prev, ...newProjects]);
-        }
-        setHasMore(newProjects.length > 0);
+        setProjects(newProjects);
       }
     } catch (error) {
       console.error('Error fetching closed projects:', error);
-      Tostget('خطأ في جلب المشاريع المغلقة');
+      Tostget(t('closedProjectsPage.fetchError'));
     } finally {
       setLoading(false);
     }
-  };
+  }, [branchId, user?.accessToken, t]);
 
-  const loadMoreProjects = () => {
-    if (hasMore && !loading && projects.length > 0) {
-      const lastProject = projects[projects.length - 1];
-      fetchClosedProjects(lastProject.id);
-    }
-  };
+  useEffect(() => {
+    fetchClosedProjects();
+  }, [fetchClosedProjects]);
 
   const reopenProject = async (projectId: number) => {
-    const hasPermission = await Uservalidation('إغلاق وفتح المشروع', projectId);
-    if (!hasPermission) {
+    // Prevent multiple simultaneous requests for the same project
+    if (actionLoading[projectId]) {
       return;
     }
 
+    // No permission check - matching mobile app behavior (lines 94-98 in ProjectColse.tsx)
     setActionLoading(prev => ({ ...prev, [projectId]: true }));
 
     try {
-      await axiosInstance.get('/brinshCompany/CloseOROpenProject', {
-        params: { idProject: projectId },
+      const response = await axiosInstance.get(`/brinshCompany/CloseOROpenProject?idProject=${projectId}`, {
         headers: { Authorization: `Bearer ${user?.accessToken}` }
       });
 
-      Tostget('تم فتح المشروع بنجاح');
-
-      // Remove project from closed list
-      setProjects(prev => prev.filter(p => p.id !== projectId));
-
-      // Navigate back to branch projects page after successful reopening
-      setTimeout(() => {
-        router.push(`/branch/${branchId}/projects`);
-      }, 1500); // Give time for the success message to show
+      if (response.status === 200) {
+        // Refresh the closed projects list (matching mobile app behavior)
+        await fetchClosedProjects();
+        Tostget(t('closedProjectsPage.reopenSuccess'));
+      }
 
     } catch (error) {
       console.error('Error reopening project:', error);
-      Tostget('خطأ في فتح المشروع');
+      Tostget(t('closedProjectsPage.reopenError'));
     } finally {
       setActionLoading(prev => ({ ...prev, [projectId]: false }));
     }
@@ -130,13 +113,13 @@ export default function ClosedProjectsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="المشاريع المغلقة"
+          title={t('closedProjectsPage.title')}
           subtitle={branchName}
           backButton={
             <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-              aria-label="الرجوع"
+              aria-label={t('closedProjectsPage.backButton')}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -153,8 +136,11 @@ export default function ClosedProjectsPage() {
             <div className="text-2xl font-ibm-arabic-bold text-red-600 mb-1">
               {projects.length}
             </div>
-            <div className="text-sm font-ibm-arabic-medium text-gray-600">
-              إجمالي المشاريع المغلقة
+            <div
+              className="text-sm font-ibm-arabic-medium text-gray-600"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
+              {t('closedProjectsPage.totalClosedProjects')}
             </div>
           </div>
         </div>
@@ -181,38 +167,16 @@ export default function ClosedProjectsPage() {
             >
               {projects.map((project, index) => (
                 <ClosedProjectCard
-                  key={`${project.id}-${index}`}
+                  key={`${project.ProjectID}-${index}`}
                   project={project}
-                  onReopen={() => reopenProject(project.id)}
-                  loading={actionLoading[project.id]}
+                  onReopen={() => reopenProject(project.ProjectID)}
+                  loading={actionLoading[project.ProjectID]}
                   formatDate={formatDate}
+                  t={t}
+                  dir={dir}
                 />
               ))}
             </div>
-
-            {hasMore && (
-              <div className="mt-6 text-center">
-                <button
-                  onClick={loadMoreProjects}
-                  disabled={loading}
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-ibm-arabic-semibold transition-colors disabled:opacity-50 flex items-center gap-2 mx-auto"
-                >
-                  {loading ? (
-                    <>
-                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                      جاري التحميل...
-                    </>
-                  ) : (
-                    <>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M6 9l6 6 6-6"/>
-                      </svg>
-                      تحميل المزيد
-                    </>
-                  )}
-                </button>
-              </div>
-            )}
           </>
         ) : (
           <div className="text-center py-12">
@@ -222,7 +186,12 @@ export default function ClosedProjectsPage() {
                 <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.2.45 4.53 1.23"/>
               </svg>
             </div>
-            <p className="text-gray-500 font-ibm-arabic-medium">لا توجد مشاريع مغلقة</p>
+            <p
+              className="text-gray-500 font-ibm-arabic-medium"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
+              {t('closedProjectsPage.noClosedProjects')}
+            </p>
           </div>
         )}
       </ContentSection>
@@ -236,9 +205,11 @@ interface ClosedProjectCardProps {
   onReopen: () => void;
   loading: boolean;
   formatDate: (date: string) => string;
+  t: (key: string) => string;
+  dir: string;
 }
 
-function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedProjectCardProps) {
+function ClosedProjectCard({ project, onReopen, loading, formatDate, t, dir }: ClosedProjectCardProps) {
   return (
     <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="p-4">
@@ -254,30 +225,33 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
               </p>
             )}
 
-            <div className="grid grid-cols-2 gap-3 text-sm">
+            <div
+              className="grid grid-cols-2 gap-3 text-sm"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
               <div>
-                <span className="text-gray-500">نوع العقد:</span>
+                <span className="text-gray-500">{t('closedProjectsPage.contractType')}</span>
                 <span className="font-ibm-arabic-medium text-gray-900 mr-2">
                   {project.TypeOFContract}
                 </span>
               </div>
 
               <div>
-                <span className="text-gray-500">عدد المباني:</span>
+                <span className="text-gray-500">{t('closedProjectsPage.buildingsCount')}</span>
                 <span className="font-ibm-arabic-bold text-gray-900 mr-2">
                   {project.numberBuilding}
                 </span>
               </div>
 
               <div>
-                <span className="text-gray-500">الرقم المرجعي:</span>
+                <span className="text-gray-500">{t('closedProjectsPage.referenceNumber')}</span>
                 <span className="font-ibm-arabic-bold text-gray-900 mr-2">
                   {project.Referencenumber}
                 </span>
               </div>
 
               <div>
-                <span className="text-gray-500">تاريخ الإنشاء:</span>
+                <span className="text-gray-500">{t('closedProjectsPage.creationDate')}</span>
                 <span className="font-ibm-arabic-medium text-gray-900 mr-2">
                   {formatDate(project.Date)}
                 </span>
@@ -286,9 +260,15 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
           </div>
 
           <button
-            onClick={onReopen}
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onReopen();
+            }}
             disabled={loading}
             className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold transition-colors disabled:opacity-50 flex items-center gap-2"
+            style={{ direction: dir as 'rtl' | 'ltr' }}
           >
             {loading ? (
               <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
@@ -298,7 +278,7 @@ function ClosedProjectCard({ project, onReopen, loading, formatDate }: ClosedPro
                 <circle cx="12" cy="12" r="3"/>
               </svg>
             )}
-            فتح المشروع
+            {t('closedProjectsPage.reopenProject')}
           </button>
         </div>
       </div>

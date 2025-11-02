@@ -6,6 +6,7 @@ import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
 import { toast } from '@/lib/toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SubStageEditModalProps {
   isOpen: boolean;
@@ -26,6 +27,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
   subStage,
   loading = false
 }) => {
+  const { t } = useTranslation();
   const [name, setName] = useState('');
   const [file, setFile] = useState<File | null>(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -39,7 +41,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error('يجب إدخال اسم المهمة');
+      toast.error(t('editTaskModal.taskNameRequired'));
       return;
     }
 
@@ -146,7 +148,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                       lineHeight: 1.4
                     }}
                   >
-                    تعديل المهمة الفرعية
+                    {t('editTaskModal.title')}
                   </h2>
                 </div>
                 <button
@@ -184,7 +186,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                       marginBottom: scale(8)
                     }}
                   >
-                    📋 المهمة الحالية:
+                    {t('editTaskModal.currentTask')}
                   </p>
                   <p
                     style={{
@@ -208,7 +210,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                           fontFamily: fonts.IBMPlexSansArabicMedium
                         }}
                       >
-                        📎 يحتوي على مرفق
+                        {t('editTaskModal.hasAttachment')}
                       </span>
                     </div>
                   )}
@@ -225,13 +227,13 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                       marginBottom: scale(8)
                     }}
                   >
-                    📝 اسم المهمة الجديد
+                    {t('editTaskModal.newTaskName')}
                   </label>
                   <input
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="أدخل اسم المهمة الجديد"
+                    placeholder={t('editTaskModal.newTaskNamePlaceholder')}
                     className="w-full text-right rounded-xl transition-all duration-200 focus:scale-[1.02]"
                     style={{
                       fontSize: scale(14),
@@ -266,7 +268,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                       marginBottom: scale(8)
                     }}
                   >
-                    📎 إرفاق ملف (اختياري)
+                    {t('editTaskModal.attachFile')}
                   </label>
                   <div className="relative">
                     <input
@@ -303,7 +305,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                             fontFamily: fonts.IBMPlexSansArabicMedium
                           }}
                         >
-                          {file ? '✅ تم إرفاق ملف بنجاح' : '📁 اضغط لإرفاق ملف'}
+                          {file ? t('editTaskModal.fileAttached') : t('editTaskModal.clickToAttach')}
                         </span>
                         {file && (
                           <p
@@ -354,7 +356,7 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                   }}
                 >
-                  ❌ إلغاء
+                  {t('editTaskModal.cancel')}
                 </button>
 
                 <button
@@ -382,10 +384,10 @@ const SubStageEditModal: React.FC<SubStageEditModalProps> = ({
                         className="border-2 border-white border-t-transparent rounded-full animate-spin"
                         style={{ width: scale(16), height: scale(16) }}
                       />
-                      <span>جاري الحفظ...</span>
+                      <span>{t('editTaskModal.saving')}</span>
                     </div>
                   ) : (
-                    '💾 حفظ التعديل'
+                    t('editTaskModal.saveEdit')
                   )}
                 </button>
               </div>

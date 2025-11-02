@@ -23,42 +23,6 @@ const getContractTypeColor = (typeContract: string): string => {
   return '#f6f8fe'; // HOME (default)
 };
 
-// Bell Icon matching the exact original design
-const BellIcon = ({ number = 0 }: { number?: number }) => (
-  <div className="relative">
-    <svg width="22" height="19" viewBox="0 0 22 19" fill="none">
-      <path
-        d="M1.52992 13.394C1.31727 14.7471 2.268 15.6862 3.43205 16.1542C7.89481 17.9486 14.1052 17.9486 18.5679 16.1542C19.732 15.6862 20.6827 14.7471 20.4701 13.394C20.3394 12.5625 19.6932 11.8701 19.2144 11.194C18.5873 10.2975 18.525 9.3197 18.5249 8.27941C18.5249 4.2591 15.1559 1 11 1C6.84413 1 3.47513 4.2591 3.47513 8.27941C3.47503 9.3197 3.41272 10.2975 2.78561 11.194C2.30684 11.8701 1.66061 12.5625 1.52992 13.394Z"
-        stroke="#9CA3AF"
-        strokeWidth="1.8"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-    <div className="absolute top-0 left-1.5">
-      <svg width="10" height="5" viewBox="0 0 10 5" fill="none">
-        <path
-          d="M1 1C1.79613 1.6219 2.8475 2 4 2C5.1525 2 6.2039 1.6219 7 1"
-          stroke="#9CA3AF"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    </div>
-    {number > 0 && (
-      <div className="absolute -top-1 -right-1">
-        <svg width="17" height="17" viewBox="0 0 11 11" fill="none">
-          <circle cx="5.5" cy="5.5" r="5.5" fill="#2117FB" />
-        </svg>
-        <span className="absolute top-0 left-1/2 transform -translate-x-1/2 text-[8px] font-bold text-white leading-none">
-          {number > 99 ? String(number).slice(0, 1) + '+' : number}
-        </span>
-      </div>
-    )}
-  </div>
-);
-
 // User List Icons matching original exactly
 const UserListIcon = ({ countuser = 0 }: { countuser?: number }) => {
   const { isEmployee } = useValidityUser();
@@ -123,9 +87,7 @@ const DeleteIcon = () => (
 
 interface ProjectCardProps {
   project: Project;
-  notificationCount?: number;
   onPress: () => void;
-  onPressNotification?: () => void;
   onPressLocation?: () => void;
   onPressGuard?: () => void;
   onPressClose?: () => void;
@@ -135,9 +97,7 @@ interface ProjectCardProps {
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
-  notificationCount = 0,
   onPress,
-  onPressNotification,
   onPressLocation,
   onPressGuard,
   onPressClose,
@@ -195,20 +155,9 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           borderRadius: 16,
         }}
       >
-        {/* Header Section - Project name and Bell */}
+        {/* Header Section - Project name */}
         <div className="flex justify-between items-start px-7 pt-3 pb-2 relative">
-        {/* Bell icon */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onPressNotification?.();
-          }}
-          className="p-2 mt-1 ml-2"
-        >
-          <BellIcon number={notificationCount} />
-        </button>
-
-        {/* Delete button - positioned at same level as bell */}
+        {/* Delete button */}
         {onPressDelete && (
           <button
             onClick={(e) => {

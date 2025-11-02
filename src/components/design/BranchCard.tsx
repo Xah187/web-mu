@@ -4,6 +4,7 @@ import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import SettingsIcon from '@/components/icons/SettingsIcon';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchCardProps {
   title: string;
@@ -21,6 +22,7 @@ export default function BranchCard({
   showSettings = false
 }: BranchCardProps) {
   const { size, user } = useAppSelector((state: any) => state.user);
+  const { t, isRTL } = useTranslation();
   const isEmployee = user?.data?.jobdiscrption === 'موظف';
 
   return (
@@ -111,9 +113,9 @@ export default function BranchCard({
                   fontWeight: '500'
                 }}
               >
-                عدد المشاريع
+                {t('branchCard.projectCount')}
               </p>
-              
+
               <div className="text-center">
                 <span
                   style={{
@@ -134,7 +136,7 @@ export default function BranchCard({
                     color: 'var(--color-primary)'
                   }}
                 >
-                  {' '}مشاريع
+                  {' '}{t('branchCard.projects')}
                 </span>
               </div>
             </>
@@ -151,11 +153,11 @@ export default function BranchCard({
             className="absolute bg-white hover:bg-blue-50 rounded-full transition-all duration-200 shadow-md hover:shadow-lg border border-gray-100"
             style={{
               top: '8px',
-              left: '8px',
+              [isRTL ? 'right' : 'left']: '8px',
               padding: '8px',
               zIndex: 10
             }}
-            title="إعدادات الفرع"
+            title={t('branchCard.branchSettings')}
           >
             {/* Three dots icon - مطابق للتطبيق المحمول */}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

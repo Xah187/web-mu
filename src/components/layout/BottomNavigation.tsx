@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import ManagementIcon from '@/components/icons/ManagementIcon';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface NavItem {
   name: string;
@@ -17,6 +18,7 @@ interface NavItem {
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { size } = useAppSelector(state => state.user);
+  const { t } = useTranslation();
 
   // Track the real current path to avoid highlight glitches on hard reload/hydration
   const [currentPath, setCurrentPath] = useState<string>('');
@@ -32,7 +34,7 @@ export default function BottomNavigation() {
   const navItems: NavItem[] = [
     {
       name: 'home',
-      label: 'الرئيسية',
+      label: t('nav.home'),
       icon: (focused: boolean) => (
         <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
           <g id="home-02">
@@ -56,7 +58,7 @@ export default function BottomNavigation() {
     },
     {
       name: 'publications',
-      label: 'اليوميات',
+      label: t('nav.publications'),
       icon: (focused: boolean) => (
         <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
           <g id="megaphone-01">
@@ -88,14 +90,14 @@ export default function BottomNavigation() {
     },
     {
       name: 'management',
-      label: 'الإدارة',
+      label: t('nav.management', 'الإدارة'),
       icon: (focused: boolean) => (
         <ManagementIcon focused={focused} size={scale(24)} />
       ),
     },
     {
       name: 'reports',
-      label: 'التقارير',
+      label: t('nav.reports'),
       icon: (focused: boolean) => (
         <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
           <g id="analytics-01">

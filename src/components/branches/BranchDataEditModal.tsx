@@ -8,6 +8,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import Input from '@/components/design/Input';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchDataEditModalProps {
   isOpen: boolean;
@@ -98,7 +99,8 @@ export default function BranchDataEditModal({
   onSave,
   loading = false
 }: BranchDataEditModalProps) {
-  const { size } = useAppSelector((state: any) => state.user);
+  const { size, language } = useAppSelector((state: any) => state.user);
+  const { t } = useTranslation();
   
   const [formData, setFormData] = useState({
     NameSub: '',
@@ -144,12 +146,12 @@ export default function BranchDataEditModal({
 
       // Validate required fields
       if (!formData.NameSub.trim()) {
-        Tostget('يرجى إدخال اسم الفرع');
+        Tostget(t('branchSettings.pleaseEnterBranchName'));
         return;
       }
 
       if (!formData.BranchAddress.trim()) {
-        Tostget('يرجى إدخال اسم المنطقة');
+        Tostget(t('branchSettings.pleaseEnterBranchAddress'));
         return;
       }
 
@@ -184,7 +186,8 @@ export default function BranchDataEditModal({
           maxWidth: `${scale(480)}px`,
           minWidth: `${scale(400)}px`,
           fontFamily: fonts.IBMPlexSansArabicSemiBold,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          direction: language === 'ar' ? 'rtl' : 'ltr'
         }}
       >
         {/* Header */}
@@ -223,17 +226,19 @@ export default function BranchDataEditModal({
                 lineHeight: 1.4
               }}
             >
-              تعديل بيانات الفرع
+              {t('branchSettings.editBranchData')}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+            className="absolute top-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
             style={{
               padding: '10px',
               backgroundColor: 'var(--theme-surface-secondary)',
               border: '1px solid var(--theme-border)',
-              color: 'var(--theme-text-secondary)'
+              color: 'var(--theme-text-secondary)',
+              left: language === 'ar' ? '16px' : 'auto',
+              right: language === 'en' ? '16px' : 'auto'
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -253,37 +258,37 @@ export default function BranchDataEditModal({
         >
           {/* اسم الفرع */}
           <InputField
-            label="اسم الفرع"
+            label={t('branchSettings.branchName')}
             value={formData.NameSub}
             onChange={(value) => handleInputChange('NameSub', value)}
-            placeholder="أدخل اسم الفرع"
+            placeholder={t('branchSettings.enterBranchName')}
             required
           />
 
           {/* اسم المنطقة */}
           <InputField
-            label="اسم المنطقة"
+            label={t('branchSettings.branchAddress')}
             value={formData.BranchAddress}
             onChange={(value) => handleInputChange('BranchAddress', value)}
-            placeholder="أدخل اسم المنطقة"
+            placeholder={t('branchSettings.enterBranchAddress')}
             required
           />
 
           {/* الأيميل */}
           <InputField
-            label="الأيميل"
+            label={t('branchSettings.email')}
             value={formData.Email}
             onChange={(value) => handleInputChange('Email', value)}
-            placeholder="أدخل الأيميل"
+            placeholder={t('branchSettings.enterEmail')}
             type="email"
           />
 
           {/* رقم هاتف الفرع */}
           <InputField
-            label="رقم هاتف الفرع"
+            label={t('branchSettings.phoneNumber')}
             value={formData.PhoneNumber}
             onChange={(value) => handleInputChange('PhoneNumber', convertArabicToEnglish(value))}
-            placeholder="أدخل رقم هاتف الفرع"
+            placeholder={t('branchSettings.enterPhoneNumber')}
             type="tel"
           />
 
@@ -313,7 +318,7 @@ export default function BranchDataEditModal({
                   fontWeight: '600'
                 }}
               >
-                {loading ? 'جاري الحفظ...' : 'تعديل'}
+                {loading ? t('branchSettings.saving') : t('branchSettings.edit')}
               </span>
             </div>
           </ButtonLong>

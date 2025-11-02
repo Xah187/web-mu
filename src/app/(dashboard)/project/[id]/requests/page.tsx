@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 import useValidityUser from '@/hooks/useValidityUser';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -28,24 +29,34 @@ interface RequestCounts {
   Open: number;  // Closed requests (Done='true')
 }
 
-const REQUEST_TYPES = [
-  { key: 'light', name: 'مواد خفيفة', icon: '📦', color: 'bg-blue-500' },
-  { key: 'heavy', name: 'مواد ثقيلة', icon: '🏗️', color: 'bg-orange-500' },
-  { key: 'plumber', name: 'سباك', icon: '🔧', color: 'bg-green-500' },
-  { key: 'electrical', name: 'كهربائي', icon: '⚡', color: 'bg-yellow-500' },
-  { key: 'blacksmith', name: 'حداد', icon: '🔨', color: 'bg-red-500' },
-];
+// Will be created inside component to access t() function
 
 export default function ProjectRequestsPage() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const projectId = parseInt(params.id as string);
-  const projectName = searchParams.get('projectName') || 'المشروع';
-
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
+
+  const projectId = parseInt(params.id as string);
+  const projectName = searchParams.get('projectName') || t('requests.project');
+
+  // Request types - keep Arabic values for API, but show translations
+  const REQUEST_TYPES = [
+    { key: 'light', value: 'مواد خفيفة', name: t('requests.lightMaterials'), icon: '📦', color: 'bg-blue-500' },
+    { key: 'heavy', value: 'مواد ثقيلة', name: t('requests.heavyMaterials'), icon: '🏗️', color: 'bg-orange-500' },
+    { key: 'plumber', value: 'سباك', name: t('requests.plumber'), icon: '🔧', color: 'bg-green-500' },
+    { key: 'electrical', value: 'كهربائي', name: t('requests.electrical'), icon: '⚡', color: 'bg-yellow-500' },
+    { key: 'blacksmith', value: 'حداد', name: t('requests.blacksmith'), icon: '🔨', color: 'bg-red-500' },
+  ];
+
+  // Helper function to get translated name from Arabic value
+  const getTranslatedName = (arabicValue: string) => {
+    const type = REQUEST_TYPES.find(t => t.value === arabicValue);
+    return type ? type.name : arabicValue;
+  };
 
   const [requestCounts, setRequestCounts] = useState<RequestCounts>({ Close: 0, Open: 0 });
   const [loading, setLoading] = useState<{ [key: string]: boolean }>({});
@@ -59,13 +70,13 @@ export default function ProjectRequestsPage() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<Request | null>(null);
 
-  // Form data
+  // Form data - keep Arabic values for API
   const [selectedType, setSelectedType] = useState('مواد خفيفة');
   const [requestData, setRequestData] = useState('');
   const [noteText, setNoteText] = useState('');
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
 
-  // Edit form data
+  // Edit form data - keep Arabic values for API
   const [editType, setEditType] = useState('مواد خفيفة');
   const [editData, setEditData] = useState('');
 
@@ -105,7 +116,7 @@ export default function ProjectRequestsPage() {
   // Export Requests Report as PDF - Matching mobile app
   const exportRequestsPDF = async () => {
     if (!projectId) {
-      Tostget('معرف المشروع غير صحيح');
+      Tostget(t('requests.invalidProjectId'));
       return;
     }
 
@@ -127,13 +138,13 @@ export default function ProjectRequestsPage() {
       if (response.status === 200 && response.data?.namefile) {
         const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
         window.open(`${baseUrl}/${response.data.namefile}`, '_blank');
-        Tostget('تم إنشاء التقرير بنجاح');
+        Tostget(t('requests.reportCreated'));
       } else {
-        Tostget(response.data?.success || 'فشل في إنشاء التقرير');
+        Tostget(response.data?.success || t('requests.reportFailed'));
       }
     } catch (error: any) {
       console.error('Error exporting requests PDF:', error);
-      Tostget(error.response?.data?.success || 'خطأ في تصدير التقرير');
+      Tostget(error.response?.data?.success || t('requests.exportError'));
     } finally {
       setExportingPDF(false);
     }
@@ -173,7 +184,7 @@ export default function ProjectRequestsPage() {
       }
     } catch (error) {
       console.error('Error fetching section data:', error);
-      Tostget('خطأ في جلب البيانات');
+      Tostget(t('requests.fetchError'));
     } finally {
       setLoading(prev => ({ ...prev, [sectionKey]: false }));
     }
@@ -205,7 +216,7 @@ export default function ProjectRequestsPage() {
 
   const createRequest = async () => {
     if (!requestData.trim()) {
-      Tostget('يرجى إدخال بيانات الطلب');
+      Tostget(t('requests.enterRequestData'));
       return;
     }
 
@@ -234,7 +245,7 @@ export default function ProjectRequestsPage() {
         }
       });
 
-      Tostget('تم إنشاء الطلب بنجاح');
+      Tostget(t('requests.requestCreated'));
       setShowCreateModal(false);
       setRequestData('');
       setSelectedType('مواد خفيفة');
@@ -242,16 +253,16 @@ export default function ProjectRequestsPage() {
 
       // Refresh counts and relevant section
       await fetchRequestCounts();
-      const typeKey = REQUEST_TYPES.find(t => t.name === selectedType)?.key;
-      if (typeKey) {
-        const openSectionKey = `${typeKey}-open`;
+      const typeObj = REQUEST_TYPES.find(t => t.name === selectedType);
+      if (typeObj) {
+        const openSectionKey = `${typeObj.key}-open`;
         if (sectionStates[openSectionKey]?.isExpanded) {
-          await fetchSectionData(typeKey, selectedType, 'false', true);
+          await fetchSectionData(typeObj.key, typeObj.value, 'false', true);
         }
       }
     } catch (error) {
       console.error('Error creating request:', error);
-      Tostget('خطأ في إنشاء الطلب');
+      Tostget(t('requests.requestCreateError'));
     } finally {
       setLoading(prev => ({ ...prev, createRequest: false }));
     }
@@ -277,39 +288,39 @@ export default function ProjectRequestsPage() {
         }
       );
 
-      Tostget('تمت العملية بنجاح');
+      Tostget(t('requests.operationSuccess'));
       await fetchRequestCounts();
 
       // Refresh both open and closed sections if expanded
-      const typeKey = REQUEST_TYPES.find(t => t.name === type)?.key;
-      if (typeKey) {
-        const openSectionKey = `${typeKey}-open`;
-        const closedSectionKey = `${typeKey}-closed`;
+      const typeObj = REQUEST_TYPES.find(t => t.value === type);
+      if (typeObj) {
+        const openSectionKey = `${typeObj.key}-open`;
+        const closedSectionKey = `${typeObj.key}-closed`;
 
         if (sectionStates[openSectionKey]?.isExpanded) {
-          await fetchSectionData(typeKey, type, 'false', true);
+          await fetchSectionData(typeObj.key, typeObj.value, 'false', true);
         }
         if (sectionStates[closedSectionKey]?.isExpanded) {
-          await fetchSectionData(typeKey, type, 'true', true);
+          await fetchSectionData(typeObj.key, typeObj.value, 'true', true);
         }
       }
     } catch (error) {
       console.error('Error closing request:', error);
-      Tostget('خطأ في العملية');
+      Tostget(t('requests.operationError'));
     } finally {
       setLoading(prev => ({ ...prev, [`close_${requestId}`]: false }));
     }
   };
 
   const copyRequestText = (request: Request) => {
-    const text = `${request.Type}: ${request.Data}`;
+    const text = `${getTranslatedName(request.Type)}: ${request.Data}`;
     navigator.clipboard.writeText(text);
-    Tostget('تم نسخ النص');
+    Tostget(t('requests.textCopied'));
   };
 
   const sendNote = async () => {
     if (!noteText.trim() || !selectedRequest) {
-      Tostget('يرجى كتابة الملاحظة');
+      Tostget(t('requests.writeNote'));
       return;
     }
 
@@ -331,13 +342,13 @@ export default function ProjectRequestsPage() {
       //   }
       // });
 
-      Tostget('تم إرسال الملاحظة بنجاح');
+      Tostget(t('requests.noteSent'));
       setNoteText('');
       setShowNoteModal(false);
       setSelectedRequest(null);
     } catch (error) {
       console.error('Error sending note:', error);
-      Tostget('خطأ في إرسال الملاحظة');
+      Tostget(t('requests.noteSendError'));
     } finally {
       setLoading(prev => ({ ...prev, sendNote: false }));
     }
@@ -364,13 +375,13 @@ export default function ProjectRequestsPage() {
       setShowOptionsModal(false);
       setShowEditModal(true);
     } else {
-      Tostget(request.Done === 'false' ? 'لايمكن تعديل الطلبيه بعد ساعه من طلبها' : 'لايمكن تعديل الطلبيه بعد تنفيذها');
+      Tostget(request.Done === 'false' ? t('requests.cannotEditAfterHour') : t('requests.cannotEditAfterExecution'));
     }
   };
 
   const updateRequest = async () => {
     if (!editData.trim() || !selectedRequest) {
-      Tostget('يرجى ملء جميع الحقول');
+      Tostget(t('requests.fillAllFields'));
       return;
     }
 
@@ -394,7 +405,7 @@ export default function ProjectRequestsPage() {
         }
       });
 
-      Tostget('تم تعديل الطلب بنجاح');
+      Tostget(t('requests.requestUpdated'));
       setShowEditModal(false);
       setEditData('');
       setEditType('مواد خفيفة');
@@ -402,16 +413,16 @@ export default function ProjectRequestsPage() {
 
       // Refresh counts and relevant section
       await fetchRequestCounts();
-      const typeKey = REQUEST_TYPES.find(t => t.name === editType)?.key;
-      if (typeKey) {
-        const openSectionKey = `${typeKey}-open`;
+      const typeObj = REQUEST_TYPES.find(t => t.name === editType);
+      if (typeObj) {
+        const openSectionKey = `${typeObj.key}-open`;
         if (sectionStates[openSectionKey]?.isExpanded) {
-          await fetchSectionData(typeKey, editType, 'false', true);
+          await fetchSectionData(typeObj.key, typeObj.value, 'false', true);
         }
       }
     } catch (error) {
       console.error('Error updating request:', error);
-      Tostget('خطأ في تعديل الطلب');
+      Tostget(t('requests.requestUpdateError'));
     } finally {
       setLoading(prev => ({ ...prev, updateRequest: false }));
     }
@@ -432,7 +443,7 @@ export default function ProjectRequestsPage() {
     );
 
     if (!canDelete) {
-      Tostget(request.Done === 'false' ? 'لايمكن حذف الطلبيه بعد ساعه من طلبها' : 'لايمكن حذف الطلبيه بعد تنفيذها');
+      Tostget(request.Done === 'false' ? t('requests.cannotDeleteAfterHour') : t('requests.cannotDeleteAfterExecution'));
       return;
     }
 
@@ -443,22 +454,22 @@ export default function ProjectRequestsPage() {
         headers: { Authorization: `Bearer ${user?.accessToken}` }
       });
 
-      Tostget('تم حذف الطلب بنجاح');
+      Tostget(t('requests.requestDeleted'));
       setShowOptionsModal(false);
       setSelectedRequest(null);
 
       // Refresh counts and relevant section
       await fetchRequestCounts();
-      const typeKey = REQUEST_TYPES.find(t => t.name === request.Type)?.key;
-      if (typeKey) {
-        const openSectionKey = `${typeKey}-open`;
+      const typeObj = REQUEST_TYPES.find(t => t.value === request.Type);
+      if (typeObj) {
+        const openSectionKey = `${typeObj.key}-open`;
         if (sectionStates[openSectionKey]?.isExpanded) {
-          await fetchSectionData(typeKey, request.Type, 'false', true);
+          await fetchSectionData(typeObj.key, typeObj.value, 'false', true);
         }
       }
     } catch (error) {
       console.error('Error deleting request:', error);
-      Tostget('خطأ في حذف الطلب');
+      Tostget(t('requests.requestDeleteError'));
     } finally {
       setLoading(prev => ({ ...prev, [`delete_${request.RequestsID}`]: false }));
     }
@@ -469,10 +480,10 @@ export default function ProjectRequestsPage() {
   return (
     <ResponsiveLayout>
       <PageHeader
-        title="الطلبات"
+        title={t('requests.title')}
         subtitle={projectName}
         backButton={
-          <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+          <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label={t('requests.back')} style={{ direction: dir as 'rtl' | 'ltr' }}>
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
@@ -492,8 +503,9 @@ export default function ProjectRequestsPage() {
                 router.push(`/chat?${chatParams.toString()}`);
               }}
               className="p-2 hover:bg-gray-50 rounded-lg transition-colors"
-              title="محادثة طلبات المشروع"
-              aria-label="محادثة طلبات المشروع"
+              title={t('requests.chat')}
+              aria-label={t('requests.chat')}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                 <path d="M21 15C21 15.5304 20.7893 16.0391 20.4142 16.4142C20.0391 16.7893 19.5304 17 19 17H7L3 21V5C3 4.46957 3.21071 3.96086 3.58579 3.58579C3.96086 3.21071 4.46957 3 5 3H19C19.5304 3 20.0391 3.21071 20.4142 3.58579C20.7893 3.96086 21 4.46957 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -504,12 +516,13 @@ export default function ProjectRequestsPage() {
             <button
               onClick={() => setShowCreateModal(true)}
               className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
-              title="إضافة طلب جديد"
+              title={t('requests.addRequest')}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isRTL ? 'ml-1' : 'mr-1'}>
                 <path d="M12 5v14m-7-7h14"/>
               </svg>
-              إضافة طلب
+              {t('requests.addRequest')}
             </button>
 
             {/* Export PDF Button - Matching mobile app */}
@@ -517,12 +530,13 @@ export default function ProjectRequestsPage() {
               onClick={exportRequestsPDF}
               disabled={exportingPDF}
               className="inline-flex items-center gap-2 text-red-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="تصدير PDF"
+              title={t('requests.exportPDF')}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
               {exportingPDF ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
               ) : (
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={isRTL ? 'ml-2' : 'mr-2'}>
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                   <polyline points="14 2 14 8 20 8"/>
                   <line x1="16" y1="13" x2="8" y2="13"/>
@@ -530,7 +544,7 @@ export default function ProjectRequestsPage() {
                   <polyline points="10 9 9 9 8 9"/>
                 </svg>
               )}
-              تصدير PDF
+              {t('requests.exportPDF')}
             </button>
           </div>
         }
@@ -540,11 +554,11 @@ export default function ProjectRequestsPage() {
       {/* Content */}
       <ContentSection>
 
-      <div className="p-4 space-y-6">
+      <div className="p-4 space-y-6" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Open Requests */}
         <div>
-          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-            الطلبات المفتوحة
+          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+            {t('requests.openRequests')}
           </h2>
 
           {REQUEST_TYPES.map((type) => {
@@ -557,8 +571,8 @@ export default function ProjectRequestsPage() {
                 type={type}
                 section={section}
                 doneValue="false"
-                onToggle={() => toggleSection(type.key, type.name, 'false')}
-                onLoadMore={() => loadMoreSectionData(type.key, type.name, 'false')}
+                onToggle={() => toggleSection(type.key, type.value, 'false')}
+                onLoadMore={() => loadMoreSectionData(type.key, type.value, 'false')}
                 onRequestAction={closeRequest}
                 onRequestOptions={(request) => {
                   setSelectedRequest(request);
@@ -573,8 +587,8 @@ export default function ProjectRequestsPage() {
 
         {/* Closed Requests */}
         <div>
-          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-            الطلبات المغلقة
+          <h2 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+            {t('requests.closedRequests')}
           </h2>
 
           {REQUEST_TYPES.map((type) => {
@@ -587,8 +601,8 @@ export default function ProjectRequestsPage() {
                 type={type}
                 section={section}
                 doneValue="true"
-                onToggle={() => toggleSection(type.key, type.name, 'true')}
-                onLoadMore={() => loadMoreSectionData(type.key, type.name, 'true')}
+                onToggle={() => toggleSection(type.key, type.value, 'true')}
+                onLoadMore={() => loadMoreSectionData(type.key, type.value, 'true')}
                 onRequestAction={closeRequest}
                 onRequestOptions={(request) => {
                   setSelectedRequest(request);
@@ -606,7 +620,7 @@ export default function ProjectRequestsPage() {
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div
             className="w-full max-w-md shadow-2xl"
             style={{
@@ -648,7 +662,7 @@ export default function ProjectRequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  إضافة طلب جديد
+                  {t('requests.addNewRequest')}
                 </h3>
               </div>
             </div>
@@ -663,10 +677,11 @@ export default function ProjectRequestsPage() {
                     style={{
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--color-text-secondary)'
+                      color: 'var(--color-text-secondary)',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    نوع الطلب
+                    {t('requests.requestType')}
                   </label>
                   <select
                     value={selectedType}
@@ -679,7 +694,8 @@ export default function ProjectRequestsPage() {
                       padding: '12px 16px',
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-regular)',
-                      color: 'var(--color-text-primary)'
+                      color: 'var(--color-text-primary)',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
                   >
                     {REQUEST_TYPES.map((type) => (
@@ -697,15 +713,16 @@ export default function ProjectRequestsPage() {
                     style={{
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--color-text-secondary)'
+                      color: 'var(--color-text-secondary)',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    تفاصيل الطلب
+                    {t('requests.requestDetails')}
                   </label>
                   <textarea
                     value={requestData}
                     onChange={(e) => setRequestData(e.target.value)}
-                    placeholder="اكتب تفاصيل الطلب هنا..."
+                    placeholder={t('requests.requestDetailsPlaceholder')}
                     className="w-full transition-all duration-200 focus:scale-[1.02] resize-none"
                     style={{
                       backgroundColor: 'var(--color-surface)',
@@ -715,7 +732,9 @@ export default function ProjectRequestsPage() {
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-regular)',
                       color: 'var(--color-text-primary)',
-                      minHeight: '100px'
+                      minHeight: '100px',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                     rows={4}
                   />
@@ -728,10 +747,11 @@ export default function ProjectRequestsPage() {
                     style={{
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--color-text-secondary)'
+                      color: 'var(--color-text-secondary)',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    المرفقات (اختياري)
+                    {t('requests.attachments')}
                   </label>
                   <div className="space-y-3">
                     {/* File Input */}
@@ -794,7 +814,8 @@ export default function ProjectRequestsPage() {
                 paddingLeft: '24px',
                 paddingRight: '24px',
                 paddingTop: '16px',
-                paddingBottom: '24px'
+                paddingBottom: '24px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
               }}
             >
               <button
@@ -815,7 +836,7 @@ export default function ProjectRequestsPage() {
                 }}
                 disabled={loading.createRequest}
               >
-                إلغاء
+                {t('requests.cancel')}
               </button>
               <button
                 onClick={createRequest}
@@ -833,10 +854,10 @@ export default function ProjectRequestsPage() {
                 {loading.createRequest ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    جاري الإنشاء...
+                    {t('requests.creating')}
                   </>
                 ) : (
-                  'إنشاء الطلب'
+                  t('requests.create')
                 )}
               </button>
             </div>
@@ -846,7 +867,7 @@ export default function ProjectRequestsPage() {
 
       {/* Options Modal */}
       {showOptionsModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div
             className="w-full max-w-md shadow-2xl"
             style={{
@@ -889,7 +910,7 @@ export default function ProjectRequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  الاعدادات
+                  {t('requests.settings')}
                 </h3>
               </div>
             </div>
@@ -903,10 +924,11 @@ export default function ProjectRequestsPage() {
                     setShowOptionsModal(false);
                     setShowNoteModal(true);
                   }}
-                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  className={`w-full p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center gap-3 ${isRTL ? 'text-right justify-start' : 'text-left justify-start'}`}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)'
+                    border: '1px solid var(--color-border)',
+                    flexDirection: isRTL ? 'row' : 'row'
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
@@ -923,17 +945,18 @@ export default function ProjectRequestsPage() {
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    إضافة ملاحظة
+                    {t('requests.addNote')}
                   </span>
                 </button>
 
                 {/* Edit Request */}
                 <button
                   onClick={() => editRequest(selectedRequest)}
-                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  className={`w-full p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center gap-3 ${isRTL ? 'text-right justify-start' : 'text-left justify-start'}`}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)'
+                    border: '1px solid var(--color-border)',
+                    flexDirection: isRTL ? 'row' : 'row'
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
@@ -947,17 +970,18 @@ export default function ProjectRequestsPage() {
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    تعديل بيانات الطلب
+                    {t('requests.editRequest')}
                   </span>
                 </button>
 
                 {/* Delete Request */}
                 <button
                   onClick={() => deleteRequest(selectedRequest)}
-                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  className={`w-full p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center gap-3 ${isRTL ? 'text-right justify-start' : 'text-left justify-start'}`}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)'
+                    border: '1px solid var(--color-border)',
+                    flexDirection: isRTL ? 'row' : 'row'
                   }}
                   disabled={loading[`delete_${selectedRequest?.RequestsID}`]}
                 >
@@ -978,7 +1002,7 @@ export default function ProjectRequestsPage() {
                       color: '#ef4444'
                     }}
                   >
-                    حذف الطلب
+                    {t('requests.deleteRequest')}
                   </span>
                 </button>
 
@@ -988,10 +1012,11 @@ export default function ProjectRequestsPage() {
                     copyRequestText(selectedRequest);
                     setShowOptionsModal(false);
                   }}
-                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  className={`w-full p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center gap-3 ${isRTL ? 'text-right justify-start' : 'text-left justify-start'}`}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)'
+                    border: '1px solid var(--color-border)',
+                    flexDirection: isRTL ? 'row' : 'row'
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
@@ -1005,7 +1030,7 @@ export default function ProjectRequestsPage() {
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    نسخ الطلبية
+                    {t('requests.copyRequest')}
                   </span>
                 </button>
 
@@ -1021,10 +1046,11 @@ export default function ProjectRequestsPage() {
                     router.push(`/chat?${chatParams.toString()}`);
                     setShowOptionsModal(false);
                   }}
-                  className="w-full p-4 text-right rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center justify-start gap-3"
+                  className={`w-full p-4 rounded-xl transition-all duration-200 hover:scale-[1.02] flex items-center gap-3 ${isRTL ? 'text-right justify-start' : 'text-left justify-start'}`}
                   style={{
                     backgroundColor: 'var(--color-surface)',
-                    border: '1px solid var(--color-border)'
+                    border: '1px solid var(--color-border)',
+                    flexDirection: isRTL ? 'row' : 'row'
                   }}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--color-text-secondary)" strokeWidth="2">
@@ -1037,7 +1063,7 @@ export default function ProjectRequestsPage() {
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    محادثة الطلبات
+                    {t('requests.requestChat')}
                   </span>
                 </button>
               </div>
@@ -1064,7 +1090,7 @@ export default function ProjectRequestsPage() {
                   fontFamily: 'var(--font-ibm-arabic-medium)'
                 }}
               >
-                إغلاق
+                {t('requests.close')}
               </button>
             </div>
           </div>
@@ -1073,7 +1099,7 @@ export default function ProjectRequestsPage() {
 
       {/* Note Modal */}
       {showNoteModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div
             className="w-full max-w-md shadow-2xl"
             style={{
@@ -1119,7 +1145,7 @@ export default function ProjectRequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  إضافة ملاحظة
+                  {t('requests.addNoteTitle')}
                 </h3>
               </div>
             </div>
@@ -1161,9 +1187,9 @@ export default function ProjectRequestsPage() {
                 >
                   <p
                     className="text-xs"
-                    style={{ color: 'var(--color-text-secondary)' }}
+                    style={{ color: 'var(--color-text-secondary)', textAlign: isRTL ? 'right' : 'left' }}
                   >
-                    بواسطة: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
+                    {t('requests.by')}: {selectedRequest.InsertBy} • {new Date(selectedRequest.Date).toLocaleDateString('en-GB', {
                       year: 'numeric',
                       month: '2-digit',
                       day: '2-digit'
@@ -1183,16 +1209,17 @@ export default function ProjectRequestsPage() {
                   style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  اكتب ملاحظتك
+                  {t('requests.writeNoteLabel')}
                 </label>
                 <div className="relative">
                   <textarea
                     value={noteText}
                     onChange={(e) => setNoteText(e.target.value)}
-                    placeholder="أضف ملاحظة حول هذا الطلب..."
+                    placeholder={t('requests.notePlaceholder')}
                     className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
                     style={{
                       backgroundColor: 'var(--color-surface)',
@@ -1202,13 +1229,15 @@ export default function ProjectRequestsPage() {
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
                       color: 'var(--color-text-primary)',
-                      minHeight: '100px'
+                      minHeight: '100px',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                     rows={4}
                     maxLength={500}
                   />
                   <div
-                    className="absolute bottom-3 left-3 text-xs"
+                    className={`absolute bottom-3 text-xs ${isRTL ? 'left-3' : 'right-3'}`}
                     style={{ color: 'var(--color-text-secondary)' }}
                   >
                     {noteText.length}/500
@@ -1224,7 +1253,8 @@ export default function ProjectRequestsPage() {
                 paddingLeft: '24px',
                 paddingRight: '24px',
                 paddingTop: '16px',
-                paddingBottom: '24px'
+                paddingBottom: '24px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
               }}
             >
               <button
@@ -1244,7 +1274,7 @@ export default function ProjectRequestsPage() {
                 }}
                 disabled={loading.sendNote}
               >
-                إلغاء
+                {t('requests.cancel')}
               </button>
               <button
                 onClick={sendNote}
@@ -1262,7 +1292,7 @@ export default function ProjectRequestsPage() {
                 {loading.sendNote ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    جاري الإرسال...
+                    {t('requests.sending')}
                   </>
                 ) : (
                   <>
@@ -1270,7 +1300,7 @@ export default function ProjectRequestsPage() {
                       <line x1="22" y1="2" x2="11" y2="13"/>
                       <polygon points="22,2 15,22 11,13 2,9 22,2"/>
                     </svg>
-                    إرسال الملاحظة
+                    {t('requests.send')}
                   </>
                 )}
               </button>
@@ -1281,7 +1311,7 @@ export default function ProjectRequestsPage() {
 
       {/* Edit Request Modal */}
       {showEditModal && selectedRequest && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div
             className="w-full max-w-md shadow-2xl"
             style={{
@@ -1324,7 +1354,7 @@ export default function ProjectRequestsPage() {
                     lineHeight: 1.4
                   }}
                 >
-                  تعديل الطلب
+                  {t('requests.editRequestTitle')}
                 </h3>
               </div>
             </div>
@@ -1345,17 +1375,19 @@ export default function ProjectRequestsPage() {
                     className="text-sm font-bold"
                     style={{
                       fontFamily: 'var(--font-ibm-arabic-semibold)',
-                      color: 'var(--color-text-secondary)'
+                      color: 'var(--color-text-secondary)',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    الطلب الحالي
+                    {t('requests.currentRequest')}
                   </p>
                 </div>
                 <p
                   className="text-sm"
                   style={{
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
                   {selectedRequest.Type}: {selectedRequest.Data}
@@ -1369,10 +1401,11 @@ export default function ProjectRequestsPage() {
                   style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  نوع الطلب
+                  {t('requests.requestType')}
                 </label>
                 <select
                   value={editType}
@@ -1385,7 +1418,8 @@ export default function ProjectRequestsPage() {
                     padding: '12px 16px',
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
                   {REQUEST_TYPES.map((type) => (
@@ -1403,15 +1437,16 @@ export default function ProjectRequestsPage() {
                   style={{
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-semibold)',
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  تفاصيل الطلب
+                  {t('requests.requestDetails')}
                 </label>
                 <textarea
                   value={editData}
                   onChange={(e) => setEditData(e.target.value)}
-                  placeholder="اكتب تفاصيل الطلب هنا..."
+                  placeholder={t('requests.requestDetailsPlaceholder')}
                   className="w-full resize-none transition-all duration-200 focus:scale-[1.02]"
                   style={{
                     backgroundColor: 'var(--color-surface)',
@@ -1421,7 +1456,9 @@ export default function ProjectRequestsPage() {
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
                     color: 'var(--color-text-primary)',
-                    minHeight: '100px'
+                    minHeight: '100px',
+                    direction: dir as 'rtl' | 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                   rows={4}
                 />
@@ -1435,7 +1472,8 @@ export default function ProjectRequestsPage() {
                 paddingLeft: '24px',
                 paddingRight: '24px',
                 paddingTop: '16px',
-                paddingBottom: '24px'
+                paddingBottom: '24px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
               }}
             >
               <button
@@ -1456,7 +1494,7 @@ export default function ProjectRequestsPage() {
                 }}
                 disabled={loading.updateRequest}
               >
-                إلغاء
+                {t('requests.cancel')}
               </button>
               <button
                 onClick={updateRequest}
@@ -1474,10 +1512,10 @@ export default function ProjectRequestsPage() {
                 {loading.updateRequest ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    جاري التعديل...
+                    {t('requests.saving')}
                   </>
                 ) : (
-                  'حفظ التعديل'
+                  t('requests.save')
                 )}
               </button>
             </div>
@@ -1490,7 +1528,7 @@ export default function ProjectRequestsPage() {
 
 // Request Section Component
 interface RequestSectionProps {
-  type: { key: string; name: string; icon: string; color: string };
+  type: { key: string; value: string; name: string; icon: string; color: string };
   section: { isExpanded: boolean; requests: Request[]; lastID: number; hasMore: boolean } | undefined;
   doneValue: string;
   onToggle: () => void;
@@ -1513,9 +1551,10 @@ function RequestSection({
   actionLoading
 }: RequestSectionProps) {
   const isOpen = doneValue === 'false';
+  const { t, isRTL, dir } = useTranslation();
 
   return (
-    <div className="mb-4 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="mb-4 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden" style={{ direction: dir as 'rtl' | 'ltr' }}>
       {/* Section Header */}
       <button
         onClick={onToggle}
@@ -1525,10 +1564,10 @@ function RequestSection({
           <div className={`w-10 h-10 ${type.color} rounded-lg flex items-center justify-center text-white text-lg`}>
             {type.icon}
           </div>
-          <div className="text-right">
+          <div className={isRTL ? 'text-right' : 'text-left'}>
             <h3 className="font-ibm-arabic-semibold text-gray-900">{type.name}</h3>
             <p className="text-sm text-gray-500">
-              {section?.requests.length || 0} طلب
+              {section?.requests.length || 0} {t('requests.requestCount')}
             </p>
           </div>
         </div>

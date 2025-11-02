@@ -9,6 +9,7 @@ import { fonts } from '@/constants/fonts';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
 import socketService from '@/lib/socket/socketService';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Import updated components
 import MessageBubble from '@/components/chat/MessageBubble';
@@ -54,6 +55,7 @@ interface ChatMessage {
 export default function ApprovalsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   // مطابق للتطبيق الأساسي: استخدام السجل التجاري كـ ProjectID لغرف خاصة (اعتمادات/قرارات/استشارات)
   const approvalsProjectId = parseInt((user as any)?.data?.CommercialRegistrationNumber as any) || 0;
@@ -707,7 +709,7 @@ export default function ApprovalsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="اعتمادات"
+          title={t('management.approvalsPage.title')}
           backButton={
             <button
               onClick={() => router.push('/management')}
@@ -722,9 +724,17 @@ export default function ApprovalsPage() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="رجوع"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+              >
                 <polyline points="15,18 9,12 15,6" />
               </svg>
             </button>
@@ -748,7 +758,7 @@ export default function ApprovalsPage() {
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-full border-4 animate-spin" style={{ borderColor: 'var(--color-primary)' + '30', borderTopColor: 'var(--color-primary)' }}></div>
             <div>
-              <div className="text-sm font-ibm-arabic-semibold" style={{ color: 'var(--color-text-primary)' }}>جاري الرفع...</div>
+              <div className="text-sm font-ibm-arabic-semibold" style={{ color: 'var(--color-text-primary)' }}>{t('common.uploading')}</div>
               <div className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>{uploading.progress.toFixed(0)}%</div>
             </div>
           </div>
@@ -782,15 +792,15 @@ export default function ApprovalsPage() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
           </div>
         ) : messages.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12" dir={dir}>
             <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="text-gray-400">
                 <path d="M9 12l2 2 4-4"/>
                 <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.22.45 4.56 1.23"/>
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">لا توجد رسائل</h3>
-            <p className="text-gray-600">ابدأ محادثة جديدة</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2 font-ibm-arabic-semibold">{t('management.approvalsPage.noMessages')}</h3>
+            <p className="text-gray-600 font-ibm-arabic-medium">{t('chat.startConversation')}</p>
           </div>
         ) : (
           messages.map((message, index) => (
@@ -854,8 +864,9 @@ export default function ApprovalsPage() {
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   color: 'var(--color-primary)'
                 }}
+                dir={dir}
               >
-                رد على: {replyToMessage.Sender || replyToMessage.sender || 'غير معروف'}
+                {t('management.approvalsPage.replyingTo')}: {replyToMessage.Sender || replyToMessage.sender || t('common.unknown')}
               </div>
               <button
                 onClick={() => setReplyToMessage(null)}
@@ -868,7 +879,7 @@ export default function ApprovalsPage() {
                 }}
                 onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-primary-dark)'}
                 onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
-                title="إلغاء الرد"
+                title={t('management.approvalsPage.cancelReply')}
               >
                 ✕
               </button>
@@ -880,8 +891,9 @@ export default function ApprovalsPage() {
                 fontFamily: fonts.IBMPlexSansArabicRegular,
                 color: 'var(--color-text-secondary)'
               }}
+              dir={dir}
             >
-              {replyToMessage.message || replyToMessage.content || 'رسالة'}
+              {replyToMessage.message || replyToMessage.content || t('chat.message')}
             </div>
           </div>
         )}
@@ -916,7 +928,7 @@ export default function ApprovalsPage() {
               onChange={onTextChange}
               onKeyDown={handleKeyDown}
               rows={1}
-              placeholder="اكتب رسالة..."
+              placeholder={t('management.approvalsPage.typeMessage')}
               className="flex-1 resize-none leading-6 border rounded-xl focus:outline-none focus:ring-2 transition-all duration-200"
               style={{
                 fontFamily: fonts.IBMPlexSansArabicRegular,
@@ -928,6 +940,8 @@ export default function ApprovalsPage() {
                 lineHeight: 1.5,
                 backgroundColor: 'var(--color-input-background)',
                 color: 'var(--color-input-text)',
+                direction: dir as 'ltr' | 'rtl',
+                textAlign: isRTL ? 'right' : 'left'
               }}
             />
 
@@ -944,10 +958,10 @@ export default function ApprovalsPage() {
               }}
               onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary-dark)'}
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-primary)'}
-              aria-label="إرسال"
-              title="إرسال"
+              aria-label={t('management.approvalsPage.send')}
+              title={t('management.approvalsPage.send')}
             >
-              إرسال
+              {t('management.approvalsPage.send')}
             </button>
           </div>
         </div>

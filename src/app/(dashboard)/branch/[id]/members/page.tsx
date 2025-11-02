@@ -118,11 +118,28 @@ export default function BranchMembersPage() {
         console.log('👥 All members from API:', allMembers.length);
         console.log('📋 Sample member:', allMembers[0]);
 
-        // لا حاجة للفلترة - الباك اند يرجع البيانات الصحيحة حسب type
-        const filteredMembers = allMembers;
+        // إضافة original_is_in لكل عضو - مطابق للتطبيق المحمول
+        const membersWithOriginal = allMembers.map((member: any) => {
+          // تحديد القيمة الأصلية حسب الوضع
+          let originalValue = 'false';
+          if (mode === 'finance') {
+            originalValue = member.is_in_Acceptingcovenant || 'false';
+          } else if (mode === 'manager') {
+            originalValue = member.Adminbransh === 'true' ? 'true' : 'false';
+          } else {
+            originalValue = member.is_in_branch || 'false';
+          }
+
+          return {
+            ...member,
+            original_is_in: originalValue
+          };
+        });
+
+        console.log('✅ Members with original_is_in:', membersWithOriginal.slice(0, 2));
 
         if (lastId === 0) {
-          setMembers(filteredMembers);
+          setMembers(membersWithOriginal);
           // في API الجديد يرجع idAdmin في البيانات
           const adminMember = allMembers.find((m: any) => m.Adminbransh === 'true');
           setBoss(adminMember?.id || result.idAdmin || 0);
@@ -130,11 +147,11 @@ export default function BranchMembersPage() {
           // إزالة المكررات عند إضافة أعضاء جدد
           setMembers(prev => {
             const existingIds = new Set(prev.map(m => m.id));
-            const newMembers = filteredMembers.filter(m => !existingIds.has(m.id));
+            const newMembers = membersWithOriginal.filter(m => !existingIds.has(m.id));
             return [...prev, ...newMembers];
           });
         }
-        setHasMore(filteredMembers.length >= 10); // الباك اند يرجع 10 في كل مرة
+        setHasMore(allMembers.length >= 10); // الباك اند يرجع 10 في كل مرة
       }
     } catch (error) {
       console.error('Error fetching branch members:', error);
@@ -166,19 +183,42 @@ export default function BranchMembersPage() {
     const target: any = members.find(m => m.id === memberId);
     const original = target?.original_is_in; // "true" | "false"
 
+    console.log('🔄 تغيير حالة العضو:', {
+      memberId,
+      memberName: target?.userName,
+      original,
+      newValue: isInBranchValue,
+      mode
+    });
+
     if (isInBranchValue !== original) {
       if (isInBranchValue === "true") {
+        // إضافة عضو جديد
         nextNew[memberId] = { id: memberId, Validity: [] };
         delete nextDel[memberId];
+        console.log('➕ إضافة عضو جديد:', memberId);
       } else {
+        // إزالة عضو
         delete nextNew[memberId];
-        if (original === "true") nextDel[memberId] = memberId;
-        else delete nextDel[memberId];
+        if (original === "true") {
+          nextDel[memberId] = memberId;
+          console.log('➖ إزالة عضو موجود:', memberId);
+        } else {
+          delete nextDel[memberId];
+          console.log('🔙 إلغاء إضافة عضو:', memberId);
+        }
       }
     } else {
+      // العودة للحالة الأصلية
       delete nextNew[memberId];
       delete nextDel[memberId];
+      console.log('↩️ العودة للحالة الأصلية:', memberId);
     }
+
+    console.log('📊 القوائم المحدثة:', {
+      checkGloblenew: nextNew,
+      checkGlobledelete: nextDel
+    });
 
     // 3) تحديث الحالة
     setMembers(updatedMembers);
@@ -193,59 +233,70 @@ export default function BranchMembersPage() {
     try {
       setActionLoading({ save: true });
 
-      // إضافة الأعضاء الجدد
-      if (Object.keys(checkGloblenew).length > 0) {
-        const response = await axiosInstance.put(
-          '/user/updat/userBrinshv2',
-          {
-            IDCompanySub: branchId,
-            type: mode === 'finance' ? 'Acceptingcovenant' : mode === 'manager' ? 'AdminSub' : 'user',
-            checkGloble: checkGloblenew
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.accessToken}`
-            }
-          }
-        );
+      console.log('💾 حفظ التغييرات:', {
+        newMembers: checkGloblenew,
+        deletedMembers: checkGlobledelete,
+        mode
+      });
 
-        if (response.data?.success) {
-          Tostget('تم إضافة الأعضاء بنجاح');
-        }
+      // التحقق من وجود تغييرات
+      const hasNewMembers = Object.keys(checkGloblenew).length > 0;
+      const hasDeletedMembers = Object.keys(checkGlobledelete).length > 0;
+
+      if (!hasNewMembers && !hasDeletedMembers) {
+        Tostget('لم يتم إجراء أي تغييرات');
+        setActionLoading({ save: false });
+        return;
       }
 
-      // حذف الأعضاء
-      if (Object.keys(checkGlobledelete).length > 0) {
-        const response = await axiosInstance.put(
-          '/user/updat/userBrinshv2',
-          {
-            IDCompanySub: branchId,
-            type: mode === 'finance' ? 'Acceptingcovenant' : mode === 'manager' ? 'AdminSub' : 'user',
-            checkGloble: {},
-            checkGlobledelete: checkGlobledelete
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${user?.accessToken}`
-            }
-          }
-        );
+      // إرسال طلب واحد مع كل التغييرات - مطابق للتطبيق المحمول
+      const requestData = {
+        idBrinsh: branchId,
+        type: mode === 'finance' ? 'Acceptingcovenant' : mode === 'manager' ? 'AdminSub' : 'user',
+        checkGloblenew: checkGloblenew,
+        checkGlobleold: checkGlobledelete,
+        kind: 'user'
+      };
 
-        if (response.data?.success) {
-          Tostget('تم إزالة الأعضاء بنجاح');
+      console.log('📤 إرسال الطلب:', requestData);
+
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.accessToken}`
         }
+      });
+
+      console.log('📊 API Response:', {
+        status: response.status,
+        data: response.data
+      });
+
+      // التحقق من النجاح - مطابق للباك اند
+      if (response.data?.success === true || response.data?.message === 'successfuly' || response.status === 200) {
+        const addedCount = Object.keys(checkGloblenew).length;
+        const removedCount = Object.keys(checkGlobledelete).length;
+
+        if (addedCount > 0 && removedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} وحذف ${removedCount} من أعضاء الفرع`);
+        } else if (addedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} عضو للفرع`);
+        } else if (removedCount > 0) {
+          Tostget(`تم حذف ${removedCount} عضو من الفرع`);
+        }
+
+        // إعادة تحميل البيانات
+        setCheckGloblenew({});
+        setCheckGlobledelete({});
+        await fetchBranchMembers(0);
+      } else {
+        Tostget(response.data?.message || 'فشل في حفظ التغييرات');
       }
 
-      // إعادة تحميل البيانات
-      setCheckGloblenew({});
-      setCheckGlobledelete({});
-      await fetchBranchMembers(0);
-
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving changes:', error);
-      Tostget('خطأ في حفظ التغييرات');
+      const errorMessage = error.response?.data?.message || error.message || 'خطأ في حفظ التغييرات';
+      Tostget(errorMessage);
     } finally {
       setActionLoading({ save: false });
     }
@@ -682,21 +733,23 @@ export default function BranchMembersPage() {
       />
 
       {/* Add Multiple Projects Modal - مطابق للتطبيق المحمول */}
-      <AddMultipleProjectsModal
-        isOpen={showMultipleProjectsModal}
-        onClose={() => {
-          setShowMultipleProjectsModal(false);
-          setSelectedMember(null);
-        }}
-        branchId={branchId}
-        memberPhoneNumber={selectedMember?.PhoneNumber || ''}
-        memberName={selectedMember?.userName || ''}
-        onSuccess={() => {
-          fetchBranchMembers();
-          setShowMultipleProjectsModal(false);
-          setSelectedMember(null);
-        }}
-      />
+      {showMultipleProjectsModal && selectedMember && (
+        <AddMultipleProjectsModal
+          isOpen={showMultipleProjectsModal}
+          onClose={() => {
+            setShowMultipleProjectsModal(false);
+            setSelectedMember(null);
+          }}
+          branchId={branchId}
+          memberPhoneNumber={selectedMember.PhoneNumber}
+          memberName={selectedMember.userName}
+          onSuccess={() => {
+            fetchBranchMembers();
+            setShowMultipleProjectsModal(false);
+            setSelectedMember(null);
+          }}
+        />
+      )}
     </ContentSection>
     </ResponsiveLayout>
   );

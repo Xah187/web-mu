@@ -10,6 +10,7 @@ import { Tostget } from '@/components/ui/Toast';
 import ButtonCreat from '@/components/design/ButtonCreat';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import useValidityUser from '@/hooks/useValidityUser';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { URLFIL } from '@/lib/api/axios';
 import HRUsersManagement from '@/components/hr/HRUsersManagement';
@@ -53,6 +54,7 @@ type ViewType = 'buttons' | 'hr' | 'overtime' | 'addHR' | 'checkIn' | 'checkOut'
 export default function PreparationPage() {
   const router = useRouter();
   const { user, size } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   // Permission hooks
   const { isAdmin, isBranchManager } = useJobBasedPermissions();
@@ -277,15 +279,15 @@ export default function PreparationPage() {
         setHrHasMore(items.length >= 10);
       } else {
         const errorData = await response.json();
-        Tostget(errorData.error || 'خطأ في تحميل بيانات التحضير', 'error');
+        Tostget(errorData.error || t('preparationPage.errors.loadingPreparationData'), 'error');
       }
     } catch (error) {
       console.error('Error loading daily preparations:', error);
-      Tostget('خطأ في تحميل بيانات التحضير', 'error');
+      Tostget(t('preparationPage.errors.loadingPreparationData'), 'error');
     } finally {
       setLoading(false);
     }
-  }, [selectedDate]);
+  }, [selectedDate, t]);
   // Load next page progressively (infinite scroll)
   const loadMorePreparations = useCallback(async () => {
     if (hrLoadingMore || !hrHasMore) return;
@@ -328,14 +330,14 @@ export default function PreparationPage() {
         }
       } else {
         const errorData = await response.json();
-        Tostget(errorData.error || 'خطأ في تحميل بيانات التحضير', 'error');
+        Tostget(errorData.error || t('preparationPage.errors.loadingPreparationData'), 'error');
       }
     } catch (e) {
       console.error('Error loading more preparations:', e);
     } finally {
       setHrLoadingMore(false);
     }
-  }, [hrLoadingMore, hrHasMore, hrLastID, selectedEmployee, selectedDate]);
+  }, [hrLoadingMore, hrHasMore, hrLastID, selectedEmployee, selectedDate, t]);
 
 
 
@@ -400,12 +402,12 @@ export default function PreparationPage() {
 
       // Ensure this runs on client and over secure context (required by most browsers)
       if (typeof window === 'undefined' || typeof navigator === 'undefined') {
-        setCameraError('هذه الوظيفة تعمل فقط داخل المتصفح');
+        setCameraError(t('preparationPage.errors.browserOnly'));
         setIsLoadingCamera(false);
         return;
       }
       if (!(window.isSecureContext || location.protocol === 'https:' || location.hostname === 'localhost')) {
-        setCameraError('يجب فتح الصفحة عبر HTTPS أو من localhost لاستخدام الكاميرا');
+        setCameraError(t('preparationPage.httpsRequired'));
         setIsLoadingCamera(false);
         return;
       }
@@ -438,13 +440,13 @@ export default function PreparationPage() {
         stream = await getUserMediaCompat(constraints);
       } catch (err: any) {
         if (err?.message === 'NOT_SUPPORTED') {
-          setCameraError('المتصفح لا يدعم الكاميرا. جرب فتح الصفحة على Chrome أو Safari محدث ومع اتصال HTTPS.');
+          setCameraError(t('preparationPage.browserNotSupported'));
         } else if (err?.name === 'NotAllowedError' || err?.name === 'SecurityError') {
-          setCameraError('تم رفض إذن الكاميرا. يرجى السماح بالوصول للكاميرا من إعدادات المتصفح ثم المحاولة مرة أخرى.');
+          setCameraError(t('preparationPage.cameraPermissionDenied'));
         } else if (err?.name === 'NotFoundError' || err?.name === 'OverconstrainedError') {
-          setCameraError('لم يتم العثور على كاميرا مناسبة على هذا الجهاز.');
+          setCameraError(t('preparationPage.cameraNotFound'));
         } else {
-          setCameraError('تعذّر تشغيل الكاميرا، يرجى المحاولة مرة أخرى.');
+          setCameraError(t('preparationPage.cameraStartFailed'));
         }
         setIsLoadingCamera(false);
         return;
@@ -487,11 +489,11 @@ export default function PreparationPage() {
       console.error('Camera error:', error);
       setIsLoadingCamera(false);
       setIsCameraActive(false);
-      let msg = 'تعذر الوصول للكاميرا';
-      if (error?.name === 'NotAllowedError') msg = 'يرجى السماح بالوصول للكاميرا من إعدادات المتصفح';
-      else if (error?.name === 'NotFoundError') msg = 'لم يتم العثور على كاميرا متاحة';
-      else if (error?.message === 'Camera timeout') msg = 'انتهت مهلة تشغيل الكاميرا - حاول مرة أخرى';
-      else if (error?.message?.includes('Video element not found')) msg = 'مشكلة في واجهة الكاميرا - أعد المحاولة';
+      let msg = t('preparationPage.errors.cameraAccess');
+      if (error?.name === 'NotAllowedError') msg = t('preparationPage.errors.cameraPermission');
+      else if (error?.name === 'NotFoundError') msg = t('preparationPage.errors.cameraNotFound');
+      else if (error?.message === 'Camera timeout') msg = t('preparationPage.errors.cameraTimeout');
+      else if (error?.message?.includes('Video element not found')) msg = t('preparationPage.errors.cameraInterface');
       setCameraError(msg);
       Tostget(msg, 'error');
       if (streamRef.current) {
@@ -504,14 +506,14 @@ export default function PreparationPage() {
   // Capture a photo from video stream
   const capturePhoto = () => {
     if (!videoRef.current || !canvasRef.current || !isCameraActive) {
-      Tostget('الكاميرا غير جاهزة', 'error');
+      Tostget(t('preparationPage.errors.cameraNotReady'), 'error');
       return;
     }
     const video = videoRef.current;
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) {
-      Tostget('خطأ في معالجة الصورة', 'error');
+      Tostget(t('preparationPage.errors.imageProcessing'), 'error');
       return;
     }
     canvas.width = video.videoWidth;
@@ -520,7 +522,7 @@ export default function PreparationPage() {
     const dataUrl = canvas.toDataURL('image/jpeg', 0.8);
     setCapturedPhoto(dataUrl);
     stopCamera();
-    Tostget('تم التقاط الصورة بنجاح', 'success');
+    Tostget(t('preparationPage.success.photoCaptured'), 'success');
   };
 
   // Stop camera and cleanup
@@ -544,7 +546,7 @@ export default function PreparationPage() {
   // Convert captured photo to mobile app format
   const convertPhotoToMobileFormat = async (): Promise<{uri: string, name: string, type: string, size: number} | null> => {
     if (!capturedPhoto) {
-      Tostget('لم يتم التقاط صورة', 'error');
+      Tostget(t('preparationPage.errors.noPhotoCaptured'), 'error');
       return null;
     }
 
@@ -568,7 +570,7 @@ export default function PreparationPage() {
       return imageObject;
     } catch (error) {
       console.error('Error converting photo:', error);
-      Tostget('خطأ في معالجة الصورة', 'error');
+      Tostget(t('preparationPage.errors.imageProcessing'), 'error');
       return null;
     }
   };
@@ -646,11 +648,11 @@ export default function PreparationPage() {
         setHrHasMore(items.length >= 10);
       } else {
         const errorData = await response.json();
-        Tostget(errorData.error || 'خطأ في تحميل بيانات التحضير', 'error');
+        Tostget(errorData.error || t('preparationPage.errors.loadingPreparationData'), 'error');
       }
     } catch (error) {
       console.error('Error loading preparation data:', error);
-      Tostget('خطأ في تحميل بيانات التحضير', 'error');
+      Tostget(t('preparationPage.errors.loadingPreparationData'), 'error');
     } finally {
       setLoading(false);
     }
@@ -760,7 +762,7 @@ export default function PreparationPage() {
   // Handle overtime assignment - Same as mobile app opreationovertime
   const handleOvertimeAssignment = async (isAssigning: boolean) => {
     if (!selectedOvertimeEmployee || selectedOvertimeDates.length === 0) {
-      Tostget('يرجى اختيار موظف وتواريخ', 'error');
+      Tostget(t('preparationPage.pleaseSelectEmployeeAndDates'), 'error');
       return;
     }
 
@@ -816,8 +818,8 @@ export default function PreparationPage() {
         if (result.success) {
           Tostget(
             isAssigning
-              ? `تم إسناد الدوام الإضافي للموظف ${selectedOvertimeEmployee.userName} بنجاح`
-              : `تم إلغاء الدوام الإضافي للموظف ${selectedOvertimeEmployee.userName} بنجاح`,
+              ? t('preparationPage.overtimeAssignedSuccess', { name: selectedOvertimeEmployee.userName })
+              : t('preparationPage.overtimeCancelledSuccess', { name: selectedOvertimeEmployee.userName }),
             'success'
           );
 
@@ -829,17 +831,17 @@ export default function PreparationPage() {
           setShowEmployeeSearch(false);
         } else {
           console.log('❌ فشل في العملية - النتيجة:', result);
-          Tostget(result.message || 'فشل في العملية', 'error');
+          Tostget(result.message || t('preparationPage.errors.operationFailed'), 'error');
         }
       } else {
         const errorText = await response.text();
         console.log('❌ خطأ HTTP - Status:', response.status);
         console.log('❌ رسالة الخطأ:', errorText);
-        Tostget('فشل في العملية', 'error');
+        Tostget(t('preparationPage.errors.operationFailed'), 'error');
       }
     } catch (error) {
       console.error('Error in overtime assignment:', error);
-      Tostget('حدث خطأ أثناء العملية', 'error');
+      Tostget(t('preparationPage.errors.operationError'), 'error');
     } finally {
       setIsAssigningOvertime(false);
     }
@@ -880,17 +882,17 @@ export default function PreparationPage() {
           // Open PDF like mobile app using URLFIL
           const pdfUrl = `${URLFIL}/${data.url}`;
           window.open(pdfUrl, '_blank');
-          Tostget('تم فتح التقرير بنجاح', 'success');
+          Tostget(t('preparationPage.success.reportOpened'), 'success');
         } else {
-          Tostget('خطأ في إنشاء التقرير', 'error');
+          Tostget(t('preparationPage.errors.reportError'), 'error');
         }
       } else {
         const errorData = await response.json();
-        Tostget(errorData.error || 'خطأ في تحميل التقرير', 'error');
+        Tostget(errorData.error || t('preparationPage.errors.loadingReport'), 'error');
       }
     } catch (error) {
       console.error('Error downloading PDF:', error);
-      Tostget('خطأ في تحميل التقرير', 'error');
+      Tostget(t('preparationPage.errors.loadingReport'), 'error');
     }
   };
 
@@ -908,7 +910,7 @@ export default function PreparationPage() {
   };
 
   const formatTime = (timeString: string) => {
-    if (!timeString) return 'غير محدد';
+    if (!timeString) return t('preparationPage.notSpecified');
     try {
       const date = new Date(timeString);
       return date.toLocaleTimeString('en-US', {
@@ -922,7 +924,7 @@ export default function PreparationPage() {
   };
 
   const formatDate = (dateString: string) => {
-    if (!dateString) return 'غير محدد';
+    if (!dateString) return t('preparationPage.notSpecified');
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString('en-CA'); // YYYY-MM-DD format
@@ -938,7 +940,7 @@ export default function PreparationPage() {
     }
 
     if (!navigator.geolocation) {
-      Tostget('المتصفح لا يدعم تحديد الموقع', 'error');
+      Tostget(t('preparationPage.errors.locationNotSupported'), 'error');
       return false;
     }
 
@@ -980,10 +982,7 @@ export default function PreparationPage() {
     if (success) return true;
 
     // All strategies failed - offer to continue with default location
-    const useDefaultLocation = window.confirm(
-      'تعذر الحصول على موقعك الدقيق. هل تريد المتابعة بموقع افتراضي؟\n\n' +
-      'ملاحظة: قد يؤثر هذا على دقة تسجيل التحضير.'
-    );
+    const useDefaultLocation = window.confirm(t('preparationPage.locationPrompt'));
 
     if (useDefaultLocation) {
       // Use a default location (company location or city center)
@@ -991,7 +990,7 @@ export default function PreparationPage() {
         latitude: 24.7136, // Riyadh coordinates as default
         longitude: 46.6753
       });
-      Tostget('تم استخدام موقع افتراضي للتحضير', 'warning');
+      Tostget(t('preparationPage.success.defaultLocationUsed'), 'warning');
       return true;
     }
 
@@ -1028,7 +1027,7 @@ export default function PreparationPage() {
       console.log('Token being sent:', token ? 'Token present' : 'No token');
 
       if (!token) {
-        throw new Error('لا يوجد توكن مصادقة');
+        throw new Error(t('preparationPage.errors.noAuthToken'));
       }
 
       const response = await fetch(`/api/hr/userverification?type=${type}`, {
@@ -1051,9 +1050,9 @@ export default function PreparationPage() {
 
       // Handle specific error cases like mobile app
       if (error?.message?.includes('تعذر الاتصال') || error?.message?.includes('fetch')) {
-        Tostget('تعذر الاتصال بالخادم، حاول مرة أخرى', 'error');
+        Tostget(t('preparationPage.errors.connectionError'), 'error');
       } else if (error?.message?.includes('401') || error?.status === 401) {
-        Tostget('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى', 'error');
+        Tostget(t('preparationPage.errors.sessionExpired'), 'error');
         // Redirect to login like mobile app
         if (typeof window !== 'undefined') {
           localStorage.removeItem('token');
@@ -1061,9 +1060,9 @@ export default function PreparationPage() {
           window.location.href = '/login';
         }
       } else if (error?.message?.includes('500') || error?.status === 500) {
-        Tostget('خطأ في الخادم، يرجى المحاولة لاحقاً', 'error');
+        Tostget(t('preparationPage.errors.serverError'), 'error');
       } else {
-        const errorMessage = error instanceof Error ? error.message : 'حدث خطأ أثناء التحقق من التحضير';
+        const errorMessage = error instanceof Error ? error.message : t('preparationPage.errors.preparationError');
         Tostget(errorMessage, 'error');
       }
 
@@ -1077,7 +1076,7 @@ export default function PreparationPage() {
     try {
       // Check local state first to prevent unnecessary API calls
       if (!userVerificationStatus.canCheckIn) {
-        Tostget('تم تسجيل الدخول مسبقاً اليوم', 'error');
+        Tostget(t('preparationPage.errors.alreadyCheckedIn'), 'error');
         return;
       }
 
@@ -1087,12 +1086,12 @@ export default function PreparationPage() {
 
       // Same as mobile app: if(Userverifications?.success) { ... } else { Tostget(Userverifications?.message) }
       if (!verification.success) {
-        Tostget(verification.message || 'التحضير غير مسموح', 'error');
+        Tostget(verification.message || t('preparationPage.errors.preparationNotAllowed'), 'error');
         // Update local state based on server response
         setUserVerificationStatus(prev => ({
           ...prev,
           canCheckIn: false,
-          canCheckOut: verification.message?.includes('يجب تحضير الدخول') ? false : true
+          canCheckOut: verification.message?.includes(t('preparationPage.mustCheckInFirst')) ? false : true
         }));
         return;
       }
@@ -1108,7 +1107,7 @@ export default function PreparationPage() {
 
     } catch (error) {
       console.error('Error in handleCheckIn:', error);
-      Tostget('حدث خطأ أثناء التحضير', 'error');
+      Tostget(t('preparationPage.errors.preparationError'), 'error');
     }
   };
 
@@ -1121,7 +1120,7 @@ export default function PreparationPage() {
 
       // Same as mobile app: if(Userverifications?.success) { ... } else { Tostget(Userverifications?.message) }
       if (!verification.success) {
-        Tostget(verification.message || 'التحضير غير مسموح', 'error');
+        Tostget(verification.message || t('preparationPage.errors.preparationNotAllowed'), 'error');
         return;
       }
 
@@ -1136,7 +1135,7 @@ export default function PreparationPage() {
 
     } catch (error) {
       console.error('Error in handleCheckOut:', error);
-      Tostget('حدث خطأ أثناء التحضير', 'error');
+      Tostget(t('preparationPage.errors.preparationError'), 'error');
     }
   };
 
@@ -1146,13 +1145,13 @@ export default function PreparationPage() {
 
       // Step 1: Check if photo was captured
       if (!capturedPhoto) {
-        Tostget('يجب التقاط صورة أولاً', 'error');
+        Tostget(t('preparationPage.errors.mustCapturePhoto'), 'error');
         setLoading(false);
         return;
       }
 
       if (!currentLocation || !verificationData) {
-        Tostget('فشل في الحصول على الموقع أو بيانات التحقق', 'error');
+        Tostget(t('preparationPage.errors.locationOrVerificationFailed'), 'error');
         setLoading(false);
         return;
       }
@@ -1216,7 +1215,7 @@ export default function PreparationPage() {
       }
 
       if (!token) {
-        throw new Error('لا يوجد توكن مصادقة');
+        throw new Error(t('preparationPage.errors.noAuthToken'));
       }
 
       // Step 3: Send to opreationPreparation endpoint (same as mobile app)
@@ -1244,11 +1243,11 @@ export default function PreparationPage() {
         if (tokenUpload && nameFile) {
           const ok = await uploadImageToGCS(nameFile, tokenUpload);
           if (!ok) {
-            Tostget('تم التسجيل لكن فشل رفع الصورة', 'warning');
+            Tostget(t('preparationPage.errors.registrationFailedImageUpload'), 'warning');
           }
         }
 
-        Tostget('تم تسجيل الحضور بنجاح', 'success');
+        Tostget(t('preparationPage.success.checkInSuccess'), 'success');
         stopCamera();
         setCurrentView('buttons');
         setVerificationData(null);
@@ -1256,11 +1255,11 @@ export default function PreparationPage() {
         // Refresh data
         await loadDailyPreparations();
       } else {
-        Tostget(result.message || 'فشل في تسجيل الحضور', 'error');
+        Tostget(result.message || t('preparationPage.errors.checkInFailed'), 'error');
       }
     } catch (error) {
       console.error('Error confirming check in:', error);
-      Tostget('حدث خطأ أثناء تسجيل الحضور', 'error');
+      Tostget(t('preparationPage.errors.checkInError'), 'error');
     } finally {
       setLoading(false);
     }
@@ -1272,13 +1271,13 @@ export default function PreparationPage() {
 
       // Step 1: Check if photo was captured
       if (!capturedPhoto) {
-        Tostget('يجب التقاط صورة أولاً', 'error');
+        Tostget(t('preparationPage.errors.mustCapturePhoto'), 'error');
         setLoading(false);
         return;
       }
 
       if (!currentLocation || !verificationData) {
-        Tostget('فشل في الحصول على الموقع أو بيانات التحقق', 'error');
+        Tostget(t('preparationPage.errors.locationOrVerificationFailed'), 'error');
         setLoading(false);
         return;
       }
@@ -1342,7 +1341,7 @@ export default function PreparationPage() {
       }
 
       if (!token) {
-        throw new Error('لا يوجد توكن مصادقة');
+        throw new Error(t('preparationPage.errors.noAuthToken'));
       }
 
       // Step 3: Send to opreationPreparation endpoint (same as mobile app)
@@ -1369,11 +1368,11 @@ export default function PreparationPage() {
         if (tokenUpload && nameFile) {
           const ok = await uploadImageToGCS(nameFile, tokenUpload);
           if (!ok) {
-            Tostget('تم التسجيل لكن فشل رفع الصورة', 'warning');
+            Tostget(t('preparationPage.errors.registrationFailedImageUpload'), 'warning');
           }
         }
 
-        Tostget('تم تسجيل الانصراف بنجاح', 'success');
+        Tostget(t('preparationPage.success.checkOutSuccess'), 'success');
         stopCamera();
         setCurrentView('buttons');
         setVerificationData(null);
@@ -1381,11 +1380,11 @@ export default function PreparationPage() {
         // Refresh data
         await loadDailyPreparations();
       } else {
-        Tostget(result.message || 'فشل في تسجيل الانصراف', 'error');
+        Tostget(result.message || t('preparationPage.errors.checkOutFailed'), 'error');
       }
     } catch (error) {
       console.error('Error confirming check out:', error);
-      Tostget('حدث خطأ أثناء تسجيل الانصراف', 'error');
+      Tostget(t('preparationPage.errors.checkOutError'), 'error');
     } finally {
       setLoading(false);
     }
@@ -1396,7 +1395,7 @@ export default function PreparationPage() {
   return (
     <ResponsiveLayout>
       <PageHeader
-        title="نظام التحضير"
+        title={t('preparationPage.title')}
       />
 
       {/* Camera Modal */}
@@ -1409,25 +1408,26 @@ export default function PreparationPage() {
             className="rounded-lg p-6 max-w-md w-full mx-4"
             style={{ backgroundColor: colors.WHITE }}
           >
-            <div className="text-center mb-4">
+            <div className="text-center mb-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
               <h3
-                className="mb-2"
+                className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}
                 style={{
                   fontSize: scale(18 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
                   color: 'var(--color-text-primary)'
                 }}
               >
-                التقاط صورة التحضير
+                {t('preparationPage.capturePhoto')}
               </h3>
               <p
+                className={isRTL ? 'text-right' : 'text-left'}
                 style={{
                   fontSize: scale(14 + size),
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   color: 'var(--color-text-secondary)'
                 }}
               >
-                تأكد من وضوح وجهك في الصورة
+                {t('preparationPage.ensureFaceVisible')}
               </p>
             </div>
 
@@ -1444,8 +1444,11 @@ export default function PreparationPage() {
                       border: '2px solid #4ade80'
                     }}
                   />
-                  <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
-                    ✓ تم التقاط الصورة
+                  <div
+                    className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs"
+                    style={{ direction: dir as 'rtl' | 'ltr' }}
+                  >
+                    ✓ {t('preparationPage.photoCapturedBadge')}
                   </div>
                 </div>
               ) : cameraError ? (
@@ -1456,8 +1459,19 @@ export default function PreparationPage() {
                     border: '2px solid #ef4444'
                   }}>
                   <div className="text-red-500 text-4xl mb-2">⚠️</div>
-                  <p className="text-center text-red-600 mb-4 px-4">{cameraError}</p>
-                  <button onClick={startCamera} className="bg-blue-500 text-white px-4 py-2 rounded-lg">إعادة المحاولة</button>
+                  <p
+                    className="text-center text-red-600 mb-4 px-4"
+                    style={{ direction: dir as 'rtl' | 'ltr' }}
+                  >
+                    {cameraError}
+                  </p>
+                  <button
+                    onClick={startCamera}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                    style={{ direction: dir as 'rtl' | 'ltr' }}
+                  >
+                    {t('preparationPage.retryCamera')}
+                  </button>
                 </div>
               ) : isLoadingCamera ? (
                 <div className="relative w-full rounded-lg"
@@ -1478,15 +1492,21 @@ export default function PreparationPage() {
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-4"></div>
                     <p
                       className="text-center mb-2"
-                      style={{ color: 'var(--color-text-secondary)' }}
+                      style={{
+                        color: 'var(--color-text-secondary)',
+                        direction: dir as 'rtl' | 'ltr'
+                      }}
                     >
-                      جاري تشغيل الكاميرا...
+                      {t('preparationPage.startingCamera')}
                     </p>
                     <p
                       className="text-xs text-center"
-                      style={{ color: 'var(--color-text-secondary)' }}
+                      style={{
+                        color: 'var(--color-text-secondary)',
+                        direction: dir as 'rtl' | 'ltr'
+                      }}
                     >
-                      يرجى السماح بالوصول للكاميرا
+                      {t('preparationPage.pleaseAllowCameraAccess')}
                     </p>
                   </div>
                 </div>
@@ -1505,7 +1525,12 @@ export default function PreparationPage() {
                       border: '2px solid #3b82f6'
                     }}
                   />
-                  <div className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs">📹 الكاميرا جاهزة</div>
+                  <div
+                    className="absolute top-2 left-2 bg-green-500 text-white px-2 py-1 rounded text-xs"
+                    style={{ direction: dir as 'rtl' | 'ltr' }}
+                  >
+                    {t('preparationPage.cameraReady')}
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center w-full rounded-lg"
@@ -1517,9 +1542,12 @@ export default function PreparationPage() {
                   <div className="text-6xl mb-4">📷</div>
                   <p
                     className="text-center mb-4"
-                    style={{ color: 'var(--color-text-secondary)' }}
+                    style={{
+                      color: 'var(--color-text-secondary)',
+                      direction: dir as 'rtl' | 'ltr'
+                    }}
                   >
-                    اضغط الزر لتشغيل الكاميرا
+                    {t('preparationPage.clickToStartCamera')}
                   </p>
                 </div>
               )}
@@ -1530,9 +1558,9 @@ export default function PreparationPage() {
 
 
 
-            <div className="flex gap-2">
+            <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <ButtonCreat
-                text="إلغاء"
+                text={t('preparationPage.cancel')}
                 onpress={() => {
                   stopCamera();
                   setCurrentView('buttons');
@@ -1556,7 +1584,7 @@ export default function PreparationPage() {
 
               {!capturedPhoto ? (
                 <ButtonCreat
-                  text={isCameraActive ? 'التقاط صورة' : 'تشغيل الكاميرا'}
+                  text={isCameraActive ? t('preparationPage.captureImage') : t('preparationPage.startCamera')}
                   onpress={() => (isCameraActive ? capturePhoto() : startCamera())}
                   styleButton={{
                     flex: 1,
@@ -1574,9 +1602,9 @@ export default function PreparationPage() {
                   }}
                 />
               ) : (
-                <div className="flex gap-2 flex-1">
+                <div className={`flex gap-2 flex-1 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                   <ButtonCreat
-                    text="إعادة التقاط"
+                    text={t('preparationPage.retake')}
                     onpress={retakePhoto}
                     styleButton={{
                       flex: 1,
@@ -1594,7 +1622,7 @@ export default function PreparationPage() {
                     }}
                   />
                   <ButtonCreat
-                    text={loading ? 'جاري التسجيل...' : 'تأكيد التحضير'}
+                    text={loading ? t('preparationPage.registering') : t('preparationPage.confirmPreparation')}
                     onpress={currentView === 'checkIn' ? confirmCheckIn : confirmCheckOut}
                     disabled={loading}
                     styleButton={{
@@ -1641,7 +1669,7 @@ export default function PreparationPage() {
             </button>
             <img
               src={selectedImage}
-              alt="صورة التحضير"
+              alt={t('preparationPage.preparationImage')}
               className="max-w-full max-h-full object-contain rounded-lg"
             />
           </div>
@@ -1657,10 +1685,11 @@ export default function PreparationPage() {
               style={{
                 fontSize: scale(20 + size),
                 fontFamily: fonts.IBMPlexSansArabicBold,
-                color: 'var(--color-text-primary)'
+                color: 'var(--color-text-primary)',
+                direction: dir as 'rtl' | 'ltr'
               }}
             >
-              خيارات التحضير
+              {t('preparationPage.preparationOptions')}
             </h2>
 
             {/* Basic buttons for all employees */}
@@ -1682,7 +1711,7 @@ export default function PreparationPage() {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                 </svg>
-                تحضير دخول
+                {t('preparationPage.checkInButton')}
               </button>
 
               <button
@@ -1702,7 +1731,7 @@ export default function PreparationPage() {
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                 </svg>
-                تحضير انصراف
+                {t('preparationPage.checkOutButton')}
               </button>
             </ResponsiveGrid>
 
@@ -1717,17 +1746,18 @@ export default function PreparationPage() {
                   style={{
                     fontSize: scale(18 + size),
                     fontFamily: fonts.IBMPlexSansArabicBold,
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
-                  خيارات إضافية
+                  {t('preparationPage.additionalOptions')}
                 </h3>
 
                 <ResponsiveGrid cols={{ mobile: 1, tablet: 2, desktop: 3 }} gap="md">
                   {hasHRPermissions() && (
                     <>
                       <ButtonCreat
-                        text="سجلات التحضير"
+                        text={t('preparationPage.preparationRecords')}
                         onpress={() => setCurrentView('hr')}
                         styleButton={{
                           backgroundColor: colors.BLUE,
@@ -1741,7 +1771,7 @@ export default function PreparationPage() {
                       />
 
                       <ButtonCreat
-                        text="إسناد دوام إضافي"
+                        text={t('preparationPage.assignOvertime')}
                         onpress={() => setCurrentView('overtime')}
                         styleButton={{
                           backgroundColor: colors.BLUE,
@@ -1758,7 +1788,7 @@ export default function PreparationPage() {
 
                   {hasManagerPermissions() && (
                     <ButtonCreat
-                      text="إضافة صلاحيات الموارد البشرية"
+                      text={t('preparationPage.addHRPermissions')}
                       onpress={() => setCurrentView('addHR')}
                       styleButton={{
                         backgroundColor: colors.BLUE,
@@ -1788,25 +1818,27 @@ export default function PreparationPage() {
               }}
             >
               <div
-                className="flex justify-between items-center"
+                className={`flex justify-between items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                 style={{
                   marginBottom: `${scale(16)}px`,
-                  gap: `${scale(16)}px`
+                  gap: `${scale(16)}px`,
+                  direction: dir as 'rtl' | 'ltr'
                 }}
               >
                 <h2
+                  className={isRTL ? 'text-right' : 'text-left'}
                   style={{
                     fontSize: scale(20 + size),
                     fontFamily: fonts.IBMPlexSansArabicBold,
                     color: 'var(--color-text-primary)'
                   }}
                 >
-                  سجلات التحضير
+                  {t('preparationPage.preparationRecords')}
                 </h2>
                 <button
                   onClick={() => setCurrentView('buttons')}
                   className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
-                  title="العودة"
+                  title={t('preparationPage.back')}
                   style={{
                     backgroundColor: 'var(--color-surface-secondary)',
                     padding: `${scale(10)}px`,
@@ -1840,15 +1872,16 @@ export default function PreparationPage() {
                 >
                   <div>
                     <label
-                      className="block"
+                      className={`block ${isRTL ? 'text-right' : 'text-left'}`}
                       style={{
                         fontSize: scale(12 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         color: 'var(--color-text-secondary)',
-                        marginBottom: `${scale(6)}px`
+                        marginBottom: `${scale(6)}px`,
+                        direction: dir as 'rtl' | 'ltr'
                       }}
                     >
-                      التاريخ
+                      {t('preparationPage.date')}
                     </label>
                     <div className="relative">
                       <input
@@ -1881,7 +1914,7 @@ export default function PreparationPage() {
                       setShowEmployeeSearch(!showEmployeeSearch);
                     }}
                     className="rounded-lg transition-colors shadow-sm hover:shadow-md"
-                    title="فلترة"
+                    title={t('preparationPage.filter')}
                     style={{
                       backgroundColor: 'var(--color-surface-secondary)',
                       padding: `${scale(12)}px`,
@@ -1925,10 +1958,12 @@ export default function PreparationPage() {
                       fontSize: scale(12 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       color: 'var(--color-text-secondary)',
-                      marginBottom: `${scale(6)}px`
+                      marginBottom: `${scale(6)}px`,
+                      direction: dir as 'rtl' | 'ltr'
                     }}
+                    className={isRTL ? 'text-right' : 'text-left'}
                   >
-                    إجمالي السجلات
+                    {t('preparationPage.totalRecords')}
                   </div>
                   <div
                     style={{
@@ -1948,12 +1983,15 @@ export default function PreparationPage() {
               <div className="p-6">
                 {/* Employee Search */}
                 <div className="mb-6">
-                  <div className="flex items-center justify-between mb-2">
+                  <div className={`flex items-center justify-between mb-2 ${isRTL ? 'flex-row' : 'flex-row'}`}>
                     <label
-                      className="text-sm font-ibm-arabic-medium"
-                      style={{ color: 'var(--color-text-primary)' }}
+                      className={`text-sm font-ibm-arabic-medium ${isRTL ? 'text-right' : 'text-left'}`}
+                      style={{
+                        color: 'var(--color-text-primary)',
+                        direction: dir as 'rtl' | 'ltr'
+                      }}
                     >
-                      البحث عن موظف محدد
+                      {t('preparationPage.searchForSpecificEmployee')}
                     </label>
                     {selectedEmployee && (
                       <button
@@ -1971,10 +2009,11 @@ export default function PreparationPage() {
                           backgroundColor: 'rgba(239, 68, 68, 0.1)',
                           border: '1px solid rgba(239, 68, 68, 0.2)',
                           color: '#dc2626',
-                          marginBottom: `${scale(8)}px` // رفع الزر قليلاً عن القائمة التي تحته
+                          marginBottom: `${scale(8)}px`, // رفع الزر قليلاً عن القائمة التي تحته
+                          direction: dir as 'rtl' | 'ltr'
                         }}
                       >
-                        إلغاء التصفية
+                        {t('preparationPage.clearFilter')}
                       </button>
                     )}
                   </div>
@@ -1995,14 +2034,15 @@ export default function PreparationPage() {
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="ابحث عن المستخدم"
-                        className="flex-1 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        placeholder={t('preparationPage.searchEmployee')}
+                        className={`flex-1 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 ${isRTL ? 'text-right' : 'text-left'}`}
                         style={{
                           padding: `${scale(12)}px ${scale(16)}px`,
                           fontSize: `${scale(14 + size)}px`,
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           borderRadius: `${scale(8)}px`,
                           border: '1px solid var(--color-border)',
+                          direction: dir as 'rtl' | 'ltr',
                           backgroundColor: 'var(--color-surface)',
                           color: 'var(--color-text-primary)'
                         }}
@@ -2020,10 +2060,11 @@ export default function PreparationPage() {
                           fontSize: `${scale(14 + size)}px`,
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           borderRadius: `${scale(8)}px`,
-                          minWidth: `${scale(80)}px`
+                          minWidth: `${scale(80)}px`,
+                          direction: dir as 'rtl' | 'ltr'
                         }}
                       >
-                        بحث
+                        {t('preparationPage.searchButton')}
                       </button>
                     </div>
                   )}
@@ -2167,7 +2208,7 @@ export default function PreparationPage() {
                           >
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                           </svg>
-                          طباعة
+                          {t('preparationPage.print')}
                         </button>
                         <div
                           className="rounded-full shadow-sm"
@@ -2194,7 +2235,10 @@ export default function PreparationPage() {
                 {loading ? (
                   <div className="flex flex-col justify-center items-center py-12">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 mb-4" style={{ borderColor: 'var(--color-primary)' }}></div>
-                    <p style={{ color: 'var(--color-text-secondary)' }}>جاري تحميل البيانات...</p>
+                    <p style={{
+                      color: 'var(--color-text-secondary)',
+                      direction: dir as 'rtl' | 'ltr'
+                    }}>{t('preparationPage.loadingData')}</p>
                   </div>
                 ) : preparationRecords.length > 0 ? (
                   <div
@@ -2243,17 +2287,18 @@ export default function PreparationPage() {
                                 {record.userName}
                               </h3>
                               <p
-                                className="rounded-full inline-block"
+                                className={`rounded-full inline-block ${isRTL ? 'text-right' : 'text-left'}`}
                                 style={{
                                   fontSize: `${scale(12 + size)}px`,
                                   padding: `${scale(6)}px ${scale(12)}px`,
                                   boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                                   backgroundColor: 'var(--color-surface)',
                                   color: 'var(--color-text-secondary)',
-                                  border: '1px solid var(--color-border)'
+                                  border: '1px solid var(--color-border)',
+                                  direction: dir as 'rtl' | 'ltr'
                                 }}
                               >
-                                {record.job || 'موظف'}
+                                {record.job || t('preparationPage.employee')}
                               </p>
                             </div>
 
@@ -2270,14 +2315,15 @@ export default function PreparationPage() {
                                 }}
                               >
                                 <div
-                                  className="font-medium"
+                                  className={`font-medium ${isRTL ? 'text-right' : 'text-left'}`}
                                   style={{
                                     fontSize: `${scale(10 + size)}px`,
                                     marginBottom: `${scale(4)}px`,
-                                    color: 'var(--color-primary)'
+                                    color: 'var(--color-primary)',
+                                    direction: dir as 'rtl' | 'ltr'
                                   }}
                                 >
-                                  إجمالي ساعات العمل
+                                  {t('preparationPage.totalWorkHours')}
                                 </div>
                                 <div
                                   className="font-ibm-arabic-bold"
@@ -2301,17 +2347,21 @@ export default function PreparationPage() {
                             )}
 
                             <div
-                              className="text-right"
-                              style={{ marginLeft: `${scale(16)}px` }}
+                              className={isRTL ? 'text-right' : 'text-left'}
+                              style={{
+                                marginLeft: isRTL ? `${scale(16)}px` : '0',
+                                marginRight: isRTL ? '0' : `${scale(16)}px`
+                              }}
                             >
                               <div
                                 style={{
                                   fontSize: `${scale(11 + size)}px`,
                                   marginBottom: `${scale(6)}px`,
-                                  color: 'var(--color-text-secondary)'
+                                  color: 'var(--color-text-secondary)',
+                                  direction: dir as 'rtl' | 'ltr'
                                 }}
                               >
-                                التاريخ
+                                {t('preparationPage.date')}
                               </div>
                               <div
                                 className="font-medium rounded-lg shadow-sm"
@@ -2365,10 +2415,11 @@ export default function PreparationPage() {
                                   style={{
                                     fontSize: `${scale(16 + size)}px`,
                                     lineHeight: 1.4,
-                                    color: 'var(--color-text-primary)'
+                                    color: 'var(--color-text-primary)',
+                                    direction: dir as 'rtl' | 'ltr'
                                   }}
                                 >
-                                  تحضير الدخول
+                                  {t('preparationPage.checkInPreparation')}
                                 </h4>
                               </div>
 
@@ -2417,10 +2468,11 @@ export default function PreparationPage() {
                                           style={{
                                             fontSize: `${scale(12 + size)}px`,
                                             marginBottom: `${scale(4)}px`,
-                                            color: '#059669'
+                                            color: '#059669',
+                                            direction: dir as 'rtl' | 'ltr'
                                           }}
                                         >
-                                          وقت الدخول
+                                          {t('preparationPage.checkInTime')}
                                         </div>
                                         <div
                                           className="font-ibm-arabic-bold"
@@ -2458,12 +2510,13 @@ export default function PreparationPage() {
                                           viewBox="0 0 24 24"
                                           style={{
                                             width: `${scale(16)}px`,
-                                            height: `${scale(16)}px`
+                                            height: `${scale(16)}px`,
+                                            direction: dir as 'rtl' | 'ltr'
                                           }}
                                         >
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        صورة الدخول
+                                        {t('preparationPage.checkInImage')}
                                       </div>
                                       <button
                                         onClick={() => handleImageView(`${URLFIL}/${record.CheckInFile!.name}`)}
@@ -2475,7 +2528,7 @@ export default function PreparationPage() {
                                       >
                                         <img
                                           src={`${URLFIL}/${record.CheckInFile!.name}`}
-                                          alt="صورة الدخول"
+                                          alt={t('preparationPage.checkInImage')}
                                           className="w-full h-full object-cover"
                                           onError={(e) => {
                                             e.currentTarget.style.display = 'none';
@@ -2503,10 +2556,11 @@ export default function PreparationPage() {
                                             <p
                                               className="text-green-600"
                                               style={{
-                                                fontSize: `${scale(12 + size)}px`
+                                                fontSize: `${scale(12 + size)}px`,
+                                                direction: dir as 'rtl' | 'ltr'
                                               }}
                                             >
-                                              لا يمكن تحميل الصورة
+                                              {t('preparationPage.cannotLoadImage')}
                                             </p>
                                           </div>
                                         </div>
@@ -2547,9 +2601,12 @@ export default function PreparationPage() {
                                   </svg>
                                   <div
                                     className="text-sm"
-                                    style={{ color: 'var(--color-text-secondary)' }}
+                                    style={{
+                                      color: 'var(--color-text-secondary)',
+                                      direction: dir as 'rtl' | 'ltr'
+                                    }}
                                   >
-                                    لم يتم التحضير بعد
+                                    {t('preparationPage.notPreparedYet')}
                                   </div>
                                 </div>
                               )}
@@ -2581,10 +2638,11 @@ export default function PreparationPage() {
                                   style={{
                                     fontSize: `${scale(16 + size)}px`,
                                     lineHeight: 1.4,
-                                    color: 'var(--color-text-primary)'
+                                    color: 'var(--color-text-primary)',
+                                    direction: dir as 'rtl' | 'ltr'
                                   }}
                                 >
-                                  تحضير الخروج
+                                  {t('preparationPage.checkOutPreparation')}
                                 </h4>
                               </div>
 
@@ -2633,10 +2691,11 @@ export default function PreparationPage() {
                                           style={{
                                             fontSize: `${scale(12 + size)}px`,
                                             marginBottom: `${scale(4)}px`,
-                                            color: '#dc2626'
+                                            color: '#dc2626',
+                                            direction: dir as 'rtl' | 'ltr'
                                           }}
                                         >
-                                          وقت الخروج
+                                          {t('preparationPage.checkOutTime')}
                                         </div>
                                         <div
                                           className="font-ibm-arabic-bold"
@@ -2674,12 +2733,13 @@ export default function PreparationPage() {
                                           viewBox="0 0 24 24"
                                           style={{
                                             width: `${scale(16)}px`,
-                                            height: `${scale(16)}px`
+                                            height: `${scale(16)}px`,
+                                            direction: dir as 'rtl' | 'ltr'
                                           }}
                                         >
                                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                         </svg>
-                                        صورة الخروج
+                                        {t('preparationPage.checkOutImage')}
                                       </div>
                                       <button
                                         onClick={() => handleImageView(`${URLFIL}/${record.CheckoutFile!.name}`)}
@@ -2691,7 +2751,7 @@ export default function PreparationPage() {
                                       >
                                         <img
                                           src={`${URLFIL}/${record.CheckoutFile!.name}`}
-                                          alt="صورة الخروج"
+                                          alt={t('preparationPage.checkOutImage')}
                                           className="w-full h-full object-cover"
                                           onError={(e) => {
                                             e.currentTarget.style.display = 'none';
@@ -2719,10 +2779,11 @@ export default function PreparationPage() {
                                             <p
                                               className="text-red-600"
                                               style={{
-                                                fontSize: `${scale(12 + size)}px`
+                                                fontSize: `${scale(12 + size)}px`,
+                                                direction: dir as 'rtl' | 'ltr'
                                               }}
                                             >
-                                              لا يمكن تحميل الصورة
+                                              {t('preparationPage.cannotLoadImage')}
                                             </p>
                                           </div>
                                         </div>
@@ -2771,10 +2832,11 @@ export default function PreparationPage() {
                                   <div
                                     style={{
                                       fontSize: `${scale(12 + size)}px`,
-                                      color: 'var(--color-text-secondary)'
+                                      color: 'var(--color-text-secondary)',
+                                      direction: dir as 'rtl' | 'ltr'
                                     }}
                                   >
-                                    لم يتم الانصراف بعد
+                                    {t('preparationPage.notCheckedOutYet')}
                                   </div>
                                 </div>
                               )}
@@ -2815,9 +2877,12 @@ export default function PreparationPage() {
                             ></div>
                             <span
                               className="font-medium"
-                              style={{ fontSize: `${scale(14 + size)}px` }}
+                              style={{
+                                fontSize: `${scale(14 + size)}px`,
+                                direction: dir as 'rtl' | 'ltr'
+                              }}
                             >
-                              جاري تحميل المزيد...
+                              {t('preparationPage.loadingMore')}
                             </span>
                           </div>
                         ) : hrHasMore ? (
@@ -2826,11 +2891,12 @@ export default function PreparationPage() {
                             className="bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-full hover:from-blue-700 hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105 font-medium"
                             style={{
                               padding: `${scale(12)}px ${scale(24)}px`,
-                              fontSize: `${scale(14 + size)}px`,
-                              borderRadius: `${scale(24)}px`
+                              fontSize: `${scale(14)}px`,
+                              borderRadius: `${scale(24)}px`,
+                              direction: dir as 'rtl' | 'ltr'
                             }}
                           >
-                            تحميل المزيد من السجلات
+                            {t('preparationPage.loadMoreRecords')}
                           </button>
                         ) : (
                           <div
@@ -2846,10 +2912,11 @@ export default function PreparationPage() {
                               className="font-medium"
                               style={{
                                 fontSize: `${scale(12 + size)}px`,
-                                color: 'var(--color-text-secondary)'
+                                color: 'var(--color-text-secondary)',
+                                direction: dir as 'rtl' | 'ltr'
                               }}
                             >
-                              تم عرض جميع السجلات
+                              {t('preparationPage.allRecordsDisplayed')}
                             </span>
                           </div>
                         )}
@@ -2878,17 +2945,20 @@ export default function PreparationPage() {
                     </div>
                     <h3
                       className="text-lg font-ibm-arabic-bold mb-2"
-                      style={{ color: 'var(--color-text-primary)' }}
+                      style={{
+                        color: 'var(--color-text-primary)',
+                        direction: dir as 'rtl' | 'ltr'
+                      }}
                     >
-                      لا توجد سجلات تحضير
+                      {t('preparationPage.noPreparationRecordsTitle')}
                     </h3>
                     <p
-                      className="max-w-sm mx-auto"
-                      style={{ color: 'var(--color-text-secondary)' }}
+                      className={`max-w-sm mx-auto ${isRTL ? 'text-right' : 'text-left'}`}
+                      style={{ color: 'var(--color-text-secondary)', direction: dir as 'rtl' | 'ltr' }}
                     >
                       {selectedEmployee
-                        ? `لا توجد سجلات تحضير للموظف ${selectedEmployee.userName} في التاريخ المحدد`
-                        : 'لا توجد سجلات تحضير للتاريخ المحدد'
+                        ? t('preparationPage.noPreparationRecordsForEmployee', { name: selectedEmployee.userName })
+                        : t('preparationPage.noPreparationRecords')
                       }
                     </p>
                     <div className="mt-6">
@@ -2914,7 +2984,7 @@ export default function PreparationPage() {
                           e.currentTarget.style.backgroundColor = 'rgba(37, 99, 235, 0.1)';
                         }}
                       >
-                        عرض جميع السجلات
+                        {t('preparationPage.viewAllRecords')}
                       </button>
                     </div>
                   </div>
@@ -2931,15 +3001,17 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(20 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  color: 'var(--color-text-primary)'
+                  color: 'var(--color-text-primary)',
+                  direction: dir as 'rtl' | 'ltr'
                 }}
+                className={isRTL ? 'text-right' : 'text-left'}
               >
-                إسناد دوام إضافي
+                {t('preparationPage.assignOvertime')}
               </h2>
               <button
                 onClick={() => setCurrentView('buttons')}
                 className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
-                title="العودة"
+                title={t('preparationPage.back')}
                 style={{
                   backgroundColor: 'var(--color-surface-secondary)',
                   padding: `${scale(10)}px`,
@@ -2962,14 +3034,15 @@ export default function PreparationPage() {
             {/* Employee Search Section */}
             <div className="mb-6">
               <h3
-                className="mb-4"
+                className={`mb-4 ${isRTL ? 'text-right' : 'text-left'}`}
                 style={{
                   fontSize: scale(16 + size),
                   fontFamily: fonts.IBMPlexSansArabicMedium,
-                  color: 'var(--color-text-primary)'
+                  color: 'var(--color-text-primary)',
+                  direction: dir as 'rtl' | 'ltr'
                 }}
               >
-                البحث عن موظف
+                {t('preparationPage.searchForEmployee')}
               </h3>
 
               <div className="relative" ref={searchContainerRef}>
@@ -2977,7 +3050,7 @@ export default function PreparationPage() {
                   id="overtime-employee-search"
                   name="overtime-employee-search"
                   type="text"
-                  placeholder="ابحث عن موظف..."
+                  placeholder={t('preparationPage.searchEmployeePlaceholder')}
                   value={searchQuery}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -3071,10 +3144,12 @@ export default function PreparationPage() {
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       color: 'var(--color-primary)',
-                      marginBottom: scale(4)
+                      marginBottom: scale(4),
+                      direction: dir as 'rtl' | 'ltr'
                     }}
+                    className={isRTL ? 'text-right' : 'text-left'}
                   >
-                    الموظف المختار: {selectedOvertimeEmployee.userName}
+                    {t('preparationPage.selectedEmployee', { name: selectedOvertimeEmployee.userName })}
                   </div>
                   <button
                     onClick={() => {
@@ -3090,7 +3165,8 @@ export default function PreparationPage() {
                       borderRadius: scale(6),
                       backgroundColor: 'rgba(239, 68, 68, 0.1)',
                       border: '1px solid rgba(239, 68, 68, 0.2)',
-                      color: '#dc2626'
+                      color: '#dc2626',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.color = '#991b1b';
@@ -3099,7 +3175,7 @@ export default function PreparationPage() {
                       e.currentTarget.style.color = '#dc2626';
                     }}
                   >
-                    إلغاء الاختيار
+                    {t('preparationPage.deselectEmployee')}
                   </button>
                 </div>
               )}
@@ -3113,10 +3189,11 @@ export default function PreparationPage() {
                   style={{
                     fontSize: scale(16 + size),
                     fontFamily: fonts.IBMPlexSansArabicMedium,
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
-                  اختيار التواريخ للدوام الإضافي
+                  {t('preparationPage.selectOvertimeDates')}
                 </h3>
 
                 {/* Current Overtime Display */}
@@ -3132,10 +3209,11 @@ export default function PreparationPage() {
                     style={{
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
-                      color: 'var(--color-text-primary)'
+                      color: 'var(--color-text-primary)',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
                   >
-                    الدوام الإضافي الحالي:
+                    {t('preparationPage.currentOvertime')}
                   </h4>
                   <div
                     style={{
@@ -3162,20 +3240,21 @@ export default function PreparationPage() {
                         ))}
                       </div>
                     ) : (
-                      'لا يوجد دوام إضافي مسند حالياً'
+                      t('preparationPage.noOvertimeAssigned')
                     )}
                   </div>
                 </div>
 
                 <h4
-                  className="mb-2"
+                  className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}
                   style={{
                     fontSize: scale(14 + size),
                     fontFamily: fonts.IBMPlexSansArabicMedium,
-                    color: 'var(--color-text-primary)'
+                    color: 'var(--color-text-primary)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
-                  إضافة تواريخ جديدة:
+                  {t('preparationPage.addNewDates')}
                 </h4>
 
                 <div className="mb-4">
@@ -3183,7 +3262,7 @@ export default function PreparationPage() {
                     id="overtime-date-picker"
                     name="overtime-date-picker"
                     type="date"
-                    className="w-full p-3 rounded-lg"
+                    className={`w-full p-3 rounded-lg ${isRTL ? 'text-right' : 'text-left'}`}
                     style={{
                       fontSize: scale(14 + size),
                       fontFamily: fonts.IBMPlexSansArabicMedium,
@@ -3191,7 +3270,8 @@ export default function PreparationPage() {
                       borderRadius: scale(8),
                       border: '1px solid var(--color-border)',
                       backgroundColor: 'var(--color-surface)',
-                      color: 'var(--color-text-primary)'
+                      color: 'var(--color-text-primary)',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
                     onChange={(e) => {
                       const selectedDate = e.target.value;
@@ -3206,14 +3286,15 @@ export default function PreparationPage() {
                 {selectedOvertimeDates.length > 0 && (
                   <div className="mb-4">
                     <h4
-                      className="mb-2"
+                      className={`mb-2 ${isRTL ? 'text-right' : 'text-left'}`}
                       style={{
                         fontSize: scale(14 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
-                        color: 'var(--color-text-primary)'
+                        color: 'var(--color-text-primary)',
+                        direction: dir as 'rtl' | 'ltr'
                       }}
                     >
-                      التواريخ المختارة:
+                      {t('preparationPage.selectedDates')}
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {selectedOvertimeDates.map((date, index) => (
@@ -3260,10 +3341,11 @@ export default function PreparationPage() {
                         fontSize: scale(14 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         padding: scale(12),
-                        borderRadius: scale(8)
+                        borderRadius: scale(8),
+                        direction: dir as 'rtl' | 'ltr'
                       }}
                     >
-                      {isAssigningOvertime ? 'جاري الإسناد...' : 'إسناد دوام إضافي'}
+                      {isAssigningOvertime ? t('preparationPage.assigning') : t('preparationPage.assignOvertimeButton')}
                     </button>
 
                     <button
@@ -3274,10 +3356,11 @@ export default function PreparationPage() {
                         fontSize: scale(14 + size),
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         padding: scale(12),
-                        borderRadius: scale(8)
+                        borderRadius: scale(8),
+                        direction: dir as 'rtl' | 'ltr'
                       }}
                     >
-                      {isAssigningOvertime ? 'جاري الإلغاء...' : 'إلغاء دوام إضافي'}
+                      {isAssigningOvertime ? t('preparationPage.cancelling') : t('preparationPage.cancelOvertimeButton')}
                     </button>
                   </div>
                 )}
@@ -3294,15 +3377,17 @@ export default function PreparationPage() {
                 style={{
                   fontSize: scale(20 + size),
                   fontFamily: fonts.IBMPlexSansArabicBold,
-                  color: 'var(--color-text-primary)'
+                  color: 'var(--color-text-primary)',
+                  direction: dir as 'rtl' | 'ltr'
                 }}
+                className={isRTL ? 'text-right' : 'text-left'}
               >
-                إضافة صلاحيات الموارد البشرية
+                {t('preparationPage.addHRPermissions')}
               </h2>
               <button
                 onClick={() => setCurrentView('buttons')}
                 className="flex items-center justify-center hover:opacity-80 transition-colors duration-200"
-                title="العودة"
+                title={t('preparationPage.back')}
                 style={{
                   backgroundColor: 'var(--color-surface-secondary)',
                   padding: `${scale(10)}px`,

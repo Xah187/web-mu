@@ -14,6 +14,7 @@ import BranchDeleteVerificationModal from './BranchDeleteVerificationModal';
 import BranchManagerModal from './BranchManagerModal';
 import BranchMembersModal from './BranchMembersModal';
 import BranchFinanceModal from './BranchFinanceModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchEditModalProps {
   isOpen: boolean;
@@ -176,7 +177,8 @@ export default function BranchEditModal({
   loading = false,
   onRefresh
 }: BranchEditModalProps) {
-  const { user, size } = useAppSelector((state: any) => state.user);
+  const { user, size, language } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const { isAdmin, hasJobPermission } = useJobBasedPermissions();
   const {
     updateBranchData,
@@ -238,10 +240,10 @@ export default function BranchEditModal({
       if (result) {
         setShowDeleteVerificationModal(true);
       } else {
-        Tostget('فشل في إرسال رمز التحقق', 'error');
+        Tostget(t('branchSettings.verificationCodeSentError'), 'error');
       }
     } catch (error: any) {
-      Tostget(error.message || 'فشل في إرسال رمز التحقق', 'error');
+      Tostget(error.message || t('branchSettings.verificationCodeSentError'), 'error');
     } finally {
       setLoadingOperation(null);
     }
@@ -263,7 +265,7 @@ export default function BranchEditModal({
           window.location.reload();
         }, 500);
       } else {
-        throw new Error('فشل في حذف الفرع');
+        throw new Error(t('branchSettings.branchDeletedError'));
       }
     } catch (error: any) {
       throw error;
@@ -322,18 +324,19 @@ export default function BranchEditModal({
       `}</style>
       
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4" style={{ zIndex: 50 }}>
-        <div 
+        <div
           className="bg-white rounded-2xl w-full max-h-[85vh] overflow-hidden shadow-2xl"
           style={{
             maxWidth: '480px',
             minWidth: '400px',
             fontFamily: fonts.IBMPlexSansArabicSemiBold,
             transform: 'translateY(0)',
-            margin: 'auto'
+            margin: 'auto',
+            direction: language === 'ar' ? 'rtl' : 'ltr'
           }}
         >
           {/* Header */}
-          <div 
+          <div
             className="border-b relative"
             style={{
               padding: `${verticalScale(16)}px ${verticalScale(20)}px`,
@@ -350,7 +353,8 @@ export default function BranchEditModal({
               onClick={onClose}
               style={{
                 position: 'absolute',
-                left: verticalScale(16),
+                left: language === 'ar' ? verticalScale(16) : 'auto',
+                right: language === 'en' ? verticalScale(16) : 'auto',
                 top: verticalScale(16),
                 background: 'none',
                 border: 'none',
@@ -361,6 +365,7 @@ export default function BranchEditModal({
               }}
               onMouseOver={(e) => e.currentTarget.style.color = 'var(--color-text-secondary)'}
               onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-text-tertiary)'}
+              aria-label={language === 'ar' ? 'إغلاق' : 'Close'}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -368,7 +373,7 @@ export default function BranchEditModal({
             </button>
 
             {/* Centered title */}
-            <h2 
+            <h2
               style={{
                 fontFamily: fonts.IBMPlexSansArabicSemiBold,
                 fontSize: verticalScale(16 + size),
@@ -378,7 +383,7 @@ export default function BranchEditModal({
                 margin: 0
               }}
             >
-              إعدادات الفرع: {branch.NameSub}
+              {t('branchSettings.branchSettings')} {branch.NameSub}
             </h2>
           </div>
 
@@ -398,7 +403,7 @@ export default function BranchEditModal({
             <OperationButton
               onPress={handleEditBranch}
               icon={<EditIcon />}
-              title="تعديل بيانات الفرع"
+              title={t('branchSettings.editBranchData')}
               isLoading={loadingOperation === 'تعديل بيانات الفرع'}
             />
 
@@ -407,7 +412,7 @@ export default function BranchEditModal({
               <OperationButton
                 onPress={handleChangeManager}
                 icon={<EditIcon />}
-                title="تغيير مدير فرع"
+                title={t('branchSettings.changeBranchManager')}
                 isLoading={loadingOperation === 'تغيير مدير فرع'}
               />
             )}
@@ -417,7 +422,7 @@ export default function BranchEditModal({
               <OperationButton
                 onPress={handleMemberManagement}
                 icon={<EditIcon />}
-                title="اضافة او ازالة عضوء"
+                title={t('branchSettings.addRemoveMembers')}
                 isLoading={loadingOperation === 'اضافة او ازالة عضوء'}
               />
             )}
@@ -427,7 +432,7 @@ export default function BranchEditModal({
               <OperationButton
                 onPress={handleFinancePermissions}
                 icon={<EditIcon />}
-                title="اضافة صلاحية مالية الفرع"
+                title={t('branchSettings.addFinancePermissions')}
                 isLoading={loadingOperation === 'اضافة صلاحية مالية الفرع'}
               />
             )}
@@ -436,7 +441,7 @@ export default function BranchEditModal({
             <OperationButton
               onPress={handleEvaluationLink}
               icon={<EditIcon />}
-              title="اضافة رابط التقييم"
+              title={t('branchSettings.addEvaluationLink')}
             />
 
             {/* 6. حذف الفرع */}
@@ -444,7 +449,7 @@ export default function BranchEditModal({
               <OperationButton
                 onPress={handleDeleteBranch}
                 icon={<DeleteIcon />}
-                title="حذف الفرع"
+                title={t('branchSettings.deleteBranch')}
                 isLoading={loadingOperation === 'إرسال رمز التحقق'}
                 isDelete={true}
               />
@@ -480,7 +485,8 @@ export default function BranchEditModal({
               border: '1px solid var(--theme-border)',
               borderRadius: `${verticalScale(20)}px`,
               padding: `${verticalScale(24)}px`,
-              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+              direction: dir as 'rtl' | 'ltr'
             }}
           >
             {/* Warning Icon */}
@@ -514,7 +520,7 @@ export default function BranchEditModal({
                   color: 'var(--theme-text-primary)'
                 }}
               >
-                تحذير: حذف الفرع
+                {t('branchSettings.deleteWarning')}
               </h3>
 
               <p
@@ -526,7 +532,7 @@ export default function BranchEditModal({
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                هل أنت متأكد من حذف فرع <span style={{ fontFamily: fonts.IBMPlexSansArabicBold, color: 'var(--theme-text-primary)' }}>"{branch?.NameSub}"</span>؟
+                {t('branchSettings.deleteConfirmMessage')} <span style={{ fontFamily: fonts.IBMPlexSansArabicBold, color: 'var(--theme-text-primary)' }}>"{branch?.NameSub}"</span>؟
               </p>
 
               <div
@@ -544,10 +550,10 @@ export default function BranchEditModal({
                     fontFamily: fonts.IBMPlexSansArabicSemiBold
                   }}
                 >
-                  ⚠️ سيتم حذف جميع المشاريع والبيانات المرتبطة بهذا الفرع
+                  {t('branchSettings.deleteWarningMessage')}
                   <br />
                   <span style={{ fontFamily: fonts.IBMPlexSansArabicBold }}>
-                    هذا الإجراء لا يمكن التراجع عنه
+                    {t('branchSettings.deleteIrreversible')}
                   </span>
                 </p>
               </div>
@@ -559,7 +565,7 @@ export default function BranchEditModal({
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                سيتم إرسال رمز التحقق إلى هاتفك لتأكيد العملية
+                {t('branchSettings.deleteVerificationMessage')}
               </p>
             </div>
 
@@ -577,7 +583,7 @@ export default function BranchEditModal({
                   opacity: loadingOperation === 'إرسال رمز التحقق' ? 0.5 : 1
                 }}
               >
-                {loadingOperation === 'إرسال رمز التحقق' ? 'جاري الإرسال...' : 'متابعة الحذف'}
+                {loadingOperation === 'إرسال رمز التحقق' ? t('branchSettings.sending') : t('branchSettings.continueDeletion')}
               </button>
 
               <button
@@ -592,7 +598,7 @@ export default function BranchEditModal({
                   border: '1px solid var(--theme-border)'
                 }}
               >
-                إلغاء
+                {t('branchSettings.cancel')}
               </button>
             </div>
           </div>

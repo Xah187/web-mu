@@ -21,6 +21,7 @@ import DeleteMemberModal from '@/components/members/DeleteMemberModal';
 import FilterModal from '@/components/members/FilterModal';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface User {
   id: string;
@@ -38,6 +39,7 @@ export default function MembersPage() {
   const router = useRouter();
   const { user, size } = useAppSelector((state: any) => state.user);
   const { isAdmin, isBranchManager } = useUserPermissions();
+  const { t, isRTL, dir } = useTranslation();
 
   // New validity-based permission system
   const {
@@ -130,7 +132,7 @@ export default function MembersPage() {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      Tostget('خطأ في جلب بيانات الأعضاء');
+      Tostget(t('members.errorFetching'));
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -161,7 +163,7 @@ export default function MembersPage() {
 
   const handleAddMember = () => {
     if (!isAdmin && !isBranchManager) {
-      Tostget('ليس لديك صلاحية لإضافة عضو');
+      Tostget(t('members.noPermissionAdd'));
       return;
     }
     setShowAddModal(true);
@@ -169,7 +171,7 @@ export default function MembersPage() {
 
   const handleEditMember = (selectedUser: User) => {
     if (!isAdmin && selectedUser.PhoneNumber !== user?.data?.PhoneNumber) {
-      Tostget('ليس لديك صلاحية لتعديل هذا العضو');
+      Tostget(t('members.noPermissionEdit'));
       return;
     }
     setSelectedUser(selectedUser);
@@ -179,11 +181,11 @@ export default function MembersPage() {
   const handleDeleteMember = (user: User) => {
     // مطابق للتطبيق المحمول - لا يمكن حذف Admin
     if (user.job === 'Admin') {
-      Tostget('لا يمكن حذف مدير النظام');
+      Tostget(t('members.cannotDeleteAdmin'));
       return;
     }
     if (!isAdmin) {
-      Tostget('ليس لديك صلاحية لحذف الأعضاء');
+      Tostget(t('members.noPermissionDelete'));
       return;
     }
     setSelectedUser(user);
@@ -193,21 +195,21 @@ export default function MembersPage() {
   const handleMemberAdded = () => {
     setShowAddModal(false);
     fetchUsers();
-    Tostget('تم إضافة العضو بنجاح');
+    Tostget(t('members.memberAdded'));
   };
 
   const handleMemberUpdated = () => {
     setShowEditModal(false);
     setSelectedUser(null);
     fetchUsers();
-    Tostget('تم تحديث بيانات العضو بنجاح');
+    Tostget(t('members.memberUpdated'));
   };
 
   const handleMemberDeleted = () => {
     setShowDeleteModal(false);
     setSelectedUser(null);
     fetchUsers();
-    Tostget('تم حذف العضو بنجاح');
+    Tostget(t('members.memberDeleted'));
   };
 
   return (
@@ -257,12 +259,13 @@ export default function MembersPage() {
       <ResponsiveLayout
         header={
           <PageHeader
-            title="الأعضاء"
+            title={t('members.title')}
             backButton={
               <button
                 onClick={() => router.back()}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                aria-label="رجوع"
+                aria-label={t('members.back')}
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
                 <ArrowIcon size={24} color={colors.BLACK} />
               </button>
@@ -277,7 +280,7 @@ export default function MembersPage() {
           {/* Add Member Button - Admin only like mobile app */}
           <AdminGuard>
             <ButtonCreat
-              text="إضافة عضو"
+              text={t('members.addMember')}
               onpress={handleAddMember}
             />
           </AdminGuard>
@@ -289,10 +292,12 @@ export default function MembersPage() {
               style={{
                 fontFamily: fonts.CAIROBOLD,
                 fontSize: 14 + size,
-                color: colors.BLACK
+                color: colors.BLACK,
+                direction: dir as 'rtl' | 'ltr',
+                textAlign: isRTL ? 'center' : 'center'
               }}
             >
-              إلغاء الفلتر
+              {t('members.clearFilter')}
             </button>
           )}
 
@@ -331,11 +336,11 @@ export default function MembersPage() {
                     <path d="M16 3.13a4 4 0 0 1 0 7.75" />
                   </svg>
                 </div>
-                <p className="text-lg text-gray-600 mb-4">لا يوجد أعضاء</p>
+                <p className="text-lg text-gray-600 mb-4" style={{ direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'center' : 'center' }}>{t('members.noMembers')}</p>
                 {/* Add First Member Button - Admin only like mobile app */}
                 <AdminGuard>
                   <ButtonCreat
-                    text="إضافة أول عضو"
+                    text={t('members.addFirstMember')}
                     onpress={handleAddMember}
                   />
                 </AdminGuard>
@@ -363,10 +368,12 @@ export default function MembersPage() {
                         className="text-gray-600"
                         style={{
                           fontFamily: fonts.CAIROBOLD,
-                          fontSize: 14 + size
+                          fontSize: 14 + size,
+                          direction: dir as 'rtl' | 'ltr',
+                          textAlign: isRTL ? 'center' : 'center'
                         }}
                       >
-                        جاري تحميل المزيد من الأعضاء...
+                        {t('members.loadingMore')}
                       </span>
                     </div>
                   </div>
@@ -381,10 +388,12 @@ export default function MembersPage() {
                       style={{
                         fontFamily: fonts.CAIROBOLD,
                         fontSize: 14 + size,
-                        color: colors.BLUE
+                        color: colors.BLUE,
+                        direction: dir as 'rtl' | 'ltr',
+                        textAlign: isRTL ? 'center' : 'center'
                       }}
                     >
-                      تحميل المزيد من الأعضاء
+                      {t('members.loadMore')}
                     </button>
                   </div>
                 )}
@@ -397,10 +406,12 @@ export default function MembersPage() {
                         className="text-gray-500"
                         style={{
                           fontFamily: fonts.CAIROBOLD,
-                          fontSize: 12 + size
+                          fontSize: 12 + size,
+                          direction: dir as 'rtl' | 'ltr',
+                          textAlign: isRTL ? 'center' : 'center'
                         }}
                       >
-                        تم عرض جميع الأعضاء ({users.length} عضو)
+                        {t('members.allMembersLoaded', { count: users.length })}
                       </span>
                     </div>
                   </div>

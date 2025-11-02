@@ -19,8 +19,10 @@ import ReelItem from '@/components/reels/ReelItem';
 import usePosts, { FilterData } from '@/hooks/usePosts';
 import useJobBasedPermissions from '@/hooks/useJobBasedPermissions';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 export default function PublicationsPage() {
+  const { t, isRTL } = useTranslation();
   const router = useRouter();
   const { user } = useAppSelector((state: any) => state.user);
   const { isEmployee: _isEmployee } = useJobBasedPermissions();
@@ -211,7 +213,7 @@ export default function PublicationsPage() {
               className="font-cairo-bold text-gray-900"
               style={{ fontSize: verticalScale(20) }}
             >
-              اليوميات
+              {t('publications.title')}
             </h1>
           </div>
         </div>
@@ -219,7 +221,7 @@ export default function PublicationsPage() {
         <div className="flex-1 flex items-center justify-center">
           <div className="text-center">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-500">جاري تحميل بيانات الشركة...</p>
+            <p className="text-gray-500">{t('publications.loadingCompanyData')}</p>
           </div>
         </div>
       </div>
@@ -431,7 +433,7 @@ export default function PublicationsPage() {
     setShowVideoPlayer({
       show: true,
       videoUrl: videoUrl,
-      title: `فيديو من ${post.postBy} - ${post.Nameproject || 'منشور'}`
+      title: `${t('publications.videoFrom')} ${post.postBy} - ${post.Nameproject || t('publications.post')}`
     });
   };
 
@@ -450,7 +452,7 @@ export default function PublicationsPage() {
               className="font-cairo-bold text-gray-900"
               style={{ fontSize: verticalScale(20) }}
             >
-              اليوميات
+              {t('publications.title')}
             </h1>
           </div>
         </div>
@@ -464,13 +466,13 @@ export default function PublicationsPage() {
                 <line x1="9" y1="9" x2="15" y2="15"/>
               </svg>
             </div>
-            <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">خطأ في تحميل اليوميات</h3>
+            <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">{t('publications.errorLoading')}</h3>
             <p className="text-gray-500 mb-4">{error}</p>
             <button
               onClick={handleRefresh}
               className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
             >
-              إعادة المحاولة
+              {t('publications.tryAgain')}
             </button>
           </div>
         </div>
@@ -488,7 +490,7 @@ export default function PublicationsPage() {
             className="font-cairo-bold text-gray-900"
             style={{ fontSize: verticalScale(20) }}
           >
-            اليوميات
+            {t('publications.title')}
           </h1>
 
           <div className="flex items-center gap-3">
@@ -499,7 +501,7 @@ export default function PublicationsPage() {
                 setCurrentReelIndex(0);
               }}
               className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-              title="عرض الشبكة"
+              title={t('publications.showGrid')}
             >
               <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <rect x="3" y="3" width="7" height="7"/>
@@ -568,7 +570,7 @@ export default function PublicationsPage() {
             <div className="h-full bg-black flex items-center justify-center">
               <div className="text-white text-center">
                 <div className="w-8 h-8 border-2 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p>تحميل الفيديوهات...</p>
+                <p>{t('publications.loadingVideos')}</p>
               </div>
             </div>
           ) : videoReels.length === 0 ? (
@@ -580,8 +582,8 @@ export default function PublicationsPage() {
                     <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
                   </svg>
                 </div>
-                <h3 className="text-xl font-ibm-arabic-semibold mb-2">لا توجد فيديوهات</h3>
-                <p className="text-gray-400">لم يتم العثور على أي فيديوهات في اليوميات</p>
+                <h3 className="text-xl font-ibm-arabic-semibold mb-2">{t('publications.noVideos')}</h3>
+                <p className="text-gray-400">{t('publications.noVideosMessage')}</p>
               </div>
             </div>
           ) : (
@@ -609,7 +611,7 @@ export default function PublicationsPage() {
                     // مشاركة الفيديو
                     if (navigator.share) {
                       navigator.share({
-                        title: `فيديو من ${videoReels[currentReelIndex].postBy}`,
+                        title: `${t('publications.videoFrom')} ${videoReels[currentReelIndex].postBy}`,
                         text: videoReels[currentReelIndex].Data || '',
                         url: window.location.href
                       });
@@ -617,7 +619,7 @@ export default function PublicationsPage() {
                   }}
                   onSave={() => {
                     // حفظ الفيديو - يمكن تطوير هذا لاحقاً
-                    Tostget('تم حفظ الفيديو');
+                    Tostget(t('publications.videoSaved'));
                   }}
                   onExit={() => {
                     setViewMode('grid');
@@ -634,7 +636,7 @@ export default function PublicationsPage() {
                     setCurrentReelIndex(0);
                   }}
                   className="w-12 h-12 bg-black bg-opacity-60 backdrop-blur-sm rounded-full flex items-center justify-center hover:bg-opacity-80 transition-all duration-300 active:scale-95 border border-white border-opacity-20"
-                  title="الخروج من وضع الفيديوهات"
+                  title={t('publications.exitVideosMode')}
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5">
                     <path d="M19 12H5"/>
@@ -669,7 +671,7 @@ export default function PublicationsPage() {
                 <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30">
                   <div className="bg-black bg-opacity-60 backdrop-blur-sm text-white px-6 py-3 rounded-full flex items-center space-x-3 rtl:space-x-reverse border border-white border-opacity-20">
                     <div className="w-5 h-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></div>
-                    <span className="text-sm font-medium">تحميل المزيد من الفيديوهات...</span>
+                    <span className="text-sm font-medium">{t('publications.loadingMore')}</span>
                   </div>
                 </div>
               )}
@@ -682,7 +684,7 @@ export default function PublicationsPage() {
         <ResponsiveLayout
           header={
             <PageHeader
-              title="اليوميات"
+              title={t('publications.title')}
               actions={
                 <div className="flex items-center gap-3">
                   <button
@@ -691,7 +693,7 @@ export default function PublicationsPage() {
                       setCurrentReelIndex(0);
                     }}
                     className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    title="عرض الفيديوهات"
+                    title={t('publications.showVideos')}
                   >
                     <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
@@ -751,7 +753,7 @@ export default function PublicationsPage() {
                       onClick={loadMorePosts}
                       className="px-4 py-2 text-blue-600 hover:text-blue-700 text-sm font-cairo-medium"
                     >
-                      تحميل المزيد
+                      {t('publications.loadMore')}
                     </button>
                   )}
                 </div>
@@ -769,14 +771,14 @@ export default function PublicationsPage() {
                   </g>
                 </svg>
               </div>
-              <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">لا توجد يوميات</h3>
-              <p className="text-gray-500 text-center">لم يتم العثور على أي يوميات حتى الآن</p>
+              <h3 className="text-lg font-cairo-semibold text-gray-900 dark:text-gray-100 mb-2">{t('publications.noPublications')}</h3>
+              <p className="text-gray-500 text-center">{t('publications.noPublicationsMessage')}</p>
               {(filterData.nameProject || filterData.userName || filterData.branch || filterData.type !== 'بحسب التاريخ') && (
                 <button
                   onClick={handleClearFilter}
                   className="mt-4 px-4 py-2 text-blue-600 hover:text-blue-700 text-sm font-cairo-medium"
                 >
-                  مسح الفلتر
+                  {t('publications.clearFilter')}
                 </button>
               )}
             </div>

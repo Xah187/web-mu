@@ -8,6 +8,7 @@ import { useAppSelector } from '@/store';
 import { EmployeeOnly } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection, ResponsiveGrid } from '@/components/layout/ResponsiveLayout';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface ManagementItemProps {
   title: string;
@@ -145,6 +146,7 @@ function UserProfileModal({ visible, onClose, user }: { visible: boolean; onClos
 
 export default function ManagementPage() {
   const router = useRouter();
+  const { t, isRTL } = useTranslation();
   const { user, size } = useAppSelector(state => state.user);
   const [showUserProfile, setShowUserProfile] = useState(false);
 
@@ -178,7 +180,7 @@ export default function ManagementPage() {
       <ResponsiveLayout 
         header={
           <PageHeader 
-            title="الإدارة" 
+            title={t('management.title')}
             actions={
               <button 
                 onClick={() => setShowUserProfile(true)} 
@@ -208,7 +210,7 @@ export default function ManagementPage() {
               {/* Employee-only features */}
               <EmployeeOnly>
                 <ManagementItem
-                  title="اعتمادات"
+                  title={t('management.approvals')}
                   onPress={handleApprovals}
                   icon={
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -219,7 +221,7 @@ export default function ManagementPage() {
                 />
 
                 <ManagementItem
-                  title="قرارات"
+                  title={t('management.decisions')}
                   onPress={handleDecisions}
                   icon={
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -235,7 +237,7 @@ export default function ManagementPage() {
                 />
 
                 <ManagementItem
-                  title="استشارات"
+                  title={t('management.consultations')}
                   onPress={handleConsultations}
                   icon={
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -249,7 +251,7 @@ export default function ManagementPage() {
 
               {/* Preparation button - Show for all users like mobile app */}
               <ManagementItem
-                title="تحضير"
+                title={t('management.preparation')}
                 onPress={handleAttendance}
                 icon={
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">

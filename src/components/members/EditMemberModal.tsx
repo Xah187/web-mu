@@ -11,6 +11,7 @@ import Combobox from '@/components/design/Combobox';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
 import useAutoPermissions from '@/hooks/useAutoPermissions';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface User {
   id: string;
@@ -79,9 +80,10 @@ const convertArabicToEnglish = (input: string | number | null | undefined): stri
 };
 
 export default function EditMemberModal({ user: editUser, onClose, onSuccess }: EditMemberModalProps) {
-  const { user, size } = useAppSelector((state: any) => state.user);
+  const { user, size, language } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [loading, setLoading] = useState(false);
-  
+
   // Auto permissions hook
   const { getDefaultPermissions, getBossStatus } = useAutoPermissions();
   
@@ -132,36 +134,36 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
 
   const validateForm = () => {
     const newErrors: {[key: string]: string} = {};
-    
+
     if (!formData.userName || !String(formData.userName).trim()) {
-      newErrors.userName = 'اسم العضو مطلوب';
+      newErrors.userName = t('members.enterMemberName');
     }
-    
+
     if (!formData.IDNumber || !String(formData.IDNumber).trim()) {
-      newErrors.IDNumber = 'رقم البطاقة مطلوب';
+      newErrors.IDNumber = t('members.enterIdNumber');
     }
-    
+
     if (!formData.PhoneNumber || !String(formData.PhoneNumber).trim()) {
-      newErrors.PhoneNumber = 'رقم الجوال مطلوب';
+      newErrors.PhoneNumber = t('members.enterPhoneNumber');
     } else if (String(formData.PhoneNumber).length < 9) {
-      newErrors.PhoneNumber = 'رقم الجوال غير صحيح';
+      newErrors.PhoneNumber = t('members.phoneNumberInvalid');
     }
-    
+
     if (!formData.job || !String(formData.job).trim()) {
-      newErrors.job = 'الوظيفة مطلوبة';
+      newErrors.job = t('members.enterJob');
     }
-    
+
     if (!formData.jobdiscrption || !String(formData.jobdiscrption).trim()) {
-      newErrors.jobdiscrption = 'صفة المستخدم مطلوبة';
+      newErrors.jobdiscrption = t('members.enterJobDescription');
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async () => {
     if (!validateForm()) {
-      Tostget('يجب إكمال جميع البيانات المطلوبة');
+      Tostget(t('members.fillAllFieldsCorrectly'));
       return;
     }
 
@@ -172,7 +174,7 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
         const token = localStorage.getItem('token');
         console.log('Token exists:', !!token);
         if (!token) {
-          Tostget('لا يوجد توكن صالح، يرجى تسجيل الدخول مرة أخرى');
+          Tostget(t('members.noValidToken'));
           return;
         }
       }
@@ -201,13 +203,13 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
       // تحقق من الاستجابة بطرق مختلفة
       if (response.status === 200) {
         if (response.data?.success || response.data?.message === 'تمت العملية بنجاح' || response.data === 'تمت العملية بنجاح') {
-          Tostget('تم تحديث بيانات العضو بنجاح');
+          Tostget(t('members.editSuccess'));
           onSuccess();
         } else {
-          Tostget(response.data?.message || response.data || 'فشل في تحديث البيانات');
+          Tostget(response.data?.message || response.data || t('members.editError'));
         }
       } else {
-        Tostget('حدث خطأ في الخادم');
+        Tostget(t('members.serverError'));
       }
     } catch (error: any) {
       console.error('Error updating member:', error);
@@ -216,13 +218,13 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
         data: error.response?.data,
         message: error.message
       });
-      
+
       if (error.response?.status === 401) {
-        Tostget('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+        Tostget(t('members.sessionExpired'));
       } else if (error.response?.status === 403) {
-        Tostget('ليس لديك صلاحية لتعديل هذا العضو');
+        Tostget(t('members.noPermissionEdit'));
       } else {
-        Tostget(error.response?.data?.message || 'خطأ في تحديث البيانات');
+        Tostget(error.response?.data?.message || t('members.editError'));
       }
     } finally {
       setLoading(false);
@@ -230,40 +232,41 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
+      <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center justify-between">
+        <div className={`sticky top-0 bg-white border-b border-gray-100 p-4 flex items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between`}>
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <svg 
-              width="24" 
-              height="24" 
-              viewBox="0 0 24 24" 
-              fill="none" 
-              stroke="currentColor" 
-              strokeWidth="2" 
-              strokeLinecap="round" 
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
               strokeLinejoin="round"
             >
               <line x1="18" y1="6" x2="6" y2="18" />
               <line x1="6" y1="6" x2="18" y2="18" />
             </svg>
           </button>
-          
-          <h2 
+
+          <h2
             className="font-bold text-lg"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: verticalScale(16 + size),
-              color: colors.BLACK
+              color: colors.BLACK,
+              textAlign: 'center'
             }}
           >
-            تعديل بيانات العضو
+            {t('members.editMember')}
           </h2>
-          
+
           <div className="w-10" />
         </div>
 
@@ -279,7 +282,7 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
           {/* User Name */}
           <div>
             <Input
-              name="اسم العضو"
+              name={t('members.memberName')}
               value={formData.userName}
               onChange={(value: string) => handleInputChange('userName', value)}
               type="text"
@@ -291,7 +294,7 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
           {/* ID Number */}
           <div>
             <Input
-              name="رقم البطاقة"
+              name={t('members.idNumber')}
               value={formData.IDNumber}
               onChange={(value: string) => handleInputChange('IDNumber', convertArabicToEnglish(value))}
               type="tel"
@@ -303,47 +306,47 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
           {/* Phone Number */}
           <div>
             <Input
-              name="رقم الجوال"
+              name={t('members.phoneNumber')}
               value={formData.PhoneNumber}
               onChange={(value: string) => handleInputChange('PhoneNumber', convertArabicToEnglish(value))}
               type="tel"
             />
             {errors.PhoneNumber && (
-              <p className="text-red-500 text-sm mt-1">{errors.PhoneNumber}</p>
+              <p className={`text-red-500 text-sm mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{errors.PhoneNumber}</p>
             )}
           </div>
 
           {/* Job */}
           <div>
             <Combobox
-              label="الوظيفة"
+              label={t('members.job')}
               value={formData.job}
               onChange={(value: string) => handleInputChange('job', value)}
               options={getAvailableJobs()}
-              placeholder="اختر الوظيفة"
+              placeholder={t('members.selectJob')}
             />
             {errors.job && (
-              <p className="text-red-500 text-sm mt-1">{errors.job}</p>
+              <p className={`text-red-500 text-sm mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{errors.job}</p>
             )}
           </div>
 
           {/* Job Description */}
           <div>
             <Combobox
-              label="صفة المستخدم"
+              label={t('members.jobDescription')}
               value={formData.jobdiscrption}
               onChange={(value: string) => handleInputChange('jobdiscrption', value)}
               options={jobDescriptions}
-              placeholder="اختر صفة المستخدم"
+              placeholder={t('members.selectJobDescription')}
             />
             {errors.jobdiscrption && (
-              <p className="text-red-500 text-sm mt-1">{errors.jobdiscrption}</p>
+              <p className={`text-red-500 text-sm mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{errors.jobdiscrption}</p>
             )}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3">
+        <div className={`sticky bottom-0 bg-white border-t border-gray-100 p-4 flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
           <button
             onClick={onClose}
             className="flex-1 py-3 px-4 border border-gray-300 rounded-xl text-gray-700 font-medium hover:bg-gray-50 transition-colors"
@@ -352,11 +355,11 @@ export default function EditMemberModal({ user: editUser, onClose, onSuccess }: 
               fontSize: 14 + size
             }}
           >
-            إلغاء
+            {t('members.cancel')}
           </button>
-          
+
           <ButtonLong
-            text={loading ? 'جاري التحديث...' : 'حفظ التغييرات'}
+            text={loading ? t('members.saving') : t('members.save')}
             Press={handleSubmit}
             disabled={loading}
             styleButton={{ flex: 1 }}

@@ -10,6 +10,7 @@ import SubStageNotesView from './SubStageNotesView';
 import SubStageNoteModal from './SubStageNoteModal';
 import useSubStageNotes from '@/hooks/useSubStageNotes';
 import useValidityUser from '@/hooks/useValidityUser';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SubStageNotesModalProps {
   isOpen: boolean;
@@ -28,10 +29,11 @@ const SubStageNotesModal: React.FC<SubStageNotesModalProps> = ({
   subStage,
   onNotesUpdated
 }) => {
+  const { t } = useTranslation();
   const [notes, setNotes] = useState<SubStageNote[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingNote, setEditingNote] = useState<SubStageNote | null>(null);
-  
+
   const { parseNotes, addNote, editNote, deleteNote, loading } = useSubStageNotes();
   const { hasPermission } = useValidityUser();
 
@@ -112,11 +114,11 @@ const SubStageNotesModal: React.FC<SubStageNotesModalProps> = ({
               {/* Header */}
               <div className="flex items-center justify-between p-6 border-b border-gray-200">
                 <div className="flex-1">
-                  <h2 
+                  <h2
                     className="font-ibm-arabic-bold text-gray-900"
                     style={{ fontSize: scale(18) }}
                   >
-                    ملاحظات المهمة
+                    {t('notesModal.title')}
                   </h2>
                   <p 
                     className="text-gray-600 font-ibm-arabic-medium mt-1"
@@ -137,7 +139,7 @@ const SubStageNotesModal: React.FC<SubStageNotesModalProps> = ({
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
-                      <span>إضافة ملاحظة</span>
+                      <span>{t('notesModal.addNote')}</span>
                     </button>
                   )}
 
@@ -167,19 +169,19 @@ const SubStageNotesModal: React.FC<SubStageNotesModalProps> = ({
               {/* Footer */}
               <div className="p-6 border-t border-gray-200">
                 <div className="flex items-center justify-between">
-                  <span 
+                  <span
                     className="text-gray-500 font-ibm-arabic-regular"
                     style={{ fontSize: scale(14) }}
                   >
-                    {notes.length === 0 ? 'لا توجد ملاحظات' : `${notes.length} ملاحظة`}
+                    {notes.length === 0 ? t('notesModal.noNotes') : t('notesModal.notesCount', { count: notes.length })}
                   </span>
-                  
+
                   <button
                     onClick={onClose}
                     className="px-4 py-2 text-gray-600 font-ibm-arabic-medium hover:bg-gray-100 rounded-lg transition-colors"
                     style={{ fontSize: scale(14) }}
                   >
-                    إغلاق
+                    {t('notesModal.close')}
                   </button>
                 </div>
               </div>

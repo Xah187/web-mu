@@ -7,6 +7,7 @@ import { setLanguage } from '@/store/slices/userSlice';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -14,6 +15,7 @@ export default function LanguageSettingsPage() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { size, language } = useAppSelector(state => state.user);
+  const { t } = useTranslation();
 
   const [selectedLanguage, setSelectedLanguage] = useState<'ar' | 'en'>((language as 'ar' | 'en') || 'ar');
 
@@ -36,9 +38,9 @@ export default function LanguageSettingsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="اللغة"
+          title={t('settings.language')}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label="رجوع">
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" aria-label={t('common.back')}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polyline points="15,18 9,12 15,6" />
               </svg>
@@ -58,7 +60,7 @@ export default function LanguageSettingsPage() {
               fontSize: scale(16 + size)
             }}
           >
-            اختر اللغة
+            {t('settings.selectLanguage')}
           </h2>
 
           <div className="space-y-3">
@@ -104,13 +106,13 @@ export default function LanguageSettingsPage() {
             onClick={handleSave}
             className="flex-1 py-3 px-4 bg-blue text-white rounded-lg font-cairo font-medium hover:bg-blue-600 transition-colors"
           >
-            حفظ
+            {t('common.save')}
           </button>
           <button
             onClick={() => router.back()}
             className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-cairo font-medium hover:bg-gray-200 transition-colors"
           >
-            إلغاء
+            {t('common.cancel')}
           </button>
         </div>
         </div>

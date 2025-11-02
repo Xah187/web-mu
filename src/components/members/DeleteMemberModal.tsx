@@ -8,6 +8,7 @@ import { useAppSelector } from '@/store';
 import ButtonLong from '@/components/design/ButtonLong';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface User {
   id: string;
@@ -29,6 +30,7 @@ interface DeleteMemberModalProps {
 
 export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess }: DeleteMemberModalProps) {
   const { size } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [loading, setLoading] = useState(false);
 
   const handleDelete = async () => {
@@ -51,13 +53,13 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
 
       if (response.status === 200) {
         if (response.data?.success || response.data?.message === 'تمت العملية بنجاح' || response.data === 'تمت العملية بنجاح') {
-          Tostget('تم حذف العضو بنجاح');
+          Tostget(t('members.deleteSuccess'));
           onSuccess();
         } else {
-          Tostget(response.data?.message || response.data || 'فشل في حذف العضو');
+          Tostget(response.data?.message || response.data || t('members.deleteError'));
         }
       } else {
-        Tostget('حدث خطأ في الخادم');
+        Tostget(isRTL ? 'حدث خطأ في الخادم' : 'Server error occurred');
       }
     } catch (error: any) {
       console.error('Error deleting member:', error);
@@ -68,11 +70,11 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
       });
       
       if (error.response?.status === 401) {
-        Tostget('انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى');
+        Tostget(isRTL ? 'انتهت صلاحية الجلسة، يرجى تسجيل الدخول مرة أخرى' : 'Session expired, please login again');
       } else if (error.response?.status === 403) {
-        Tostget('ليس لديك صلاحية لحذف هذا العضو');
+        Tostget(t('members.noPermissionDelete'));
       } else {
-        Tostget(error.response?.data?.message || 'خطأ في حذف العضو');
+        Tostget(error.response?.data?.message || t('members.deleteError'));
       }
     } finally {
       setLoading(false);
@@ -80,8 +82,8 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
+      <div className="bg-white rounded-2xl w-full max-w-md" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Icon */}
         <div className="flex justify-center pt-6 pb-4">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
@@ -105,7 +107,7 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
 
         {/* Content */}
         <div className="px-6 pb-4 text-center">
-          <h2 
+          <h2
             className="font-bold text-xl mb-2"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -113,17 +115,17 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
               color: colors.BLACK
             }}
           >
-            حذف العضو
+            {t('members.deleteMember')}
           </h2>
-          
-          <p 
+
+          <p
             className="text-gray-600 mb-4"
             style={{
               fontFamily: fonts.CAIROBOLD,
               fontSize: verticalScale(14 + size)
             }}
           >
-            هل أنت متأكد من حذف العضو
+            {t('members.confirmDelete')}
           </p>
           
           <p 
@@ -153,20 +155,20 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
                  border: '1px solid var(--color-warning)'
                }}>
             <p
-              className="text-sm"
+              className={`text-sm ${isRTL ? 'text-right' : 'text-left'}`}
               style={{
                 fontFamily: fonts.CAIROBOLD,
                 fontSize: verticalScale(12 + size),
                 color: 'var(--color-warning)'
               }}
             >
-              تحذير: لا يمكن التراجع عن هذا الإجراء
+              {t('members.deleteWarning')}
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 flex gap-3" style={{ borderTop: '1px solid var(--color-border)' }}>
+        <div className={`p-4 flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`} style={{ borderTop: '1px solid var(--color-border)' }}>
           <button
             onClick={onClose}
             className="flex-1 py-3 px-4 rounded-xl font-medium transition-colors theme-button-secondary"
@@ -179,16 +181,16 @@ export default function DeleteMemberModal({ user: deleteUser, onClose, onSuccess
             }}
             disabled={loading}
           >
-            إلغاء
+            {t('members.cancel')}
           </button>
-          
+
           <ButtonLong
-            text={loading ? 'جاري الحذف...' : 'تأكيد الحذف'}
+            text={loading ? t('members.deleting') : t('members.delete')}
             Press={handleDelete}
             disabled={loading}
-            styleButton={{ 
+            styleButton={{
               flex: 1,
-              backgroundColor: colors.RED 
+              backgroundColor: colors.RED
             }}
           />
         </div>

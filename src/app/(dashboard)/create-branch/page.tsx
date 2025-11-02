@@ -14,6 +14,7 @@ import useValidityUser from '@/hooks/useValidityUser';
 import PermissionGuard, { AdminGuard } from '@/components/auth/PermissionGuard';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -44,6 +45,7 @@ function UserSelectionModal({
   selectedCount
 }: UserSelectionModalProps) {
   const { user } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -75,7 +77,7 @@ function UserSelectionModal({
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      Tostget('خطأ في جلب المستخدمين');
+      Tostget(t('createBranch.errorFetchingUsers'));
     } finally {
       setLoading(false);
     }
@@ -112,19 +114,20 @@ function UserSelectionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-hidden">
-      <div className="bg-white rounded-lg w-full max-w-md sm:max-w-lg lg:max-w-xl max-h-[70vh] sm:max-h-[75vh] flex flex-col shadow-2xl">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 overflow-hidden" style={{ direction: dir as 'rtl' | 'ltr' }}>
+      <div className="bg-white rounded-lg w-full max-w-md sm:max-w-lg lg:max-w-xl max-h-[70vh] sm:max-h-[75vh] flex flex-col shadow-2xl" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Header - Fixed */}
-        <div className="p-3 sm:p-4 border-b border-bordercolor bg-white rounded-t-lg flex-shrink-0">
-          <div className="flex items-center justify-between mb-3">
+        <div className={`p-3 sm:p-4 border-b border-bordercolor bg-white rounded-t-lg flex-shrink-0`}>
+          <div className={`flex items-center ${isRTL ? 'flex-row-reverse' : 'flex-row'} justify-between mb-3`}>
             <h2
               className="font-bold text-lg sm:text-xl"
               style={{
                 fontFamily: fonts.IBMPlexSansArabicBold,
-                color: colors.BLACK
+                color: colors.BLACK,
+                textAlign: isRTL ? 'right' : 'left'
               }}
             >
-              {type === 'AdminSub' ? 'اختيار مشرف فرع' : 'اختيار أعضاء الفرع'}
+              {type === 'AdminSub' ? t('createBranch.selectManager') : t('createBranch.selectMembers')}
             </h2>
             <button
               onClick={onClose}
@@ -136,17 +139,17 @@ function UserSelectionModal({
 
           {/* Bulk Selection Controls for UserSub */}
           {type === 'UserSub' && users.length > 0 && !loading && (
-            <div className="flex items-center gap-4">
+            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <span
                 className="text-sm text-gray-600"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                تم اختيار {selectedUserIds.length} من {users.length}
+                {t('createBranch.selectedCount', { selected: selectedUserIds.length, total: users.length })}
               </span>
 
-              <div className="flex gap-2">
+              <div className={`flex gap-2 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                 <button
                   onClick={() => setSelectedUserIds(users.map(u => u.id))}
                   className="px-3 py-1 text-xs bg-blue/10 text-blue rounded-lg hover:bg-blue/20 transition-colors"
@@ -154,7 +157,7 @@ function UserSelectionModal({
                     fontFamily: fonts.IBMPlexSansArabicMedium
                   }}
                 >
-                  اختيار الكل
+                  {t('createBranch.selectAll')}
                 </button>
 
                 <button
@@ -164,7 +167,7 @@ function UserSelectionModal({
                     fontFamily: fonts.IBMPlexSansArabicMedium
                   }}
                 >
-                  إلغاء الكل
+                  {t('createBranch.clearAll')}
                 </button>
               </div>
             </div>
@@ -199,7 +202,7 @@ function UserSelectionModal({
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue"></div>
-              <span className="mr-3 text-greay">جاري التحميل...</span>
+              <span className={`${isRTL ? 'mr-3' : 'ml-3'} text-greay`}>{t('createBranch.loading')}</span>
             </div>
           ) : users.length === 0 ? (
             <div className="text-center py-12">
@@ -208,7 +211,7 @@ function UserSelectionModal({
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
               </div>
-              <p className="text-greay text-lg">لا يوجد مستخدمين متاحين</p>
+              <p className="text-greay text-lg">{t('createBranch.noUsersAvailable')}</p>
             </div>
           ) : (
             <div className="space-y-2 sm:space-y-3 pb-2">
@@ -324,7 +327,7 @@ function UserSelectionModal({
         {/* Footer - Fixed */}
         {type === 'UserSub' && (
           <div className="border-t border-bordercolor p-3 sm:p-4 bg-gray-50 rounded-b-lg flex-shrink-0">
-            <div className="flex gap-3 sm:gap-4">
+            <div className={`flex gap-3 sm:gap-4 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
               <button
                 onClick={onClose}
                 className="flex-1 bg-white border border-gray-300 text-black py-2 sm:py-3 rounded-xl hover:bg-gray-50 transition-all duration-200 text-sm active:scale-98 cursor-pointer"
@@ -332,7 +335,7 @@ function UserSelectionModal({
                   fontFamily: fonts.IBMPlexSansArabicMedium
                 }}
               >
-                إلغاء
+                {t('createBranch.cancel')}
               </button>
               <button
                 onClick={handleConfirmSelection}
@@ -366,10 +369,10 @@ function UserSelectionModal({
 
                   <span>
                     {selectedUserIds.length === 0
-                      ? 'اختر المستخدمين'
+                      ? t('createBranch.selectUsers')
                       : selectedUserIds.length === 1
-                        ? 'إضافة عضو واحد'
-                        : `إضافة ${selectedUserIds.length} أعضاء`
+                        ? t('createBranch.addOneMember')
+                        : t('createBranch.addMultipleMembers', { count: selectedUserIds.length })
                     }
                   </span>
                 </div>
@@ -393,6 +396,7 @@ function UserSelectionModal({
 export default function CreateBranchPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const { checkPermission } = useUserPermissions();
 
   // Form states - matching mobile app exactly
@@ -458,26 +462,26 @@ export default function CreateBranchPage() {
 
   const validateForm = () => {
     if (!title.NameSub.trim()) {
-      Tostget('يرجى ادخال اسم الفرع');
+      Tostget(t('createBranch.enterBranchName'));
       return false;
     }
     if (!title.BranchAddress.trim()) {
-      Tostget('يرجى ادخال اسم المنطقة');
+      Tostget(t('createBranch.enterBranchAddress'));
       return false;
     }
     if (!title.Email.trim()) {
-      Tostget('يرجى ادخال الأيميل');
+      Tostget(t('createBranch.enterEmail'));
       return false;
     }
     if (!title.PhoneNumber.trim()) {
-      Tostget('يرجى ادخال رقم هاتف الفرع');
+      Tostget(t('createBranch.enterBranchPhone'));
       return false;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(title.Email)) {
-      Tostget('يرجى ادخال بريد إلكتروني صحيح');
+      Tostget(t('createBranch.invalidEmail'));
       return false;
     }
 
@@ -508,14 +512,14 @@ export default function CreateBranchPage() {
       });
 
       if (response.status === 200) {
-        Tostget(response.data?.success || 'تم إنشاء الفرع بنجاح');
+        Tostget(response.data?.success || t('createBranch.createSuccess'));
 
         // Navigate back to home and trigger refresh
         setTimeout(() => {
           router.push('/home?refresh=branches');
         }, 1500);
       } else {
-        Tostget('حدث خطأ في إنشاء الفرع');
+        Tostget(t('createBranch.createError'));
       }
 
     } catch (error: any) {
@@ -524,7 +528,7 @@ export default function CreateBranchPage() {
       if (error.response?.data?.message) {
         Tostget(error.response.data.message);
       } else {
-        Tostget('حدث خطأ في الاتصال');
+        Tostget(t('createBranch.connectionError'));
       }
     } finally {
       setLoading(false);
@@ -562,12 +566,13 @@ export default function CreateBranchPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="إنشاء فرع"
+          title={t('createBranch.title')}
           backButton={
             <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label="رجوع"
+              aria-label={t('createBranch.back')}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
               <ArrowIcon size={24} color={colors.BLACK} />
             </button>
@@ -590,7 +595,7 @@ export default function CreateBranchPage() {
             {/* Branch Name */}
             <div className="w-full">
               <Input
-                name="اسم الفرع"
+                name={t('createBranch.branchName')}
                 value={title.NameSub}
                 onChange={(value) => handleInputChange(value, 'NameSub')}
                 type="text"
@@ -602,7 +607,7 @@ export default function CreateBranchPage() {
             {/* Branch Address */}
             <div className="w-full">
               <Input
-                name="اسم المنطقة"
+                name={t('createBranch.branchAddress')}
                 value={title.BranchAddress}
                 onChange={(value) => handleInputChange(value, 'BranchAddress')}
                 type="text"
@@ -614,7 +619,7 @@ export default function CreateBranchPage() {
             {/* Email */}
             <div className="w-full">
               <Input
-                name="الأيميل"
+                name={t('createBranch.email')}
                 value={title.Email}
                 onChange={(value) => handleInputChange(value, 'Email')}
                 type="email"
@@ -626,7 +631,7 @@ export default function CreateBranchPage() {
             {/* Phone Number */}
             <div className="w-full">
               <Input
-                name="رقم هاتف الفرع"
+                name={t('createBranch.branchPhone')}
                 value={title.PhoneNumber}
                 onChange={(value) => {
                   // Convert Arabic to English numbers like mobile app
@@ -658,7 +663,7 @@ export default function CreateBranchPage() {
                       fontFamily: fonts.IBMPlexSansArabicMedium
                     }}
                   >
-                    إضافة مشرف فرع (اختياري)
+                    {t('createBranch.addManagerOptional')}
                   </p>
 
                   {/* Content */}
@@ -685,7 +690,7 @@ export default function CreateBranchPage() {
                         color: colors.BLACK
                       }}
                     >
-                      {check > 0 ? 'تم اختيار مشرف' : 'إضافة مشرف فرع'}
+                      {check > 0 ? t('createBranch.managerSelected') : t('createBranch.addBranchManager')}
                     </span>
                   </div>
                 </div>
@@ -705,7 +710,7 @@ export default function CreateBranchPage() {
                       fontFamily: fonts.IBMPlexSansArabicMedium
                     }}
                   >
-                    إضافة أعضاء (اختياري)
+                    {t('createBranch.addMembersOptional')}
                   </p>
 
                   {/* Content */}
@@ -733,8 +738,8 @@ export default function CreateBranchPage() {
                       }}
                     >
                       {Object.keys(checkGloble).length > 0
-                        ? 'تم اختيار أعضاء'
-                        : 'إضافة أعضاء للفرع'}
+                        ? t('createBranch.membersSelected')
+                        : t('createBranch.addMembers')}
                     </span>
                   </div>
                 </div>
@@ -745,7 +750,7 @@ export default function CreateBranchPage() {
           {/* Submit Button */}
           <div className="mt-8 w-full">
             <ButtonLong
-              text="إنشاء"
+              text={t('createBranch.create')}
               onPress={handleSubmit}
               loading={loading}
               disabled={loading}

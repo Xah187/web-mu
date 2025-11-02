@@ -7,6 +7,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // This page represents the "قرارات" section from mobile app
 // It's a separate chat interface for decisions at company level
@@ -16,6 +17,7 @@ import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layou
 export default function DecisionsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
   
   const [loading, setLoading] = useState(true);
 
@@ -46,7 +48,7 @@ export default function DecisionsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="قرارات"
+          title={t('management.decisionsPage.title')}
           backButton={
             <button
               onClick={() => router.push('/management')}
@@ -61,9 +63,17 @@ export default function DecisionsPage() {
               onMouseLeave={(e) => {
                 e.currentTarget.style.backgroundColor = 'transparent';
               }}
-              aria-label="رجوع"
+              aria-label={isRTL ? 'رجوع' : 'Back'}
             >
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+              >
                 <polyline points="15,18 9,12 15,6" />
               </svg>
             </button>
@@ -74,7 +84,7 @@ export default function DecisionsPage() {
       <ContentSection className="p-4">
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-4" dir={dir}>
         {loading ? (
           <div className="flex justify-center items-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
@@ -82,7 +92,7 @@ export default function DecisionsPage() {
         ) : (
           <div className="space-y-4">
             {/* Decisions Chat Card */}
-            <div 
+            <div
               className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 cursor-pointer hover:shadow-md transition-all duration-200"
               onClick={handleNavigateToDecisionsChat}
             >
@@ -96,27 +106,36 @@ export default function DecisionsPage() {
                     </svg>
                   </div>
                   <div>
-                    <h3 
+                    <h3
                       className="font-semibold text-gray-900 mb-1"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: scale(16 + size) 
+                        fontSize: scale(16 + size)
                       }}
                     >
-                      دردشة القرارات
+                      {t('management.decisionsPage.title')}
                     </h3>
-                    <p 
+                    <p
                       className="text-gray-600 text-sm"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
-                        fontSize: scale(12 + size) 
+                        fontSize: scale(12 + size)
                       }}
                     >
-                      دردشة القرارات على مستوى الشركة
+                      {t('management.decisionsPage.description')}
                     </p>
                   </div>
                 </div>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-400">
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  className="text-gray-400"
+                  style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
+                >
                   <polyline points="9,18 15,12 9,6" />
                 </svg>
               </div>
@@ -124,16 +143,16 @@ export default function DecisionsPage() {
 
             {/* Features Section */}
             <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
-              <h2 
+              <h2
                 className="font-semibold text-gray-900 mb-4"
-                style={{ 
+                style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                  fontSize: scale(16 + size) 
+                  fontSize: scale(16 + size)
                 }}
               >
-                مميزات دردشة القرارات
+                {t('management.decisionsPage.featuresTitle')}
               </h2>
-              
+
               <div className="space-y-3">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -142,23 +161,23 @@ export default function DecisionsPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4 
+                    <h4
                       className="font-medium text-gray-900 mb-1"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: scale(14 + size) 
+                        fontSize: scale(14 + size)
                       }}
                     >
-                      اتخاذ القرارات الجماعية
+                      {t('management.decisionsPage.feature1Title')}
                     </h4>
-                    <p 
+                    <p
                       className="text-gray-600 text-sm"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
-                        fontSize: scale(12 + size) 
+                        fontSize: scale(12 + size)
                       }}
                     >
-                      مناقشة واتخاذ القرارات المهمة مع فريق العمل
+                      {t('management.decisionsPage.feature1Description')}
                     </p>
                   </div>
                 </div>
@@ -173,23 +192,23 @@ export default function DecisionsPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4 
+                    <h4
                       className="font-medium text-gray-900 mb-1"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: scale(14 + size) 
+                        fontSize: scale(14 + size)
                       }}
                     >
-                      مشاركة جميع أعضاء الشركة
+                      {t('management.decisionsPage.feature2Title')}
                     </h4>
-                    <p 
+                    <p
                       className="text-gray-600 text-sm"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
-                        fontSize: scale(12 + size) 
+                        fontSize: scale(12 + size)
                       }}
                     >
-                      جميع موظفي الشركة يمكنهم المشاركة في النقاش
+                      {t('management.decisionsPage.feature2Description')}
                     </p>
                   </div>
                 </div>
@@ -205,23 +224,23 @@ export default function DecisionsPage() {
                     </svg>
                   </div>
                   <div>
-                    <h4 
+                    <h4
                       className="font-medium text-gray-900 mb-1"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: scale(14 + size) 
+                        fontSize: scale(14 + size)
                       }}
                     >
-                      توثيق القرارات
+                      {t('management.decisionsPage.feature3Title')}
                     </h4>
-                    <p 
+                    <p
                       className="text-gray-600 text-sm"
-                      style={{ 
+                      style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
-                        fontSize: scale(12 + size) 
+                        fontSize: scale(12 + size)
                       }}
                     >
-                      حفظ وتوثيق جميع القرارات المتخذة للرجوع إليها لاحقاً
+                      {t('management.decisionsPage.feature3Description')}
                     </p>
                   </div>
                 </div>
@@ -239,23 +258,23 @@ export default function DecisionsPage() {
                   </svg>
                 </div>
                 <div>
-                  <h4 
+                  <h4
                     className="font-medium text-purple-900 mb-1"
-                    style={{ 
+                    style={{
                       fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                      fontSize: scale(14 + size) 
+                      fontSize: scale(14 + size)
                     }}
                   >
-                    دردشة القرارات
+                    {t('management.decisionsPage.infoTitle')}
                   </h4>
-                  <p 
+                  <p
                     className="text-purple-800 text-sm leading-relaxed"
-                    style={{ 
+                    style={{
                       fontFamily: fonts.IBMPlexSansArabicRegular,
-                      fontSize: scale(12 + size) 
+                      fontSize: scale(12 + size)
                     }}
                   >
-                    هذا القسم مخصص لمناقشة واتخاذ القرارات المهمة على مستوى الشركة. يمكن لجميع الموظفين المشاركة في النقاش وإبداء آرائهم.
+                    {t('management.decisionsPage.infoDescription')}
                   </p>
                 </div>
               </div>

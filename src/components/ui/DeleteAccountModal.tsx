@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface DeleteAccountModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
   isLoading = false
 }) => {
   const { size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   return (
     <AnimatePresence>
@@ -56,6 +58,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
               ease: [0.25, 0.46, 0.45, 0.94]
             }}
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md mx-4"
+            dir={dir}
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '2px solid var(--color-text-primary)',
@@ -129,7 +132,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                   marginBottom: `${scale(16)}px`
                 }}
               >
-                حذف الحساب
+                {t('settings.deleteAccount')}
               </h3>
 
               {/* Message */}
@@ -146,7 +149,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                   marginRight: 'auto'
                 }}
               >
-                هل أنت متأكد من رغبتك في حذف حسابك؟
+                {t('settings.deleteAccountConfirm')}
               </p>
             </div>
 
@@ -212,7 +215,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                         marginBottom: `${scale(6)}px`
                       }}
                     >
-                      تنبيه مهم
+                      {t('common.importantNote')}
                     </p>
                     <p
                       style={{
@@ -224,7 +227,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                         opacity: 1
                       }}
                     >
-                      هذا الإجراء لا يمكن التراجع عنه. سيتم حذف جميع بياناتك نهائياً.
+                      {t('settings.deleteAccountWarning')}
                     </p>
                   </div>
                 </div>
@@ -257,7 +260,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
                   }}
                 >
-                  إلغاء
+                  {t('common.cancel')}
                 </button>
 
                 {/* Delete Button */}
@@ -279,7 +282,7 @@ const DeleteAccountModal: React.FC<DeleteAccountModalProps> = ({
                     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)'
                   }}
                 >
-                  {isLoading ? 'جاري الحذف...' : 'حذف الحساب'}
+                  {isLoading ? t('common.deleting') : t('settings.deleteAccount')}
                 </button>
               </div>
             </div>

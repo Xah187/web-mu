@@ -14,6 +14,7 @@ import ReorderStagesModal from '@/components/project/ReorderStagesModal';
 import AddProjectUsersModal from '@/components/project/AddProjectUsersModal';
 import { EmployeeOnly, PermissionBasedVisibility } from '@/components/auth/PermissionGuard';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
+import { useTranslation } from '@/hooks/useTranslation';
 
 
 // Enhanced Project Header with proper data display
@@ -21,7 +22,6 @@ const ProjectHeader = ({
   project,
   onBack,
   onEdit,
-  onNotifications,
   onArchives,
   onFinance,
   onRequests,
@@ -30,11 +30,12 @@ const ProjectHeader = ({
   user,
   showTopNav = true,
   showFinancialData = true, // New prop to control financial data visibility
+  t,
+  isRTL,
 }: {
   project: ProjectDetails | null;
   onBack: () => void;
   onEdit: () => void;
-  onNotifications: () => void;
   onArchives: () => void;
   onFinance: () => void;
   onRequests: () => void;
@@ -43,6 +44,8 @@ const ProjectHeader = ({
   user: any;
   showTopNav?: boolean;
   showFinancialData?: boolean; // Matching mobile app NavbarPhase.tsx line 181-258
+  t: (key: string) => string;
+  isRTL: boolean;
 }) => {
   if (!project) {
     return (
@@ -76,13 +79,6 @@ const ProjectHeader = ({
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
-
-          <button onClick={onNotifications} className="p-2">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-            </svg>
-          </button>
         </div>
         )}
 
@@ -111,7 +107,7 @@ const ProjectHeader = ({
                 className="bg-blue-600 text-white px-4 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
                 style={{ fontSize: scale(12) }}
               >
-                بدء تنفيذ المشروع
+                {t('projectDetails.startProject')}
               </button>
             </PermissionBasedVisibility>
           )}
@@ -127,7 +123,7 @@ const ProjectHeader = ({
           <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-3 sm:p-4 lg:p-6 overflow-hidden">
             <div className="text-center">
               <p className="text-gray-600 font-ibm-arabic-medium mb-2" style={{ fontSize: scale(11) }}>
-                إجمالي الأيام المتبقية
+                {isOverdue ? t('projectDetails.overdueDays') : t('projectDetails.remainingDays')}
               </p>
               <div className="text-center">
                 <span
@@ -136,7 +132,7 @@ const ProjectHeader = ({
                   }`}
                   style={{ fontSize: scale(20), fontFeatureSettings: '"tnum"' }}
                 >
-                  {remainingDays}
+                  {Math.abs(remainingDays)}
                 </span>
               </div>
             </div>
@@ -160,7 +156,7 @@ const ProjectHeader = ({
                    fontSize: scale(10),
                    color: 'var(--color-text-primary)'
                  }}>
-                التكلفة اليومية
+                {t('projectDetails.totalExpenses')}
               </p>
               <p className="font-ibm-arabic-bold"
                  style={{
@@ -170,7 +166,7 @@ const ProjectHeader = ({
                  }}>
                 {/* Matching mobile app NavbarPhase.tsx line 181-183 */}
                 {showFinancialData ? formatCurrency(project.ConstCompany || 0) : 'xxxx'}
-                {showFinancialData && <span className="text-xs mr-1">ر.س</span>}
+                {showFinancialData && <span className="text-xs mr-1">{t('projectDetails.sar')}</span>}
               </p>
             </div>
           </div>
@@ -187,7 +183,7 @@ const ProjectHeader = ({
                    fontSize: scale(10),
                    color: 'var(--color-text-primary)'
                  }}>
-                عدد الأيام
+                {t('projectDetails.days')}
               </p>
               <p className="font-ibm-arabic-bold"
                  style={{
@@ -213,7 +209,7 @@ const ProjectHeader = ({
                    fontSize: scale(10),
                    color: 'var(--color-text-primary)'
                  }}>
-                إجمالي التكلفة
+                {t('projectDetails.totalRevenues')}
               </p>
               <p className="font-ibm-arabic-bold"
                  style={{
@@ -226,7 +222,7 @@ const ProjectHeader = ({
                   <>
                     {formatCurrency(project.TotalcosttothCompany || 0).slice(0, 8)}
                     {String(project.TotalcosttothCompany).length > 8 && '..'}
-                    <span className="text-xs mr-1">ر.س</span>
+                    <span className="text-xs mr-1">{t('projectDetails.sar')}</span>
                   </>
                 ) : 'xxxx'}
               </p>
@@ -267,7 +263,7 @@ const ProjectHeader = ({
                   <polyline points="10,9 9,9 8,9"/>
                 </svg>
               </div>
-              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>طلبات</span>
+              <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>{t('projectDetails.requestsLabel')}</span>
             </button>
           </div>
 
@@ -298,7 +294,7 @@ const ProjectHeader = ({
                     <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="var(--color-primary)"/>
                   </svg>
                 </div>
-                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>مالية</span>
+                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>{t('projectDetails.financeLabel')}</span>
               </button>
             </div>
           </PermissionBasedVisibility>
@@ -333,7 +329,7 @@ const ProjectHeader = ({
                     <line x1="7" y1="18" x2="14" y2="18" stroke="var(--color-primary)" strokeWidth="1.5" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>أرشيف</span>
+                <span className="text-xs font-ibm-arabic-semibold" style={{ fontSize: scale(9), color: 'var(--color-text-primary)' }}>{t('projectDetails.archiveLabel')}</span>
               </button>
             </div>
           </PermissionBasedVisibility>
@@ -354,6 +350,7 @@ const StageCard = ({
   onDelete: () => void;
 }) => {
   const { hasPermission } = useValidityUser();
+  const { t } = useTranslation();
   const isCompleted = stage.Done === 'true';
   const progress = stage.rate || 0;
 
@@ -362,7 +359,7 @@ const StageCard = ({
     if (stage.attached) {
       window.open(stage.attached, '_blank', 'noopener,noreferrer');
     } else {
-      Tostget('لايوجد رابط خارجي للمرحلة');
+      Tostget(t('projectDetails.noExternalLink'));
     }
   };
 
@@ -402,7 +399,7 @@ const StageCard = ({
                 justifyContent: 'center',
               }}
             >
-              {isCompleted ? 'تم إنجاز' : 'غير منجز'}
+              {isCompleted ? t('projectDetails.stageCompleted') : t('projectDetails.stageNotCompleted')}
             </span>
           </div>
         </div>
@@ -439,7 +436,7 @@ const StageCard = ({
           </div>
         </div>
 
-        <div className="text-xs text-gray-500 mb-1">نسبة الإنجاز</div>
+        <div className="text-xs text-gray-500 mb-1">{t('projectDetails.completionRate')}</div>
 
         {/* Action Buttons Row - Top of card */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-center">
@@ -454,8 +451,8 @@ const StageCard = ({
               alignItems: 'center',
               justifyContent: 'center'
             }}
-            aria-label="دليل خارجي"
-            title={stage.attached ? 'فتح الدليل الخارجي' : 'لايوجد رابط خارجي'}
+            aria-label={t('projectDetails.externalGuide')}
+            title={stage.attached ? t('projectDetails.openExternalGuide') : t('projectDetails.noExternalLinkAvailable')}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="10" strokeWidth="2" />
@@ -471,7 +468,7 @@ const StageCard = ({
                 onDelete();
               }}
               className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-              aria-label="حذف المرحلة"
+              aria-label={t('projectDetails.deleteStage')}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -493,6 +490,7 @@ const ProjectDetailsPage = () => {
   const projectId = parseInt(params.id as string);
 
   const { user, size } = useSelector((state: any) => state.user || {});
+  const { t, isRTL, dir } = useTranslation();
   const { Uservalidation, hasPermission } = useValidityUser();
 
   const {
@@ -587,10 +585,6 @@ const ProjectDetailsPage = () => {
     }
   };
 
-  const handleNotifications = () => {
-    router.push(`/project/${projectId}/notifications`);
-  };
-
   const handleArchives = () => {
     router.push(`/project/${projectId}/archives`);
   };
@@ -626,13 +620,13 @@ const ProjectDetailsPage = () => {
       );
 
       if (response.status === 200) {
-        Tostget('تم بدء تنفيذ المشروع بنجاح');
+        Tostget(t('projectDetails.projectStartSuccess'));
         // Refresh project data
         await fetchProjectDetails(projectId);
       }
     } catch (error) {
       console.error('Error starting project:', error);
-      Tostget('خطأ في بدء تنفيذ المشروع');
+      Tostget(t('projectDetails.projectStartError'));
     }
   };
 
@@ -665,13 +659,13 @@ const ProjectDetailsPage = () => {
     if (project?.Linkevaluation) {
       window.open(project.Linkevaluation, '_blank');
     } else {
-      alert('لايوجد هناك رابط للانتقال اليه');
+      alert(t('projectDetails.noQualityLink'));
     }
   };
 
   const confirmAddStage = async () => {
     if (!stageData.StageName.trim()) {
-      alert('يجب إدخال اسم المرحلة');
+      alert(t('projectDetails.stageNameRequired'));
       return;
     }
 
@@ -691,7 +685,7 @@ const ProjectDetailsPage = () => {
         attached: ''
       });
     } catch (error) {
-      console.error('خطأ في إضافة المرحلة:', error);
+      console.error(t('projectDetails.addStageError'), error);
     }
   };
 
@@ -710,7 +704,7 @@ const ProjectDetailsPage = () => {
       setShowDeleteModal(false);
       setSelectedStage(null);
     } catch (error) {
-      console.error('خطأ في حذف المرحلة:', error);
+      console.error(t('projectDetails.deleteStageError'), error);
     }
   };
 
@@ -725,13 +719,13 @@ const ProjectDetailsPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">خطأ في تحميل البيانات</h3>
+          <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">{t('projectDetails.loadingData')}</h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={handleRefresh}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
           >
-            إعادة المحاولة
+            {t('projectDetails.retryLoad')}
           </button>
         </div>
       </div>
@@ -742,9 +736,9 @@ const ProjectDetailsPage = () => {
     <ResponsiveLayout
       header={
         <PageHeader
-          title={project?.Nameproject || 'المشروع'}
+          title={project?.Nameproject || t('projectDetails.project')}
           backButton={
-            <button onClick={handleBack} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الرجوع">
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label={t('projectDetails.backToProject')}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -753,13 +747,13 @@ const ProjectDetailsPage = () => {
           actions={
             <div className="flex items-center gap-4 sm:gap-6">
               {hasPermission('تعديل بيانات المشروع') && (
-                <button onClick={handleEdit} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="تعديل المشروع">
+                <button onClick={handleEdit} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label={t('projectDetails.editProject')}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 </button>
               )}
-              <button onClick={handleArchives} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الأرشيف">
+              <button onClick={handleArchives} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label={t('projectDetails.archiveLabel')}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <rect x="3" y="8" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <rect x="2" y="4" width="20" height="4" rx="1" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -769,7 +763,7 @@ const ProjectDetailsPage = () => {
                 </svg>
               </button>
               {hasPermission('انشاء عمليات مالية') && (
-                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="المالية">
+                <button onClick={handleFinance} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label={t('projectDetails.financeLabel')}>
                   <svg width="18" height="18" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill="currentColor"/>
                     <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill="currentColor"/>
@@ -777,7 +771,7 @@ const ProjectDetailsPage = () => {
                 </button>
               )}
               {hasPermission('إنشاء طلبات') && (
-                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الطلبات">
+                <button onClick={handleRequests} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label={t('projectDetails.requestsLabel')}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                     <polyline points="14,2 14,8 20,8"/>
@@ -787,12 +781,6 @@ const ProjectDetailsPage = () => {
                   </svg>
                 </button>
               )}
-              <button onClick={handleNotifications} className="p-2 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg" aria-label="الإشعارات">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-                </svg>
-              </button>
             </div>
           }
         />
@@ -803,7 +791,6 @@ const ProjectDetailsPage = () => {
           project={project}
           onBack={handleBack}
           onEdit={handleEdit}
-          onNotifications={handleNotifications}
           onArchives={handleArchives}
           onFinance={handleFinance}
           onRequests={handleRequests}
@@ -812,26 +799,28 @@ const ProjectDetailsPage = () => {
           user={user}
           showTopNav={false}
           showFinancialData={showFinancialData}
+          t={t}
+          isRTL={isRTL}
         />
 
       {/* Pull to refresh indicator */}
       {refreshing && (
         <div className="p-4 text-center">
-          <p className="text-sm text-gray-600">جاري التحديث...</p>
+          <p className="text-sm text-gray-600">{t('projectDetails.refreshing')}</p>
         </div>
       )}
 
       {/* Action Buttons - Show for employees only like mobile app (PageHomeProject.tsx line 338) */}
       <EmployeeOnly>
         <div className="flex justify-between items-center p-4">
-          {/* Create Task Button */}
+          {/* Create Stage Button */}
           <PermissionBasedVisibility permission="إضافة مرحلة رئيسية">
             <button
               onClick={handleAddStage}
               className="text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
               style={{ fontSize: scale(14) }}
             >
-              إنشاء مهمة
+              {t('projectDetails.createStage')}
             </button>
           </PermissionBasedVisibility>
 
@@ -839,9 +828,9 @@ const ProjectDetailsPage = () => {
             <button
               onClick={handleQualityEvaluation}
               className="text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0"
-              style={{ fontSize: scale(14) }}
+              style={{ fontSize: scale(14), direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'right' : 'left' }}
             >
-              تقييم الجودة
+              {t('projectDetails.qualityEvaluation')}
             </button>
 
             {/* Settings button */}
@@ -849,7 +838,7 @@ const ProjectDetailsPage = () => {
               <button
                 onClick={() => setShowSettingsModal((v)=>!v)}
                 className="p-3"
-                title="المزيد"
+                title={t('projectDetails.more')}
               >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zM12 13a1 1 0 110-2 1 1 0 010 2zM12 20a1 1 0 110-2 1 1 0 010 2z" />
@@ -861,11 +850,12 @@ const ProjectDetailsPage = () => {
                   <div
                     className="absolute left-1/2 top-1/2 w-[min(22rem,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-lg overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
+                    style={{ direction: dir as 'rtl' | 'ltr' }}
                   >
                     {/* Header */}
                     <div className="px-4 py-3 border-b border-gray-200">
-                      <h3 className="font-ibm-arabic-semibold text-gray-500" style={{ fontSize: scale(14) }}>
-                        الاعدادات
+                      <h3 className="font-ibm-arabic-semibold text-gray-500" style={{ fontSize: scale(14), textAlign: isRTL ? 'right' : 'left' }}>
+                        {t('projectDetails.settings')}
                       </h3>
                     </div>
 
@@ -886,7 +876,7 @@ const ProjectDetailsPage = () => {
                           <path d="M7.5 3V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M2.5 8H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        إنشاء مرحلة
+                        {t('projectDetails.createStage')}
                       </button>
 
                       {/* 2. ترتيب المراحل */}
@@ -905,7 +895,7 @@ const ProjectDetailsPage = () => {
                               if (!verifyDone) {
                                 setShowReorderModal(true);
                               } else {
-                                Tostget('لايمكن إعادة ترتيب المراحل فهناك مراحل قد انجزت');
+                                Tostget(t('projectDetails.cannotReorderStages'));
                               }
                             } catch (e) {
                               console.error(e);
@@ -919,14 +909,19 @@ const ProjectDetailsPage = () => {
                           <path d="M13 4L20 11" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                           <path d="M14 22H22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        ترتيب المراحل
+                        {t('projectDetails.reorderStages')}
                       </button>
 
                       {/* 3. اضافة مستخدمين - Matching mobile app PageHomeProject.tsx line 192-199 */}
                       {/* تم تغييره ليفتح صفحة كاملة بدلاً من مودال - مطابق للتطبيق المحمول PageUsers.tsx */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{
+                          fontSize: scale(14),
+                          backgroundColor: 'var(--color-surface-secondary)',
+                          textAlign: isRTL ? 'right' : 'left',
+                          flexDirection: isRTL ? 'row' : 'row'
+                        }}
                         onClick={async () => {
                           const ok = await Uservalidation('إضافة مستخدمين للمشروع', projectId);
                           if (!ok) { setShowSettingsModal(false); return; }
@@ -943,20 +938,25 @@ const ProjectDetailsPage = () => {
                           <line x1="19" y1="8" x2="19" y2="14"/>
                           <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
-                        اضافة مستخدمين
+                        {t('projectDetails.addUsers')}
                       </button>
 
                       {/* 4. تعديل تاريخ بدء المشروع - Matching mobile app PageHomeProject.tsx line 223-232 */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{
+                          fontSize: scale(14),
+                          backgroundColor: 'var(--color-surface-secondary)',
+                          textAlign: isRTL ? 'right' : 'left',
+                          flexDirection: isRTL ? 'row' : 'row'
+                        }}
                         onClick={async () => {
                           if (await Uservalidation('تعديل تاريخ بدء المشروع', projectId)) {
                             const verifyDone = stages?.find((pic: any) => pic.Done === 'true');
                             if (!verifyDone) {
                               setShowEditStartDateModal(true);
                             } else {
-                              Tostget('لايمكن تعديل تاريخ المشروع فهناك مراحل قد اقفلت');
+                              Tostget(t('projectDetails.cannotEditStartDate'));
                             }
                           }
                           setShowSettingsModal(false);
@@ -966,13 +966,18 @@ const ProjectDetailsPage = () => {
                           <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
                           <path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
-                        تعديل تاريخ بدء المشروع
+                        {t('projectDetails.editStartDate')}
                       </button>
 
                       {/* 5. تعديل بيانات المشروع */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        style={{
+                          fontSize: scale(14),
+                          backgroundColor: 'var(--color-surface-secondary)',
+                          textAlign: isRTL ? 'right' : 'left',
+                          flexDirection: isRTL ? 'row' : 'row'
+                        }}
                         onClick={async () => {
                           if (await Uservalidation('تعديل بيانات المشروع', projectId)) {
                             handleEdit();
@@ -983,13 +988,18 @@ const ProjectDetailsPage = () => {
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        تعديل بيانات المشروع
+                        {t('projectDetails.editProjectData')}
                       </button>
 
                       {/* 6. حذف المشروع */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-red-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors text-red-600"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full px-4 py-3 hover:bg-red-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors text-red-600"
+                        style={{
+                          fontSize: scale(14),
+                          backgroundColor: 'var(--color-surface-secondary)',
+                          textAlign: isRTL ? 'right' : 'left',
+                          flexDirection: isRTL ? 'row' : 'row'
+                        }}
                         onClick={async () => {
                           if (await Uservalidation('حذف مشروع', projectId)) {
                             setShowDeleteProjectModal(true);
@@ -1000,7 +1010,7 @@ const ProjectDetailsPage = () => {
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        حذف المشروع
+                        {t('projectDetails.deleteProject')}
                       </button>
                     </div>
                   </div>
@@ -1025,7 +1035,7 @@ const ProjectDetailsPage = () => {
                    borderColor: 'var(--color-primary)',
                    backgroundColor: 'var(--color-primary)' + '20'
                  }}>
-              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>إجمالي المراحل</div>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)', direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'center' : 'center' }}>{t('projectDetails.totalStages')}</div>
               <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-text-primary)' }}>{stages?.length || 0}</div>
             </div>
 
@@ -1035,7 +1045,7 @@ const ProjectDetailsPage = () => {
                    borderColor: 'var(--color-primary)',
                    backgroundColor: 'var(--color-primary)' + '20'
                  }}>
-              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>المفتوحة / المكتملة</div>
+              <div className="text-xs font-ibm-arabic-medium mb-1" style={{ color: 'var(--color-text-primary)', direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'center' : 'center' }}>{t('projectDetails.openCompleted')}</div>
               <div className="text-lg font-ibm-arabic-bold" style={{ color: 'var(--color-text-primary)' }}>
                 {(stages?.length || 0) - (stages?.filter(s => s.Done === 'true').length || 0)} / {(stages?.filter(s => s.Done === 'true').length || 0)}
               </div>
@@ -1044,7 +1054,7 @@ const ProjectDetailsPage = () => {
 
           {/* Sort Control - Matching Page Design */}
           <div className="flex items-center gap-3 justify-center">
-            <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-text-primary)' }}>ترتيب:</label>
+            <label className="text-sm font-ibm-arabic-medium" style={{ color: 'var(--color-text-primary)', direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'right' : 'left' }}>{t('projectDetails.sort')}:</label>
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as any)}
@@ -1052,13 +1062,16 @@ const ProjectDetailsPage = () => {
               style={{
                 border: '1px solid var(--color-primary)',
                 backgroundColor: 'var(--color-card-background)',
-                color: 'var(--color-text-primary)'
+                color: 'var(--color-text-primary)',
+                direction: dir as 'rtl' | 'ltr',
+                textAlign: isRTL ? 'right' : 'left'
               }}
+              dir={dir as 'rtl' | 'ltr'}
             >
-              <option value="default">الافتراضي</option>
-              <option value="status">الحالة (المفتوحة أولاً)</option>
-              <option value="progress">التقدم (الأعلى أولاً)</option>
-              <option value="name">الاسم (أ-ي)</option>
+              <option value="default">{t('projectDetails.sortDefault')}</option>
+              <option value="status">{t('projectDetails.sortStatus')}</option>
+              <option value="progress">{t('projectDetails.sortProgress')}</option>
+              <option value="name">{t('projectDetails.sortName')}</option>
             </select>
           </div>
         </div>
@@ -1077,13 +1090,13 @@ const ProjectDetailsPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="text-gray-500 font-ibm-arabic-medium mb-6 text-lg">لا توجد مراحل في هذا المشروع</p>
+            <p className="text-gray-500 font-ibm-arabic-medium mb-6 text-lg" style={{ direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'center' : 'center' }}>{t('projectDetails.noStages')}</p>
             {user?.data?.jobdiscrption === 'موظف' && (
               <button
                 onClick={handleAddStage}
                 className="bg-blue-600 text-white px-8 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
               >
-                إضافة أول مرحلة
+                {t('projectDetails.addFirstStage')}
               </button>
             )}
           </div>
@@ -1172,10 +1185,12 @@ const ProjectDetailsPage = () => {
                     fontSize: '18px',
                     fontFamily: 'var(--font-ibm-arabic-bold)',
                     color: 'var(--theme-text-primary)',
-                    lineHeight: 1.4
+                    lineHeight: 1.4,
+                    direction: dir as 'rtl' | 'ltr',
+                    textAlign: isRTL ? 'center' : 'center'
                   }}
                 >
-                  إضافة مرحلة جديدة
+                  {t('projectModals.createStage.title')}
                 </h3>
               </div>
               <button
@@ -1219,19 +1234,23 @@ const ProjectDetailsPage = () => {
                     style={{
                       fontSize: '12px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--theme-text-secondary)'
+                      color: 'var(--theme-text-secondary)',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    عدد الأيام
+                    {t('projectModals.createStage.days')}
                   </label>
                   <div
                     style={{
                       fontSize: '18px',
                       fontFamily: 'var(--font-ibm-arabic-semibold)',
-                      color: 'var(--theme-text-primary)'
+                      color: 'var(--theme-text-primary)',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    {stageData.Days} <span style={{ fontSize: '14px' }}>يوم</span>
+                    {stageData.Days} <span style={{ fontSize: '14px' }}>{t('projectModals.createStage.day')}</span>
                   </div>
                 </div>
                 <div className="flex flex-col gap-1">
@@ -1274,10 +1293,12 @@ const ProjectDetailsPage = () => {
                     style={{
                       fontSize: '12px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--theme-text-secondary)'
+                      color: 'var(--theme-text-secondary)',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    اسم المرحلة
+                    {t('projectModals.createStage.stageName')}
                   </label>
                   <input
                     type="text"
@@ -1291,9 +1312,11 @@ const ProjectDetailsPage = () => {
                       color: 'var(--theme-text-primary)',
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      textAlign: 'right'
+                      textAlign: isRTL ? 'right' : 'left',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
-                    placeholder="ادخل اسم المرحلة"
+                    placeholder={t('projectModals.createStage.stageName')}
+                    dir={dir as 'rtl' | 'ltr'}
                   />
                 </div>
 
@@ -1303,10 +1326,12 @@ const ProjectDetailsPage = () => {
                     style={{
                       fontSize: '12px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      color: 'var(--theme-text-secondary)'
+                      color: 'var(--theme-text-secondary)',
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    النسبة التقديرية
+                    {t('projectModals.createStage.ratio')}
                   </label>
                   <input
                     type="number"
@@ -1320,10 +1345,12 @@ const ProjectDetailsPage = () => {
                       color: 'var(--theme-text-primary)',
                       fontSize: '14px',
                       fontFamily: 'var(--font-ibm-arabic-medium)',
-                      textAlign: 'right'
+                      textAlign: isRTL ? 'right' : 'left',
+                      direction: dir as 'rtl' | 'ltr'
                     }}
-                    placeholder="النسبة التقديرية"
+                    placeholder={t('projectModals.createStage.ratio')}
                     min="0"
+                    dir={dir as 'rtl' | 'ltr'}
                   />
                 </div>
               </div>
@@ -1335,10 +1362,12 @@ const ProjectDetailsPage = () => {
                   style={{
                     fontSize: '12px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    color: 'var(--theme-text-secondary)'
+                    color: 'var(--theme-text-secondary)',
+                    direction: dir as 'rtl' | 'ltr',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  دليل خارجي
+                  {t('projectModals.createStage.externalGuide')}
                 </label>
                 <input
                   type="text"
@@ -1352,9 +1381,11 @@ const ProjectDetailsPage = () => {
                     color: 'var(--theme-text-primary)',
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
-                    textAlign: 'right'
+                    textAlign: isRTL ? 'right' : 'left',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
-                  placeholder="رابط خارجي"
+                  placeholder={t('projectModals.createStage.externalLink')}
+                  dir={dir as 'rtl' | 'ltr'}
                 />
               </div>
             </div>
@@ -1391,10 +1422,10 @@ const ProjectDetailsPage = () => {
                 {loading ? (
                   <>
                     <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    <span>جاري الإضافة...</span>
+                    <span>{t('projectModals.createStage.adding')}</span>
                   </>
                 ) : (
-                  'إنشاء'
+                  t('projectModals.createStage.create')
                 )}
               </button>
               <button
@@ -1418,7 +1449,7 @@ const ProjectDetailsPage = () => {
                   width: '45%'
                 }}
               >
-                إلغاء
+                {t('projectModals.createStage.cancel')}
               </button>
             </div>
 
@@ -1443,7 +1474,7 @@ const ProjectDetailsPage = () => {
 
       {/* Edit Start Date Modal */}
       {showEditStartDateModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div
             className="w-full max-w-md shadow-2xl"
             style={{
@@ -1483,20 +1514,22 @@ const ProjectDetailsPage = () => {
                     fontSize: '18px',
                     fontFamily: 'var(--font-ibm-arabic-bold)',
                     color: 'var(--theme-text-primary)',
-                    lineHeight: 1.4
+                    lineHeight: 1.4,
+                    textAlign: 'center'
                   }}
                 >
-                  تعديل تاريخ بداية المشروع
+                  {t('projectDetails.editStartDateTitle')}
                 </h3>
               </div>
               <button
                 onClick={()=>setShowEditStartDateModal(false)}
-                className="absolute top-4 left-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
+                className="absolute top-4 rounded-xl transition-all duration-200 hover:scale-110 hover:shadow-lg"
                 style={{
                   padding: '10px',
                   backgroundColor: 'var(--theme-surface-secondary)',
                   border: '1px solid var(--theme-border)',
-                  color: 'var(--theme-text-secondary)'
+                  color: 'var(--theme-text-secondary)',
+                  [isRTL ? 'right' : 'left']: '16px'
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1514,10 +1547,11 @@ const ProjectDetailsPage = () => {
                     fontSize: '14px',
                     fontFamily: 'var(--font-ibm-arabic-medium)',
                     color: 'var(--theme-text-primary)',
-                    marginBottom: '8px'
+                    marginBottom: '8px',
+                    textAlign: isRTL ? 'right' : 'left'
                   }}
                 >
-                  تاريخ البداية
+                  {t('projectDetails.selectStartDate')}
                 </label>
                 <input
                   type="date"
@@ -1530,7 +1564,8 @@ const ProjectDetailsPage = () => {
                     border: '1px solid var(--theme-border)',
                     color: 'var(--theme-text-primary)',
                     fontSize: '16px',
-                    fontFamily: 'var(--font-ibm-arabic-medium)'
+                    fontFamily: 'var(--font-ibm-arabic-medium)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 />
               </div>
@@ -1548,7 +1583,8 @@ const ProjectDetailsPage = () => {
                 paddingBottom: '16px',
                 margin: '8px 0',
                 borderBottomLeftRadius: '20px',
-                borderBottomRightRadius: '20px'
+                borderBottomRightRadius: '20px',
+                flexDirection: isRTL ? 'row-reverse' : 'row'
               }}
             >
               <button
@@ -1557,12 +1593,12 @@ const ProjectDetailsPage = () => {
                     await axiosInstance.put('/brinshCompany/UpdateStartdate', {
                       data: { ProjectID: projectId, ProjectStartdate: startDate }
                     }, { headers: { Authorization: `Bearer ${user?.accessToken}` } });
-                    Tostget('تم تحديث تاريخ بداية المشروع');
+                    Tostget(t('projectDetails.startDateUpdated'));
                     setShowEditStartDateModal(false);
                     await fetchProjectDetails(projectId);
                   } catch (e) {
                     console.error(e);
-                    Tostget('فشل تحديث التاريخ');
+                    Tostget(t('projectDetails.startDateUpdateFailed'));
                   }
                 }}
                 className="flex-1 text-center rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
@@ -1576,7 +1612,7 @@ const ProjectDetailsPage = () => {
                   width: '45%'
                 }}
               >
-                حفظ
+                {t('projectDetails.save')}
               </button>
               <button
                 onClick={()=>setShowEditStartDateModal(false)}
@@ -1591,7 +1627,7 @@ const ProjectDetailsPage = () => {
                   width: '45%'
                 }}
               >
-                إلغاء
+                {t('projectDetails.cancel')}
               </button>
             </div>
 
@@ -1628,6 +1664,7 @@ const ProjectDetailsPage = () => {
         isOpen={showAddUsersModal}
         onClose={() => setShowAddUsersModal(false)}
         projectId={projectId}
+        branchId={(project as any)?.IDCompanyBransh} // تمرير branchId - مطابق للتطبيق المحمول
         onSaved={async () => { /* no-op */ }}
       />
 
@@ -1819,34 +1856,34 @@ const ProjectDetailsPage = () => {
 
       {/* Delete Project Modal */}
       {showDeleteProjectModal && (
-        <div className="fixed inset-0 z-[1001] bg-black/40 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[1001] bg-black/40 flex items-center justify-center p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div className="bg-white rounded-2xl w-full max-w-md shadow-xl" onClick={(e) => e.stopPropagation()}>
             {/* Header */}
             <div className="px-6 py-4 border-b border-gray-200">
-              <h3 className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(18) }}>
-                تأكيد حذف المشروع
+              <h3 className="font-ibm-arabic-bold text-gray-900" style={{ fontSize: scale(18), textAlign: isRTL ? 'right' : 'left' }}>
+                {t('projectDetails.deleteProjectTitle')}
               </h3>
             </div>
 
             {/* Content */}
             <div className="px-6 py-6">
-              <div className="flex items-start gap-4 mb-4">
+              <div className="flex items-start gap-4 mb-4" style={{ flexDirection: isRTL ? 'row' : 'row' }}>
                 <div className="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ef4444">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <p className="font-ibm-arabic-semibold text-gray-900 mb-2" style={{ fontSize: scale(15) }}>
-                    هل أنت متأكد من حذف هذا المشروع؟
+                  <p className="font-ibm-arabic-semibold text-gray-900 mb-2" style={{ fontSize: scale(15), textAlign: isRTL ? 'right' : 'left' }}>
+                    {t('projectDetails.deleteProjectConfirm')}
                   </p>
-                  <p className="font-ibm-arabic-regular text-gray-600" style={{ fontSize: scale(13) }}>
-                    سيتم حذف المشروع وجميع المراحل والبيانات المرتبطة به بشكل نهائي. لا يمكن التراجع عن هذا الإجراء.
+                  <p className="font-ibm-arabic-regular text-gray-600" style={{ fontSize: scale(13), textAlign: isRTL ? 'right' : 'left' }}>
+                    {t('projectDetails.deleteProjectWarning')}
                   </p>
                   {project && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                      <p className="font-ibm-arabic-medium text-gray-700" style={{ fontSize: scale(13) }}>
-                        المشروع: <span className="font-ibm-arabic-bold">{project.Nameproject}</span>
+                      <p className="font-ibm-arabic-medium text-gray-700" style={{ fontSize: scale(13), textAlign: isRTL ? 'right' : 'left' }}>
+                        {t('projectDetails.project')}: <span className="font-ibm-arabic-bold">{project.Nameproject}</span>
                       </p>
                     </div>
                   )}
@@ -1855,14 +1892,14 @@ const ProjectDetailsPage = () => {
             </div>
 
             {/* Footer */}
-            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 rounded-b-2xl">
+            <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex gap-3 rounded-b-2xl" style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}>
               <button
                 onClick={() => setShowDeleteProjectModal(false)}
                 disabled={loading}
                 className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-ibm-arabic-semibold disabled:opacity-50"
                 style={{ fontSize: scale(14) }}
               >
-                إلغاء
+                {t('projectDetails.cancel')}
               </button>
               <button
                 onClick={async () => {
@@ -1872,13 +1909,13 @@ const ProjectDetailsPage = () => {
                       headers: { Authorization: `Bearer ${user.accessToken}` }
                     });
                     if (res.status === 200) {
-                      Tostget('تم حذف المشروع بنجاح');
+                      Tostget(t('projectDetails.projectDeleted'));
                       setShowDeleteProjectModal(false);
                       router.back();
                     }
                   } catch (e: any) {
                     console.error(e);
-                    Tostget(e.response?.data?.error || 'خطأ في حذف المشروع');
+                    Tostget(e.response?.data?.error || t('projectDetails.projectDeleteFailed'));
                   }
                 }}
                 disabled={loading}
@@ -1888,14 +1925,14 @@ const ProjectDetailsPage = () => {
                 {loading ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    جاري الحذف...
+                    {t('projectDetails.deleting')}
                   </>
                 ) : (
                   <>
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                     </svg>
-                    حذف المشروع
+                    {t('projectDetails.deleteProject')}
                   </>
                 )}
               </button>

@@ -6,6 +6,7 @@ import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
 import { toast } from '@/lib/toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SubStageNoteModalProps {
   isOpen: boolean;
@@ -31,6 +32,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
   loading = false,
   editingNote = null
 }) => {
+  const { t } = useTranslation();
   const [note, setNote] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
@@ -48,7 +50,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
 
   const handleSave = async () => {
     if (!note.trim()) {
-      toast.error('يجب إدخال نص الملاحظة');
+      toast.error(t('noteModal.noteRequired'));
       return;
     }
 
@@ -144,7 +146,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                         lineHeight: 1.4
                       }}
                     >
-                      {editingNote ? 'تعديل الملاحظة' : 'إضافة ملاحظة جديدة'}
+                      {editingNote ? t('noteModal.editTitle') : t('noteModal.addTitle')}
                     </h2>
                     <p
                       style={{
@@ -187,13 +189,13 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                       marginBottom: scale(8)
                     }}
                   >
-                    نص الملاحظة *
+                    {t('noteModal.noteText')}
                   </label>
                   <textarea
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="اكتب ملاحظتك هنا..."
+                    placeholder={t('noteModal.notePlaceholder')}
                     className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02] resize-none"
                     rows={4}
                     style={{
@@ -214,7 +216,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                       marginTop: scale(8)
                     }}
                   >
-                    اضغط Ctrl + Enter للحفظ السريع
+                    {t('noteModal.quickSaveHint')}
                   </p>
                 </div>
 
@@ -229,7 +231,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                       marginBottom: scale(8)
                     }}
                   >
-                    المرفقات (اختياري)
+                    {t('noteModal.attachments')}
                   </label>
                   <div
                     className="rounded-xl text-center transition-all duration-200 hover:scale-[1.02]"
@@ -268,7 +270,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                           color: 'var(--theme-text-secondary)'
                         }}
                       >
-                        اضغط لإضافة ملفات
+                        {t('noteModal.clickToAddFiles')}
                       </span>
                     </label>
                   </div>
@@ -350,7 +352,7 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
                   }}
                 >
-                  إلغاء
+                  {t('noteModal.cancel')}
                 </button>
 
                 <button
@@ -378,10 +380,10 @@ const SubStageNoteModal: React.FC<SubStageNoteModalProps> = ({
                         className="border-2 border-white border-t-transparent rounded-full animate-spin"
                         style={{ width: scale(16), height: scale(16) }}
                       />
-                      <span>جاري الحفظ...</span>
+                      <span>{t('noteModal.saving')}</span>
                     </div>
                   ) : (
-                    editingNote ? 'حفظ التعديل' : 'إضافة الملاحظة'
+                    editingNote ? t('noteModal.saveEdit') : t('noteModal.addNote')
                   )}
                 </button>
 

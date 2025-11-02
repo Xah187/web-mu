@@ -8,6 +8,7 @@ import { DndContext, closestCenter, PointerSensor, KeyboardSensor, useSensor, us
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Stage } from "@/hooks/useProjectDetails";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface ReorderStagesModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ interface ReorderStagesModalProps {
 
 export default function ReorderStagesModal({ isOpen, onClose, stages, onSaved }: ReorderStagesModalProps) {
   const { user } = useSelector((state: any) => state.user || {});
+  const { t, isRTL, dir } = useTranslation();
   const [saving, setSaving] = useState(false);
 
   // Prepare a reorderable list referencing the original items
@@ -76,12 +78,12 @@ export default function ReorderStagesModal({ isOpen, onClose, stages, onSaved }:
           },
         }
       );
-      Tostget("تم حفظ الترتيب");
+      Tostget(t('projectModals.reorderStages.success'));
       await onSaved();
       onClose();
     } catch (e) {
       console.error(e);
-      Tostget("فشل حفظ الترتيب");
+      Tostget(t('projectModals.reorderStages.error'));
 
     } finally {
       setSaving(false);
@@ -160,10 +162,12 @@ function SortableRow({ id, children }: { id: string; children: React.ReactNode }
               fontSize: '14px',
               fontFamily: 'var(--font-ibm-arabic-medium)',
               color: 'var(--theme-text-secondary)',
-              marginBottom: '8px'
+              marginBottom: '8px',
+              direction: dir as 'rtl' | 'ltr',
+              textAlign: isRTL ? 'right' : 'left'
             }}
           >
-            اسحب العناصر لتغيير الترتيب، ثم اضغط حفظ
+            {t('projectModals.reorderStages.description')}
           </p>
           <button
             onClick={onClose}
@@ -315,7 +319,7 @@ function SortableRow({ id, children }: { id: string; children: React.ReactNode }
               width: '45%'
             }}
           >
-            {saving ? "جارٍ الحفظ..." : "حفظ"}
+            {saving ? t('projectModals.reorderStages.saving') : t('projectModals.reorderStages.save')}
           </button>
           <button
             onClick={onClose}
@@ -330,7 +334,7 @@ function SortableRow({ id, children }: { id: string; children: React.ReactNode }
               width: '45%'
             }}
           >
-            إلغاء
+            {t('projectModals.reorderStages.cancel')}
           </button>
         </div>
 

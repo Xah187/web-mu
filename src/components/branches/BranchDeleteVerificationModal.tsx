@@ -7,6 +7,7 @@ import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import ButtonLong from '@/components/design/ButtonLong';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchDeleteVerificationModalProps {
   isOpen: boolean;
@@ -34,6 +35,7 @@ export default function BranchDeleteVerificationModal({
   branchName
 }: BranchDeleteVerificationModalProps) {
   const { size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [code, setCode] = useState(['', '', '', '']);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -90,7 +92,7 @@ export default function BranchDeleteVerificationModal({
     const verificationCode = code.join('');
 
     if (verificationCode.length !== 4) {
-      Tostget('يرجى إدخال رمز التحقق كاملاً');
+      Tostget(t('branchSettings.pleaseEnterCompleteCode'));
       return;
     }
 
@@ -99,7 +101,7 @@ export default function BranchDeleteVerificationModal({
       await onConfirm(verificationCode);
       onClose();
     } catch (error: any) {
-      Tostget(error.message || 'فشل في تأكيد الحذف', 'error');
+      Tostget(error.message || t('branchSettings.deleteConfirmationFailed'), 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -125,7 +127,8 @@ export default function BranchDeleteVerificationModal({
           border: '1px solid var(--theme-border)',
           borderRadius: `${scale(20)}px`,
           padding: `${scale(24)}px`,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          direction: dir as 'rtl' | 'ltr'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -156,47 +159,49 @@ export default function BranchDeleteVerificationModal({
             </svg>
           </div>
           
-          <h3 
+          <h3
             className="font-semibold text-gray-900 mb-2"
             style={{
               fontSize: `${verticalScale(18 + (size || 0))}px`,
-              fontFamily: fonts.IBMPlexSansArabicSemiBold
+              fontFamily: fonts.IBMPlexSansArabicSemiBold,
+              textAlign: isRTL ? 'center' : 'center'
             }}
           >
-            تأكيد حذف الفرع
+            {t('branchSettings.confirmDeleteBranch')}
           </h3>
-          
+
           <p
             className="text-gray-600 mb-4"
             style={{
               fontSize: `${verticalScale(14 + (size || 0))}px`,
-              lineHeight: 1.5
+              lineHeight: 1.5,
+              textAlign: isRTL ? 'center' : 'center'
             }}
           >
-            سيتم حذف فرع "{branchName}" وجميع المشاريع والبيانات المرتبطة به.
+            {t('branchSettings.branchWillBeDeleted')} "{branchName}" {t('branchSettings.andAllRelatedData')}
             <br />
-            <span className="text-red-600 font-semibold">هذا الإجراء لا يمكن التراجع عنه.</span>
+            <span className="text-red-600 font-semibold">{t('branchSettings.thisActionCannotBeUndone')}</span>
             <br />
             <br />
-            تم إرسال رمز التحقق إلى هاتفك
+            {t('branchSettings.verificationCodeSent')}
             <br />
-            يرجى إدخال الرمز لتأكيد الحذف
+            {t('branchSettings.enterCodeToConfirm')}
           </p>
         </div>
 
         {/* OTP Input */}
         <div className="mb-6">
-          <p 
+          <p
             className="text-center text-gray-700 mb-4"
             style={{
               fontSize: `${verticalScale(14 + (size || 0))}px`,
               color: colors.BLACK
             }}
           >
-            ادخل رمز التأكيد
+            {t('branchSettings.enterVerificationCode')}
           </p>
-          
-          <div className="flex justify-center space-x-3 rtl:space-x-reverse">
+
+          <div className={`flex justify-center ${isRTL ? 'space-x-reverse' : ''} space-x-3`}>
             {code.map((digit, index) => (
               <input
                 key={index}
@@ -225,7 +230,7 @@ export default function BranchDeleteVerificationModal({
         {/* Confirm Button */}
         <div style={{ marginTop: `${verticalScale(20)}px` }}>
           <ButtonLong
-            text={isSubmitting || loading ? 'جاري التحقق...' : 'تأكيد الحذف'}
+            text={isSubmitting || loading ? t('branchSettings.verifying') : t('branchSettings.confirmDelete')}
             Press={handleConfirm}
             disabled={isSubmitting || loading || code.join('').length !== 4}
             backgroundColor={colors.RED}
@@ -236,7 +241,7 @@ export default function BranchDeleteVerificationModal({
         {/* Cancel Button */}
         <div style={{ marginTop: `${scale(12)}px` }}>
           <ButtonLong
-            text="إلغاء"
+            text={t('common.cancel')}
             Press={onClose}
             disabled={isSubmitting || loading}
             backgroundColor={colors.HOME}

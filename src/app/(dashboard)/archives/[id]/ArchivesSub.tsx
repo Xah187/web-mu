@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import useArchivesFunction from '@/hooks/useArchivesFunction';
 import useValidityUser from '@/hooks/useValidityUser';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // مكونات مطابقة للتطبيق المحمول
 import CreateFolderChildrenModal from '@/components/archives/CreateFolderChildrenModal';
@@ -29,14 +30,15 @@ export default function ArchivesSub() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t, isRTL, dir } = useTranslation();
 
   const archiveId = parseInt(params.id as string);
   const idHome = parseInt(searchParams.get('idHome') || '0');
   const idSub = parseInt(searchParams.get('idSub') || archiveId.toString());
   const activationChildren = searchParams.get('activationChildren') || 'false';
   const projectId = parseInt(searchParams.get('projectId') || '0');
-  const projectName = searchParams.get('projectName') || 'المشروع';
-  const folderName = searchParams.get('folderName') || 'المجلد';
+  const projectName = searchParams.get('projectName') || t('archivesPage.title');
+  const folderName = searchParams.get('folderName') || t('archivesPage.folder');
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
@@ -90,7 +92,7 @@ export default function ArchivesSub() {
         }
       }
     } else {
-      Tostget('هذا المجلد خاص بالنظام لايمكنك إضافة ملفات فيه');
+      Tostget(t('archivesPage.systemFolderError'));
     }
   };
 
@@ -106,7 +108,7 @@ export default function ArchivesSub() {
       });
       setShowOperationModal(true);
     } else {
-      Tostget('هذا الملف خاص بالنظام لايمكنك تعديل او حذف اي من هذه الملفات');
+      Tostget(t('archivesPage.systemFileError'));
     }
   };
 
@@ -196,10 +198,10 @@ export default function ArchivesSub() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="الأرشيف"
+          title={t('archivesPage.title')}
           subtitle={folderName}
           backButton={
-            <button onClick={handleGoBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="رجوع">
+            <button onClick={handleGoBack} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label={t('archivesPage.backButton')}>
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
               </svg>
@@ -209,8 +211,9 @@ export default function ArchivesSub() {
             <button
               onClick={handleCreateFile}
               className="inline-flex items-center gap-0 text-blue-600 hover:underline font-ibm-arabic-medium bg-transparent p-0"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
-              إنشاء
+              {t('archivesPage.createButton')}
             </button>
           }
         />
@@ -255,8 +258,11 @@ export default function ArchivesSub() {
                       {item.namefile || item.name}
                     </h3>
                     <div className="flex items-center space-x-2 rtl:space-x-reverse mt-1">
-                      <p className="text-xs text-gray-500">
-                        {item.type === 'folder' ? 'مجلد' : item.type}
+                      <p
+                        className="text-xs text-gray-500"
+                        style={{ direction: dir as 'rtl' | 'ltr' }}
+                      >
+                        {item.type === 'folder' ? t('archivesPage.folder') : item.type}
                       </p>
                       {item.size > 0 && (
                         <>
@@ -289,13 +295,19 @@ export default function ArchivesSub() {
                 <polyline points="14,2 14,8 20,8"/>
               </svg>
             </div>
-            <p className="text-gray-500 font-ibm-arabic-medium mb-4">لا توجد ملفات في هذا المجلد</p>
+            <p
+              className="text-gray-500 font-ibm-arabic-medium mb-4"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
+              {t('archivesPage.noFilesMessage')}
+            </p>
             {activationChildren === 'true' && (
               <button
                 onClick={handleCreateFile}
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
-                إضافة ملف أو مجلد
+                {t('archivesPage.addFileOrFolder')}
               </button>
             )}
           </div>
@@ -365,7 +377,12 @@ export default function ArchivesSub() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center space-x-4 rtl:space-x-reverse">
             <div className="w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-            <span className="font-ibm-arabic-medium text-gray-700">جاري الرفع...</span>
+            <span
+              className="font-ibm-arabic-medium text-gray-700"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
+              {t('archivesPage.uploading')}
+            </span>
           </div>
         </div>
       )}

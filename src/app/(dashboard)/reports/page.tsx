@@ -13,6 +13,7 @@ import { Tostget } from '@/components/ui/Toast';
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import { useAppSelector } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * Reports Page - Matching Mobile App
@@ -21,6 +22,7 @@ import { useAppSelector } from '@/store';
  * Mobile App Reference: Src/Screens/Reports.tsx
  */
 export default function ReportsPage() {
+  const { t, isRTL } = useTranslation();
   const userState = useAppSelector((state) => state.user);
   const _user = userState?.user; // Extract the actual user object
 
@@ -71,7 +73,7 @@ export default function ReportsPage() {
     switch (type) {
       case 5: // Statistical Report - Display in page (like mobile app case 5)
         // This is already handled by selectProject, just show success message
-        Tostget('تم تحميل التقرير الإحصائي');
+        Tostget(t('reports.statisticalReportLoaded'));
         break;
       case 1: // Requests Report - Part
         fileUrl = await generateRequestsReport(selectedProject.id, 'part');
@@ -86,7 +88,7 @@ export default function ReportsPage() {
         fileUrl = await generateTimelineReport(selectedProject.id);
         break;
       default:
-        Tostget('نوع تقرير غير معروف');
+        Tostget(t('reports.unknownReportType'));
         return;
     }
 
@@ -94,7 +96,7 @@ export default function ReportsPage() {
       // Open the file in a new tab
       const baseUrl = process.env.NEXT_PUBLIC_FILE_URL || 'https://mushrf.net';
       window.open(`${baseUrl}/${fileUrl}`, '_blank');
-      Tostget('تم إنشاء التقرير بنجاح');
+      Tostget(t('reports.reportGenerated'));
     }
   };
 
@@ -123,7 +125,7 @@ export default function ReportsPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="التقارير"
+          title={t('reports.title')}
           actions={
             reportData ? (
               <button
@@ -173,7 +175,7 @@ export default function ReportsPage() {
                   borderColor: 'rgba(27, 78, 209, 0.2)',
                   backgroundColor: colors.WHITE
                 }}
-                title="تحديث الفروع"
+                title={t('reports.updateBranches')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polyline points="23 4 23 10 17 10"></polyline>
@@ -220,7 +222,7 @@ export default function ReportsPage() {
                       }}
                       dir="rtl"
                     >
-                      جاري تحميل جميع المشاريع...
+                      {t('reports.loadingProjects')}
                     </span>
                   </div>
                 </div>
@@ -240,7 +242,7 @@ export default function ReportsPage() {
                       }}
                       dir="rtl"
                     >
-                      المشاريع ({projects.length})
+                      {t('reports.projects')} ({projects.length})
                     </span>
                   </div>
                   <div className="max-h-40 overflow-y-auto">
@@ -301,7 +303,7 @@ export default function ReportsPage() {
                   }}
                   dir="rtl"
                 >
-                  نوع التقرير
+                  {t('reports.reportType')}
                 </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                   {/* Report 1: Requests Report (تقرير طلبيات) */}
@@ -329,7 +331,7 @@ export default function ReportsPage() {
                         }}
                         dir="rtl"
                       >
-                        تقرير طلبيات
+                        {t('reports.requestsReport')}
                       </span>
                     </div>
                   </button>
@@ -358,7 +360,7 @@ export default function ReportsPage() {
                         }}
                         dir="rtl"
                       >
-                        تقرير ماليه شامل
+                        {t('reports.financialReport')}
                       </span>
                     </div>
                   </button>
@@ -387,7 +389,7 @@ export default function ReportsPage() {
                         }}
                         dir="rtl"
                       >
-                        تقرير مصروفات
+                        {t('reports.expensesReport')}
                       </span>
                     </div>
                   </button>
@@ -447,7 +449,7 @@ export default function ReportsPage() {
                         }}
                         dir="rtl"
                       >
-                        تقرير احصائي للمشروع
+                        {t('reports.statisticalReport')}
                       </span>
                     </div>
                   </button>
@@ -465,7 +467,7 @@ export default function ReportsPage() {
                       }}
                       dir="rtl"
                     >
-                      جاري إنشاء التقرير...
+                      {t('reports.generatingReport')}
                     </span>
                   </div>
                 )}
@@ -484,7 +486,7 @@ export default function ReportsPage() {
                   fontSize: verticalScale(14)
                 }}
               >
-                جاري تحميل التقرير...
+                {t('reports.loadingReport')}
               </span>
             </div>
           )}
@@ -509,7 +511,7 @@ export default function ReportsPage() {
               }}
               dir="rtl"
             >
-              اختر اسم المشروع لإظهار التقرير الخاص به
+              {t('reports.selectProject')}
             </p>
             <div 
               className="w-32 h-px bg-gray-200 mt-4"
@@ -544,7 +546,7 @@ export default function ReportsPage() {
                   }}
                   dir="rtl"
                 >
-                  تقرير المشروع
+                  {t('reports.projectReport')}
                 </h1>
               </div>
             </div>

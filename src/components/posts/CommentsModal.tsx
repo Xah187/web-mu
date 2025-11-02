@@ -6,6 +6,7 @@ import { useAppSelector } from '@/store';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface Comment {
   CommentID: number;
@@ -35,6 +36,7 @@ export default function CommentsModal({
   currentCommentCount,
   onCommentAdded
 }: CommentsModalProps) {
+  const { t, isRTL } = useTranslation();
   const { user } = useAppSelector((state: any) => state.user);
   const [comments, setComments] = useState<Comment[]>([]);
   const [newComment, setNewComment] = useState('');
@@ -118,7 +120,7 @@ export default function CommentsModal({
       }
     } catch (error) {
       console.error('Error fetching comments:', error);
-      Tostget('خطأ في تحميل التعليقات');
+      Tostget(t('publications.commentsModal.errorLoading'));
     } finally {
       setLoading(false);
     }
@@ -127,7 +129,7 @@ export default function CommentsModal({
   // Add comment - مطابق لآلية التطبيق المحمول
   const handleAddComment = async () => {
     if (!newComment.trim()) {
-      Tostget('يرجى كتابة تعليق');
+      Tostget(t('publications.commentsModal.pleaseWriteComment'));
       return;
     }
 
@@ -166,11 +168,11 @@ export default function CommentsModal({
         // تحديث التعليقات من الخادم
         await fetchComments();
         onCommentAdded(); // تحديث عدد التعليقات في المنشور
-        Tostget('تم إضافة التعليق بنجاح');
+        Tostget(t('publications.commentsModal.commentAdded'));
       }
     } catch (error) {
       console.error('Error adding comment:', error);
-      Tostget('خطأ في إضافة التعليق');
+      Tostget(t('publications.commentsModal.commentError'));
       // إزالة التعليق المؤقت في حالة الخطأ
       setComments(prev => prev.filter(c => c.CommentID !== 0));
       setNewComment(newComment); // إعادة النص
@@ -231,7 +233,7 @@ export default function CommentsModal({
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <div className="flex items-center space-x-2 rtl:space-x-reverse">
-            <h2 className="text-xl font-ibm-arabic-bold text-gray-900">التعليقات</h2>
+            <h2 className="text-xl font-ibm-arabic-bold text-gray-900">{t('publications.commentsModal.title')}</h2>
             <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
               {comments.length}
             </span>
@@ -260,8 +262,8 @@ export default function CommentsModal({
                   <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-ibm-arabic-semibold text-gray-900 mb-2">لا توجد تعليقات بعد</h3>
-              <p className="text-gray-600">كن أول من يعلق على هذا المنشور</p>
+              <h3 className="text-lg font-ibm-arabic-semibold text-gray-900 mb-2">{t('publications.commentsModal.noComments')}</h3>
+              <p className="text-gray-600">{t('publications.commentsModal.noCommentsMessage')}</p>
             </div>
           ) : (
             comments.map((comment) => (
@@ -301,7 +303,7 @@ export default function CommentsModal({
                       {formatDate(comment.CommentDate || comment.Date || '')}
                     </span>
                     {comment.CommentID === 0 && (
-                      <span className="text-xs text-blue-500">جاري الإرسال...</span>
+                      <span className="text-xs text-blue-500">{t('publications.commentsModal.sending')}</span>
                     )}
                   </div>
                 </div>
@@ -326,7 +328,7 @@ export default function CommentsModal({
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="اكتب تعليقك..."
+                  placeholder={t('publications.commentsModal.writeComment')}
                   className="flex-1 px-4 py-3 border border-gray-200 rounded-2xl resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-ibm-arabic-regular"
                   rows={2}
                   disabled={submitting}
@@ -344,7 +346,7 @@ export default function CommentsModal({
                         <line x1="22" y1="2" x2="11" y2="13"/>
                         <polygon points="22,2 15,22 11,13 2,9 22,2"/>
                       </svg>
-                      <span>إرسال</span>
+                      <span>{t('publications.commentsModal.send')}</span>
                     </>
                   )}
                 </button>

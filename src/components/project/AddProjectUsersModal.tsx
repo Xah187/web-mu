@@ -6,11 +6,13 @@ import axiosInstance from "@/lib/api/axios";
 import { Tostget } from "@/components/ui/Toast";
 import PermissionList from "@/components/Permissions/PermissionList";
 import { PermissionType } from "@/types/permissions";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface AddProjectUsersModalProps {
   isOpen: boolean;
   onClose: () => void;
   projectId: number;
+  branchId?: number; // إضافة branchId - مطابق للتطبيق المحمول
   onSaved: () => Promise<void> | void;
 }
 
@@ -19,19 +21,25 @@ interface CompanyMember {
   userName: string;
   PhoneNumber: string;
   image?: string;
+  is_in_ProjectID?: string; // "true" or "false" - مطابق للتطبيق المحمول
+  original_is_in?: string; // القيمة الأصلية
 }
 
-export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSaved }: AddProjectUsersModalProps) {
+export default function AddProjectUsersModal({ isOpen, onClose, projectId, branchId, onSaved }: AddProjectUsersModalProps) {
   const { user } = useSelector((state: any) => state.user || {});
+  const { t, isRTL, dir } = useTranslation();
   const [loading, setLoading] = useState(false);
   const [members, setMembers] = useState<CompanyMember[]>([]);
-  const [selected, setSelected] = useState<number[]>([]);
   const [search, setSearch] = useState("");
   const [lastId, setLastId] = useState<number | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
   const [permModalOpen, setPermModalOpen] = useState(false);
   const [selectedPerms, setSelectedPerms] = useState<PermissionType[]>([]);
+
+  // حالة التغييرات - مطابق للتطبيق المحمول PageUsers.tsx
+  const [checkGloblenew, setCheckGloblenew] = useState<Record<number, { id: number; Validity: string[] }>>({});
+  const [checkGlobledelete, setCheckGlobledelete] = useState<Record<number, number>>({});
 
   useEffect(() => {
     if (isOpen) {
@@ -62,18 +70,65 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
         setHasMore(true);
       }
       const number = reset ? 0 : (lastId || 0);
-      const res = await axiosInstance.get(`/user/BringUserCompany?IDCompany=${user?.data?.IDCompany}&number=${number}&kind_request=all`, {
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${user?.accessToken}` }
+
+      console.log('🔍 Fetching members for project:', projectId, 'branch:', branchId);
+
+      // مطابق للتطبيق المحمول PageUsers.tsx السطر 134-138:
+      // عندما type = رقم المشروع و scope = 'select' (أي نريد إضافة أعضاء)
+      // يجب استخدام targetScope = 'none' لعرض أعضاء الفرع فقط (وليس أعضاء المشروع)
+      // هذا يسمح بإضافة أعضاء من الفرع إلى المشروع
+      const res = await axiosInstance.get(
+        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId || user?.data?.IDCompanyBransh}&type=${projectId}&number=${number}&kind_request=all&selectuser=none`,
+        {
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${user?.accessToken}` }
+        }
+      );
+
+      console.log('📊 Members API response:', res.data);
+      console.log('📊 Response structure:', {
+        hasData: !!res.data,
+        dataType: Array.isArray(res.data) ? 'array' : typeof res.data,
+        dataLength: Array.isArray(res.data) ? res.data.length : res.data?.data?.length,
+        firstItem: Array.isArray(res.data) ? res.data[0] : res.data?.data?.[0]
       });
-      if (res.status === 200) {
-        const list: CompanyMember[] = res.data?.data || [];
-        setMembers(prev => reset ? list : [...prev, ...list]);
-        if (list.length > 0) setLastId(list[list.length - 1].id);
-        setHasMore(list.length > 0);
+
+      // معالجة الاستجابة - مطابق للتطبيق المحمول normalizeApiResult
+      // الاستجابة قد تكون: { data: [...] } أو [...] مباشرة
+      let list: CompanyMember[] = [];
+      if (Array.isArray(res.data)) {
+        list = res.data;
+      } else if (res.data?.data && Array.isArray(res.data.data)) {
+        list = res.data.data;
       }
+
+      console.log('📋 Normalized list:', {
+        length: list.length,
+        firstItem: list[0]
+      });
+
+      // إضافة original_is_in لكل عضو - مطابق للتطبيق المحمول
+      const membersWithOriginal = list.map((member: any) => ({
+        ...member,
+        original_is_in: member.is_in_ProjectID || 'false'
+      }));
+
+      console.log('✅ Members with original_is_in:', membersWithOriginal.slice(0, 2));
+
+      if (reset) {
+        setMembers(membersWithOriginal);
+      } else {
+        setMembers(prev => {
+          const existingIds = new Set(prev.map(m => m.id));
+          const newMembers = membersWithOriginal.filter((m: CompanyMember) => !existingIds.has(m.id));
+          return [...prev, ...newMembers];
+        });
+      }
+
+      if (list.length > 0) setLastId(list[list.length - 1].id);
+      setHasMore(list.length >= 10);
     } catch (e) {
       console.error(e);
-      Tostget("خطأ في جلب المستخدمين");
+      Tostget(t('projectModals.addUsers.error'));
     } finally {
       setLoading(false);
     }
@@ -85,43 +140,149 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
     return members.filter(m => m.userName?.includes(s) || m.PhoneNumber?.includes(s));
   }, [search, members]);
 
-  const toggle = (id: number) => {
-    setSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  // تبديل حالة العضو في المشروع - مطابق للتطبيق المحمول handleGlobalChoice
+  const toggle = (memberId: number) => {
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+
+    const currentValue = member.is_in_ProjectID || 'false';
+    const newValue = currentValue === 'true' ? 'false' : 'true';
+    const original = member.original_is_in || 'false';
+
+    console.log('🔄 تغيير حالة العضو:', {
+      memberId,
+      memberName: member.userName,
+      original,
+      currentValue,
+      newValue
+    });
+
+    // تحديث حالة العضو في القائمة
+    const updatedMembers = members.map(m =>
+      m.id === memberId ? { ...m, is_in_ProjectID: newValue } : m
+    );
+    setMembers(updatedMembers);
+
+    // بناء القوائم الجديدة - مطابق للتطبيق المحمول
+    const nextNew = { ...checkGloblenew };
+    const nextDel = { ...checkGlobledelete };
+
+    if (newValue !== original) {
+      if (newValue === 'true') {
+        // إضافة عضو جديد للمشروع
+        nextNew[memberId] = { id: memberId, Validity: selectedPerms };
+        delete nextDel[memberId];
+        console.log('➕ إضافة عضو جديد للمشروع:', memberId);
+      } else {
+        // إزالة عضو من المشروع
+        delete nextNew[memberId];
+        if (original === 'true') {
+          nextDel[memberId] = memberId;
+          console.log('➖ إزالة عضو موجود من المشروع:', memberId);
+        } else {
+          delete nextDel[memberId];
+          console.log('🔙 إلغاء إضافة عضو للمشروع:', memberId);
+        }
+      }
+    } else {
+      // العودة للحالة الأصلية
+      delete nextNew[memberId];
+      delete nextDel[memberId];
+      console.log('↩️ العودة للحالة الأصلية:', memberId);
+    }
+
+    console.log('📊 القوائم المحدثة:', {
+      checkGloblenew: nextNew,
+      checkGlobledelete: nextDel
+    });
+
+    setCheckGloblenew(nextNew);
+    setCheckGlobledelete(nextDel);
   };
 
   const submit = async () => {
     try {
-      if (selected.length === 0) {
-        Tostget("يرجى اختيار مستخدم واحد على الأقل");
+      console.log('💾 حفظ التغييرات للمشروع:', {
+        projectId,
+        branchId,
+        newMembers: checkGloblenew,
+        deletedMembers: checkGlobledelete
+      });
+
+      // التحقق من وجود تغييرات
+      const hasNewMembers = Object.keys(checkGloblenew).length > 0;
+      const hasDeletedMembers = Object.keys(checkGlobledelete).length > 0;
+
+      if (!hasNewMembers && !hasDeletedMembers) {
+        Tostget('لم يتم إجراء أي تغييرات');
         return;
       }
-      if (selectedPerms.length === 0) {
-        Tostget("يرجى اختيار صلاحية واحدة على الأقل");
+
+      // التحقق من الصلاحيات للأعضاء الجدد فقط
+      if (hasNewMembers && selectedPerms.length === 0) {
+        Tostget("يرجى اختيار صلاحية واحدة على الأقل للأعضاء الجدد");
         setPermModalOpen(true);
         return;
       }
+
       setLoading(true);
-      // استخدم InsertmultipleProjecsinvalidity كما في التطبيق
-      const phoneNumbers = members.filter(m => selected.includes(m.id)).map(m => m.PhoneNumber);
-      if (phoneNumbers.length === 0) {
-        Tostget("لم يتم العثور على أرقام هواتف للمستخدمين المحددين");
-        return;
+
+      // تحديث الصلاحيات في checkGloblenew
+      const updatedCheckGloblenew = { ...checkGloblenew };
+      Object.keys(updatedCheckGloblenew).forEach(id => {
+        updatedCheckGloblenew[parseInt(id)].Validity = selectedPerms;
+      });
+
+      // إرسال طلب واحد مع كل التغييرات - مطابق للتطبيق المحمول
+      const requestData = {
+        idBrinsh: branchId || user?.data?.IDCompanyBransh,
+        type: projectId,
+        checkGloblenew: updatedCheckGloblenew,
+        checkGlobleold: checkGlobledelete,
+        kind: 'user'
+      };
+
+      console.log('📤 إرسال الطلب:', requestData);
+
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', requestData, {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${user?.accessToken}`
+        }
+      });
+
+      console.log('📊 API Response:', {
+        status: response.status,
+        data: response.data
+      });
+
+      // التحقق من النجاح - مطابق للباك اند
+      if (response.data?.success === true || response.data?.message === 'successfuly' || response.status === 200) {
+        const addedCount = Object.keys(updatedCheckGloblenew).length;
+        const removedCount = Object.keys(checkGlobledelete).length;
+
+        if (addedCount > 0 && removedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} وحذف ${removedCount} من أعضاء المشروع`);
+        } else if (addedCount > 0) {
+          Tostget(`تم إضافة ${addedCount} عضو للمشروع`);
+        } else if (removedCount > 0) {
+          Tostget(`تم حذف ${removedCount} عضو من المشروع`);
+        }
+
+        // إعادة تعيين الحالة
+        setCheckGloblenew({});
+        setCheckGlobledelete({});
+        setSelectedPerms([]);
+
+        await onSaved();
+        onClose();
+      } else {
+        Tostget(response.data?.message || 'فشل في حفظ التغييرات');
       }
-      // إرسال لكل رقم هاتف كما يفعل التطبيق بإضافة مشاريع متعددة لمستخدم واحد، هنا مستخدمين متعددين لنفس المشروع
-      for (const phone of phoneNumbers) {
-        await axiosInstance.put('/user/InsertmultipleProjecsinvalidity', {
-          ProjectesNew: [projectId],
-          Validitynew: selectedPerms,
-          idBrinsh: user?.data?.IDCompanyBransh,
-          PhoneNumber: phone
-        }, { headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${user?.accessToken}` } });
-      }
-      Tostget("تمت إضافة المستخدمين للمشروع");
-      await onSaved();
-      onClose();
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      Tostget("فشل إضافة المستخدمين");
+      const errorMessage = e.response?.data?.message || e.message || t('projectModals.addUsers.error');
+      Tostget(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -173,10 +334,12 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
                 fontSize: '18px',
                 fontFamily: 'var(--font-ibm-arabic-bold)',
                 color: 'var(--theme-text-primary)',
-                lineHeight: 1.4
+                lineHeight: 1.4,
+                direction: dir as 'rtl' | 'ltr',
+                textAlign: isRTL ? 'right' : 'left'
               }}
             >
-              إضافة مستخدمين للمشروع
+              {t('projectModals.addUsers.title')}
             </h3>
           </div>
           <button
@@ -208,9 +371,12 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
                 border: '1px solid var(--theme-border)',
                 color: 'var(--theme-text-primary)',
                 fontSize: '16px',
-                fontFamily: 'var(--font-ibm-arabic-medium)'
+                fontFamily: 'var(--font-ibm-arabic-medium)',
+                direction: dir as 'rtl' | 'ltr',
+                textAlign: isRTL ? 'right' : 'left'
               }}
-              placeholder="ابحث بالاسم أو الرقم"
+              placeholder={t('projectModals.addUsers.search')}
+              dir={dir as 'rtl' | 'ltr'}
             />
             <button
               onClick={()=>fetchMembers(true)}
@@ -236,50 +402,68 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
               marginBottom: '16px'
             }}
           >
-            {filtered.map(m => (
-              <label
-                key={m.id}
-                className="flex items-center justify-between transition-all duration-200 hover:scale-[1.01]"
-                style={{
-                  padding: '12px 16px',
-                  borderBottom: '1px solid var(--theme-border)',
-                  cursor: 'pointer'
-                }}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={selected.includes(m.id)}
-                    onChange={()=>toggle(m.id)}
-                    className="w-4 h-4 rounded"
-                    style={{
-                      accentColor: 'var(--theme-primary)'
-                    }}
-                  />
-                  <div>
-                    <div
+            {filtered.map(m => {
+              const isInProject = m.is_in_ProjectID === 'true';
+              return (
+                <label
+                  key={m.id}
+                  className="flex items-center justify-between transition-all duration-200 hover:scale-[1.01]"
+                  style={{
+                    padding: '12px 16px',
+                    borderBottom: '1px solid var(--theme-border)',
+                    cursor: 'pointer',
+                    backgroundColor: isInProject ? 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.05))' : 'transparent'
+                  }}
+                >
+                  <div className="flex items-center gap-3 flex-1">
+                    <input
+                      type="checkbox"
+                      checked={isInProject}
+                      onChange={()=>toggle(m.id)}
+                      className="w-4 h-4 rounded"
                       style={{
-                        fontSize: '14px',
-                        fontFamily: 'var(--font-ibm-arabic-semibold)',
-                        color: 'var(--theme-text-primary)',
-                        marginBottom: '4px'
+                        accentColor: 'var(--theme-primary)'
                       }}
-                    >
-                      {m.userName}
+                    />
+                    <div className="flex-1">
+                      <div
+                        style={{
+                          fontSize: '14px',
+                          fontFamily: 'var(--font-ibm-arabic-semibold)',
+                          color: 'var(--theme-text-primary)',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        {m.userName}
+                      </div>
+                      <div
+                        style={{
+                          fontSize: '12px',
+                          fontFamily: 'var(--font-ibm-arabic-regular)',
+                          color: 'var(--theme-text-secondary)'
+                        }}
+                      >
+                        {m.PhoneNumber}
+                      </div>
                     </div>
-                    <div
-                      style={{
-                        fontSize: '12px',
-                        fontFamily: 'var(--font-ibm-arabic-regular)',
-                        color: 'var(--theme-text-secondary)'
-                      }}
-                    >
-                      {m.PhoneNumber}
-                    </div>
+                    {isInProject && (
+                      <div
+                        style={{
+                          fontSize: '11px',
+                          fontFamily: 'var(--font-ibm-arabic-medium)',
+                          color: 'var(--theme-primary)',
+                          backgroundColor: 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))',
+                          padding: '4px 8px',
+                          borderRadius: '8px'
+                        }}
+                      >
+                        في المشروع
+                      </div>
+                    )}
                   </div>
-                </div>
-              </label>
-            ))}
+                </label>
+              );
+            })}
             {hasMore && (
               <div className="p-3 text-center">
                 <button
@@ -301,22 +485,58 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
             )}
           </div>
 
-          <div style={{ marginTop: '16px', marginBottom: '24px' }}>
-            <button
-              onClick={()=>setPermModalOpen(true)}
-              className="rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+          {/* عرض عدد التغييرات */}
+          <div style={{ marginTop: '16px', marginBottom: '16px' }}>
+            <div
               style={{
-                padding: '12px 20px',
-                backgroundColor: 'var(--theme-primary)',
-                color: 'white',
-                fontSize: '16px',
-                fontFamily: 'var(--font-ibm-arabic-semibold)',
-                border: 'none'
+                padding: '12px 16px',
+                backgroundColor: 'var(--theme-surface-secondary)',
+                border: '1px solid var(--theme-border)',
+                borderRadius: '12px',
+                fontSize: '14px',
+                fontFamily: 'var(--font-ibm-arabic-medium)',
+                color: 'var(--theme-text-primary)',
+                direction: dir as 'rtl' | 'ltr',
+                textAlign: isRTL ? 'right' : 'left'
               }}
             >
-              اختيار الصلاحيات ({selectedPerms.length})
-            </button>
+              {Object.keys(checkGloblenew).length > 0 && (
+                <div style={{ color: 'var(--theme-success)', marginBottom: '4px' }}>
+                  ✓ سيتم إضافة {Object.keys(checkGloblenew).length} عضو
+                </div>
+              )}
+              {Object.keys(checkGlobledelete).length > 0 && (
+                <div style={{ color: 'var(--theme-error)' }}>
+                  ✗ سيتم حذف {Object.keys(checkGlobledelete).length} عضو
+                </div>
+              )}
+              {Object.keys(checkGloblenew).length === 0 && Object.keys(checkGlobledelete).length === 0 && (
+                <div style={{ color: 'var(--theme-text-secondary)' }}>
+                  لم يتم إجراء أي تغييرات
+                </div>
+              )}
+            </div>
           </div>
+
+          {/* زر اختيار الصلاحيات - يظهر فقط إذا كان هناك أعضاء جدد */}
+          {Object.keys(checkGloblenew).length > 0 && (
+            <div style={{ marginBottom: '16px' }}>
+              <button
+                onClick={()=>setPermModalOpen(true)}
+                className="rounded-xl transition-all duration-200 hover:scale-[1.02] hover:shadow-md"
+                style={{
+                  padding: '12px 20px',
+                  backgroundColor: 'var(--theme-primary)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontFamily: 'var(--font-ibm-arabic-semibold)',
+                  border: 'none'
+                }}
+              >
+                اختيار الصلاحيات ({selectedPerms.length})
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Footer */}
@@ -348,7 +568,7 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
               width: '45%'
             }}
           >
-            {loading ? 'جارٍ الحفظ...' : 'حفظ'}
+            {loading ? t('projectModals.addUsers.adding') : t('projectModals.addUsers.add')}
           </button>
           <button
             onClick={onClose}
@@ -363,7 +583,7 @@ export default function AddProjectUsersModal({ isOpen, onClose, projectId, onSav
               width: '45%'
             }}
           >
-            إلغاء
+            {t('projectModals.addUsers.cancel')}
           </button>
         </div>
 

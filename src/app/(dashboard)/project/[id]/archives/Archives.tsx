@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 import useArchivesFunction from '@/hooks/useArchivesFunction';
 import useValidityUser from '@/hooks/useValidityUser';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // مكونات مطابقة للتطبيق المحمول
 import CreateFolderModal from '@/components/archives/CreateFolderModal';
@@ -33,6 +34,7 @@ export default function Archives() {
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
 
   const {
     arrafolder,
@@ -85,7 +87,7 @@ export default function Archives() {
       });
       setShowOperationModal(true);
     } else {
-      Tostget('الملفات الرئيسية لايمكن تعديلها او حذفها');
+      Tostget(t('archives.cannotEditSystemFiles'));
     }
   };
 
@@ -104,30 +106,31 @@ export default function Archives() {
     <ResponsiveLayout>
 
       <PageHeader
-        title="الأرشيف"
+        title={t('archives.title')}
         subtitle={projectName}
         backButton={
-          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label="رجوع">
+          <button onClick={() => router.back()} className="p-2 rounded-lg hover:bg-gray-100 transition-colors" aria-label={t('archives.back')} style={{ direction: dir as 'rtl' | 'ltr' }}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
           </button>
         }
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2" style={{ direction: dir as 'rtl' | 'ltr' }}>
             {tilte.length > 0 && (
               <button
                 onClick={() => setTitle('')}
                 className="bg-white text-gray-700 px-3 py-1.5 rounded-lg border hover:bg-gray-50 transition-colors font-ibm-arabic-medium"
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
-                إلغاء فلتر
+                {t('archives.clearFilter')}
               </button>
             )}
             <button
               onClick={() => setShowFilterModal(true)}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
-              title="فلترة"
-              aria-label="فلترة"
+              title={t('archives.filter')}
+              aria-label={t('archives.filter')}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <polygon points="22,3 2,3 10,12.46 10,19 14,21 14,12.46"/>
@@ -137,8 +140,8 @@ export default function Archives() {
               onClick={handleRefresh}
               disabled={refreshing}
               className="p-2 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
-              title="تحديث"
-              aria-label="تحديث"
+              title={t('archives.refresh')}
+              aria-label={t('archives.refresh')}
             >
               <svg
                 width="18"
@@ -157,8 +160,9 @@ export default function Archives() {
             <button
               onClick={handleCreateFolder}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+              style={{ direction: dir as 'rtl' | 'ltr' }}
             >
-              إنشاء
+              {t('archives.create')}
             </button>
           </div>
         }
@@ -203,11 +207,11 @@ export default function Archives() {
                     </svg>
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="text-sm font-ibm-arabic-semibold text-gray-900 truncate">
+                    <h3 className="text-sm font-ibm-arabic-semibold text-gray-900 truncate" style={{ textAlign: isRTL ? 'right' : 'left' }}>
                       {folder.FolderName}
                     </h3>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {folder.ActivationHome === 'true' ? 'قابل للتعديل' : 'ملف نظام'}
+                    <p className="text-xs text-gray-500 mt-1" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                      {folder.ActivationHome === 'true' ? t('archives.editable') : t('archives.systemFile')}
                     </p>
                   </div>
                   <div className="flex-shrink-0">
@@ -229,8 +233,8 @@ export default function Archives() {
                 <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
               </svg>
             </div>
-            <p className="text-gray-500 font-ibm-arabic-medium mb-4">
-              {tilte.length > 0 ? 'لا توجد مجلدات تطابق البحث' : 'لا توجد مجلدات في الأرشيف'}
+            <p className="text-gray-500 font-ibm-arabic-medium mb-4" style={{ textAlign: 'center' }}>
+              {tilte.length > 0 ? t('archives.noMatchingFolders') : t('archives.noFolders')}
             </p>
             {tilte.length === 0 && (
               <button
@@ -238,8 +242,9 @@ export default function Archives() {
 
 
                 className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors font-ibm-arabic-medium"
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
-                إنشاء مجلد جديد
+                {t('archives.createFolder')}
               </button>
             )}
           </div>

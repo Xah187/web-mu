@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 import { store } from '@/store';
 import socketService from '@/lib/socket/socketService';
 import { ToastContainer } from '@/components/ui/Toast';
+import LanguageProvider from './LanguageProvider';
 
 interface AppProviderProps {
   children: React.ReactNode;
@@ -23,8 +24,10 @@ export default function AppProvider({ children }: AppProviderProps) {
 
   return (
     <Provider store={store}>
-      {children}
-      <ToastContainer />
+      <LanguageProvider>
+        {children}
+        <ToastContainer />
+      </LanguageProvider>
     </Provider>
   );
 }

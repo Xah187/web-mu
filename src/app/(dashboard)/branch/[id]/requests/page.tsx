@@ -9,6 +9,7 @@ import UserProfileModal from '@/components/user/UserProfileModal';
 import useValidityUser from '@/hooks/useValidityUser';
 import { EmployeeOnly } from '@/components/auth/PermissionGuard';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Types
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
@@ -33,21 +34,22 @@ interface RequestsData {
   arrayClosed: Request[];
 }
 
-// Request Types - matching mobile app exactly
-const REQUEST_TYPES = [
-  'مواد خفيفة',
-  'مواد ثقيلة',
-  'كهربائي',
-  'سباك',
-  'حداد'
-];
-
 export default function BranchRequestsPage() {
   const router = useRouter();
   const params = useParams();
   const branchId = params.id as string;
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
+
+  // Request Types - matching mobile app exactly
+  const REQUEST_TYPES = [
+    { key: 'light', value: 'مواد خفيفة', name: t('requests.lightMaterials'), icon: '📦', color: 'bg-blue-500' },
+    { key: 'heavy', value: 'مواد ثقيلة', name: t('requests.heavyMaterials'), icon: '🏗️', color: 'bg-orange-500' },
+    { key: 'electrical', value: 'كهربائي', name: t('requests.electrical'), icon: '⚡', color: 'bg-yellow-500' },
+    { key: 'plumber', value: 'سباك', name: t('requests.plumber'), icon: '🔧', color: 'bg-green-500' },
+    { key: 'blacksmith', value: 'حداد', name: t('requests.blacksmith'), icon: '🔨', color: 'bg-gray-500' }
+  ];
 
   const [requestsData, setRequestsData] = useState<RequestsData>({
     arrayOpen: [],
@@ -64,7 +66,6 @@ export default function BranchRequestsPage() {
     projectId: 0
   });
   const [projects, setProjects] = useState<any[]>([]);
-  const [notificationCount, setNotificationCount] = useState(0);
   const [exportingPDF, setExportingPDF] = useState(false);
 
   useEffect(() => {
@@ -218,7 +219,7 @@ export default function BranchRequestsPage() {
 
 
       {/* Content */}
-      <div className="px-6 py-4">
+      <div className="px-6 py-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Action Buttons - Matching mobile app */}
         <div className="mb-6 flex flex-wrap gap-4 items-center">
           {/* Create Request Button - Show for employees only like mobile app */}
@@ -227,7 +228,7 @@ export default function BranchRequestsPage() {
               onClick={() => setShowCreateModal(true)}
               className="bg-blue-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
             >
-              اضافة طلب
+              {t('requests.addRequest')}
             </button>
           </EmployeeOnly>
 
@@ -236,7 +237,7 @@ export default function BranchRequestsPage() {
             onClick={exportBranchRequestsPDF}
             disabled={exportingPDF}
             className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-green-700 transition-colors shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-            title="تصدير PDF"
+            title={t('requests.exportPDF')}
           >
             {exportingPDF ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -249,7 +250,7 @@ export default function BranchRequestsPage() {
                 <polyline points="10 9 9 9 8 9"/>
               </svg>
             )}
-            تصدير PDF
+            {t('requests.exportPDF')}
           </button>
         </div>
 
@@ -258,15 +259,15 @@ export default function BranchRequestsPage() {
           <div className="flex flex-wrap gap-2">
             {REQUEST_TYPES.map((type) => (
               <button
-                key={type}
-                onClick={() => setSelectedType(type)}
+                key={type.key}
+                onClick={() => setSelectedType(type.value)}
                 className={`px-4 py-2 rounded-lg font-ibm-arabic-medium transition-colors ${
-                  selectedType === type
+                  selectedType === type.value
                     ? 'bg-blue-600 text-white'
                     : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
                 }`}
               >
-                {type}
+                {type.icon} {type.name}
               </button>
             ))}
           </div>
@@ -283,7 +284,7 @@ export default function BranchRequestsPage() {
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
               }`}
             >
-              الطلبات المفتوحة
+              {t('requests.openRequests')}
             </button>
             <button
               onClick={() => setActiveTab('closed')}
@@ -293,7 +294,7 @@ export default function BranchRequestsPage() {
                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50'
               }`}
             >
-              الطلبات المغلقة
+              {t('requests.closedRequests')}
             </button>
           </div>
         </div>
@@ -321,18 +322,18 @@ export default function BranchRequestsPage() {
                       ? 'bg-green-100 text-green-800'
                       : 'bg-gray-100 text-gray-800'
                   }`}>
-                    {request.Done === 'false' ? 'مفتوح' : 'مغلق'}
+                    {request.Done === 'false' ? t('requests.open') : t('requests.closed')}
                   </div>
                 </div>
 
                 <div className="flex justify-between items-center text-sm text-gray-500">
-                  <span>بواسطة: {request.InsertBy}</span>
-                  <span>{new Date(request.Date).toLocaleDateString('ar-SA')}</span>
+                  <span>{t('requests.by')}: {request.InsertBy}</span>
+                  <span>{new Date(request.Date).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}</span>
                 </div>
 
                 {request.Nameproject && (
                   <div className="mt-2 text-sm text-blue-600 font-ibm-arabic-medium">
-                    المشروع: {request.Nameproject}
+                    {t('requests.project')}: {request.Nameproject}
                   </div>
                 )}
               </div>
@@ -345,10 +346,10 @@ export default function BranchRequestsPage() {
                 </svg>
               </div>
               <h3 className="text-lg font-ibm-arabic-semibold text-gray-700 mb-2">
-                لا توجد طلبات
+                {t('requests.noRequests')}
               </h3>
               <p className="text-gray-500 font-ibm-arabic-medium">
-                لم يتم إنشاء أي طلبات من نوع "{selectedType}" بعد
+                {t('requests.noRequestsOfType', { type: REQUEST_TYPES.find(rt => rt.value === selectedType)?.name || selectedType })}
               </p>
             </div>
           )}
@@ -357,23 +358,24 @@ export default function BranchRequestsPage() {
 
       {/* Create Request Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
           <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
             <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-              إنشاء طلب جديد
+              {t('requests.addNewRequest')}
             </h3>
 
             {/* Project Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2">
-                المشروع
+              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {t('requests.project')}
               </label>
               <select
                 value={createRequest.projectId}
                 onChange={(e) => setCreateRequest(prev => ({ ...prev, projectId: parseInt(e.target.value) }))}
                 className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
-                <option value={0}>اختر المشروع</option>
+                <option value={0}>{t('requests.selectProject')}</option>
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.Nameproject}
@@ -384,17 +386,18 @@ export default function BranchRequestsPage() {
 
             {/* Request Type Selection */}
             <div className="mb-4">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2">
-                نوع الطلب
+              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {t('requests.requestType')}
               </label>
               <select
                 value={createRequest.type}
                 onChange={(e) => setCreateRequest(prev => ({ ...prev, type: e.target.value }))}
                 className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{ direction: dir as 'rtl' | 'ltr' }}
               >
                 {REQUEST_TYPES.map((type) => (
-                  <option key={type} value={type}>
-                    {type}
+                  <option key={type.key} value={type.value}>
+                    {type.icon} {type.name}
                   </option>
                 ))}
               </select>
@@ -402,33 +405,34 @@ export default function BranchRequestsPage() {
 
             {/* Request Description */}
             <div className="mb-6">
-              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2">
-                وصف الطلب
+              <label className="block text-sm font-ibm-arabic-semibold text-gray-700 mb-2" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                {t('requests.requestDetails')}
               </label>
               <textarea
                 value={createRequest.data}
                 onChange={(e) => setCreateRequest(prev => ({ ...prev, data: e.target.value }))}
-                placeholder="اكتب وصف الطلب هنا..."
+                placeholder={t('requests.requestDetailsPlaceholder')}
                 className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-medium focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
                 rows={4}
+                style={{ direction: dir as 'rtl' | 'ltr', textAlign: isRTL ? 'right' : 'left' }}
               />
             </div>
 
             {/* Buttons */}
-            <div className="flex gap-3">
+            <div className="flex gap-3" style={{ flexDirection: isRTL ? 'row-reverse' : 'row' }}>
               <button
                 onClick={resetCreateRequest}
                 className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
                 disabled={loading.create}
               >
-                إلغاء
+                {t('requests.cancel')}
               </button>
               <button
                 onClick={createNewRequest}
                 className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
                 disabled={loading.create}
               >
-                {loading.create ? 'جاري الإنشاء...' : 'إنشاء الطلب'}
+                {loading.create ? t('requests.creating') : t('requests.create')}
               </button>
             </div>
           </div>

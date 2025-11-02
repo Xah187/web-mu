@@ -10,6 +10,7 @@ import axiosInstance from '@/lib/api/axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { toast } from '@/lib/toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface StageCloseModalProps {
   isOpen: boolean;
@@ -35,6 +36,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
   stage,
   onSuccess
 }) => {
+  const { t, isRTL, dir } = useTranslation();
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
   const { Uservalidation } = useValidityUser();
@@ -61,13 +63,13 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
 
   const handleCloseOrOpenStage = async () => {
     if (!note.trim()) {
-      toast.error('يجب إدخال الملاحظة أولاً');
+      toast.error(t('projectModals.closeStage.requiredNote'));
       return;
     }
 
     // Check if trying to close an incomplete stage
     if (isStageOpen && !isStageCompleted) {
-      toast.error('لا يمكن إغلاق المرحلة قبل إنهاء جميع المهام الفرعية (100%)');
+      toast.error(t('projectModals.closeStage.incompleteError'));
       return;
     }
 
@@ -97,7 +99,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
       );
 
       if (response.status === 200) {
-        const successMessage = response.data?.success || 'تمت العملية بنجاح';
+        const successMessage = response.data?.success || t('projectModals.closeStage.success');
         toast.success(successMessage);
 
         // إذا كانت الرسالة تحتوي على خطأ من الباك إند (مثل عدم اكتمال المهام)
@@ -112,7 +114,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
       }
     } catch (error: any) {
       console.error('Error closing/opening stage:', error);
-      const errorMessage = error.response?.data?.success || 'فشل في تنفيذ العملية';
+      const errorMessage = error.response?.data?.success || t('projectModals.closeStage.error');
       toast.error(errorMessage);
     } finally {
       setLoading(false);
@@ -122,16 +124,16 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
   const getActionText = () => {
     if (isStageOpen) {
       return {
-        title: 'عملية إغلاق المرحلة',
-        placeholder: 'ملاحظة لإغلاق المرحلة',
-        buttonText: 'إغلاق المرحلة',
+        title: t('projectModals.closeStage.closeTitle'),
+        placeholder: t('projectModals.closeStage.closePlaceholder'),
+        buttonText: t('projectModals.closeStage.closeButton'),
         buttonColor: 'bg-red-600 hover:bg-red-700'
       };
     } else {
       return {
-        title: 'عملية فتح المرحلة',
-        placeholder: 'اعطي سبب واضح لفتح المرحلة',
-        buttonText: 'فتح المرحلة',
+        title: t('projectModals.closeStage.openTitle'),
+        placeholder: t('projectModals.closeStage.openPlaceholder'),
+        buttonText: t('projectModals.closeStage.openButton'),
         buttonColor: 'bg-green-600 hover:bg-green-700'
       };
     }
@@ -291,10 +293,12 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                             fontSize: `${scale(14)}px`,
                             fontFamily: fonts.IBMPlexSansArabicMedium,
                             color: 'var(--theme-text-secondary)',
-                            marginBottom: scale(4)
+                            marginBottom: scale(4),
+                            direction: dir as 'rtl' | 'ltr',
+                            textAlign: isRTL ? 'right' : 'left'
                           }}
                         >
-                          تاريخ الإغلاق: {formatDate(stage.CloseDate)}
+                          {t('projectModals.closeStage.closeDate')} {formatDate(stage.CloseDate)}
                         </p>
                         {stage.Difference !== undefined && (
                           <p
@@ -302,10 +306,12 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                             style={{
                               fontSize: `${scale(14)}px`,
                               fontFamily: fonts.IBMPlexSansArabicMedium,
-                              color: 'var(--theme-text-secondary)'
+                              color: 'var(--theme-text-secondary)',
+                              direction: dir as 'rtl' | 'ltr',
+                              textAlign: isRTL ? 'right' : 'left'
                             }}
                           >
-                            الفارق: {stage.Difference} يوم
+                            {t('projectModals.closeStage.difference')} {stage.Difference} {t('projectModals.closeStage.days')}
                           </p>
                         )}
                       </>
@@ -329,10 +335,12 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                       style={{
                         color: 'var(--theme-error)',
                         fontFamily: fonts.IBMPlexSansArabicMedium,
-                        fontSize: `${scale(14)}px`
+                        fontSize: `${scale(14)}px`,
+                        direction: dir as 'rtl' | 'ltr',
+                        textAlign: isRTL ? 'right' : 'left'
                       }}
                     >
-                      لا يمكن إغلاق المرحلة قبل إنهاء جميع المهام الفرعية (100%)
+                      {t('projectModals.closeStage.incompleteError')}
                     </p>
                   </div>
                 )}
@@ -345,10 +353,12 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                       fontSize: `${scale(14)}px`,
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       color: 'var(--theme-text-secondary)',
-                      marginBottom: scale(8)
+                      marginBottom: scale(8),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    الملاحظة *
+                    {t('projectModals.closeStage.note')}
                   </label>
                   <textarea
                     value={note}
@@ -356,6 +366,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                     placeholder={actionText.placeholder}
                     className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02] resize-none"
                     rows={4}
+                    dir={dir as 'rtl' | 'ltr'}
                     style={{
                       padding: `${scale(12)}px ${scale(16)}px`,
                       backgroundColor: 'var(--theme-input-background)',
@@ -395,7 +406,7 @@ const StageCloseModal: React.FC<StageCloseModalProps> = ({
                     width: '45%'
                   }}
                 >
-                  إلغاء
+                  {t('projectModals.closeStage.cancel')}
                 </button>
 
                 <button

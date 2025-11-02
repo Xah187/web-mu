@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SubStageOptionsModalProps {
   isOpen: boolean;
@@ -31,6 +32,8 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
   loading = false,
   subStage
 }) => {
+  const { t } = useTranslation();
+
   // Parse notes to get count
   const getNotesCount = () => {
     if (!subStage.Note) return 0;
@@ -108,7 +111,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                       lineHeight: 1.4
                     }}
                   >
-                    خيارات المهمة
+                    {t('stageDetails.taskOptions')}
                   </h2>
                 </div>
                 <button
@@ -155,7 +158,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                       color: 'var(--theme-success)'
                     }}
                   >
-                    📝 إضافة ملاحظة جديدة
+                    {t('stageDetails.addNewNote')}
                   </span>
                 </button>
 
@@ -187,7 +190,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                           color: 'var(--theme-info)'
                         }}
                       >
-                        📄 عرض الملاحظات
+                        {t('stageDetails.viewNotes')}
                       </span>
                     </div>
                     <span
@@ -240,7 +243,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                       color: 'var(--theme-primary)'
                     }}
                   >
-                    ✏️ تعديل بيانات المهمة
+                    {t('stageDetails.editTaskData')}
                   </span>
                 </button>
 
@@ -278,7 +281,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                       color: loading ? 'var(--theme-text-tertiary)' : 'var(--theme-error, #ef4444)'
                     }}
                   >
-                    🗑️ حذف المهمة
+                    {t('stageDetails.deleteTask')}
                   </span>
                 </button>
               </div>
@@ -304,7 +307,7 @@ const SubStageOptionsModal: React.FC<SubStageOptionsModalProps> = ({
                     marginBottom: scale(8)
                   }}
                 >
-                  🎯 المهمة المحددة:
+                  {t('stageDetails.selectedTask')}
                 </p>
                 <p
                   style={{

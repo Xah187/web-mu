@@ -7,6 +7,7 @@ import { fonts } from '@/constants/fonts';
 import { verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import SettingsIcon from '@/components/icons/SettingsIcon';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface UserCardProps {
   user: {
@@ -28,6 +29,7 @@ interface UserCardProps {
 
 export default function UserCard({ user, onEdit, onDelete, onEditPermissions, showActions = true }: UserCardProps) {
   const { size } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
   const [showMenu, setShowMenu] = useState(false);
   const [showUserDetails, setShowUserDetails] = useState(false);
 
@@ -57,7 +59,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
   // مطابق للتطبيق المحمول UserComponent.tsx line 48
   const getDisplayJobTitle = () => {
     // في صفحة الأعضاء الرئيسية نعرض الصفة الأساسية (job) فقط
-    return user.job || 'غير محدد';
+    return user.job || t('members.notSpecified');
   };
 
   const getJobColor = (job: string) => {
@@ -81,10 +83,12 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
         <div
           className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4"
           onClick={() => setShowUserDetails(false)}
+          style={{ direction: dir as 'rtl' | 'ltr' }}
         >
           <div
             className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
+            style={{ direction: dir as 'rtl' | 'ltr' }}
           >
             {/* User Avatar */}
             <div className="flex flex-col items-center mb-4">
@@ -124,7 +128,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                   fontSize: 16
                 }}
               >
-                رقم الجوال {user.PhoneNumber}
+                {t('members.phoneNumber')} {user.PhoneNumber}
               </p>
               <p
                 className="text-center text-black mb-2"
@@ -133,7 +137,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                   fontSize: 16
                 }}
               >
-                رقم البطاقة {user.IDNumber || 'غير محدد'}
+                {t('members.idNumber')} {user.IDNumber || t('members.notSpecified')}
               </p>
             </div>
 
@@ -147,7 +151,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                     fontSize: 16
                   }}
                 >
-                  الصلاحيات
+                  {t('members.permissions')}
                 </p>
                 <div
                   className="border border-dashed rounded-lg p-3"
@@ -276,15 +280,16 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                 />
                 
                 {/* Menu */}
-                <div className="absolute left-0 top-full mt-1 rounded-lg shadow-lg overflow-hidden z-50 min-w-[180px] theme-card"
+                <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-1 rounded-lg shadow-lg overflow-hidden z-50 min-w-[180px] theme-card`}
                      style={{
                        backgroundColor: 'var(--color-card-background)',
                        border: '1px solid var(--color-card-border)',
-                       boxShadow: 'var(--shadow-lg)'
+                       boxShadow: 'var(--shadow-lg)',
+                       direction: dir as 'rtl' | 'ltr'
                      }}>
                   <button
                     onClick={handleEdit}
-                    className="w-full px-4 py-3 text-right hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-3"
+                    className={`w-full px-4 py-3 ${isRTL ? 'text-right' : 'text-left'} hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                   >
                     <svg 
                       width="18" 
@@ -306,7 +311,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                         color: 'var(--color-text-primary)'
                       }}
                     >
-                      تعديل البيانات
+                      {t('members.editData')}
                     </span>
                   </button>
 
@@ -316,7 +321,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                       <div className="border-t border-gray-100" />
                       <button
                         onClick={handleEditPermissions}
-                        className="w-full px-4 py-3 text-right hover:bg-blue-50 transition-colors flex items-center gap-3"
+                        className={`w-full px-4 py-3 ${isRTL ? 'text-right' : 'text-left'} hover:bg-blue-50 transition-colors flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                       >
                         <svg
                           width="18"
@@ -339,7 +344,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                             color: colors.BLACK
                           }}
                         >
-                          تعديل الصلاحيات
+                          {t('members.editPermissions')}
                         </span>
                       </button>
                     </>
@@ -351,7 +356,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                       <div className="border-t border-gray-100" />
                       <button
                         onClick={handleDelete}
-                        className="w-full px-4 py-3 text-right hover:bg-red-50 transition-colors flex items-center gap-3"
+                        className={`w-full px-4 py-3 ${isRTL ? 'text-right' : 'text-left'} hover:bg-red-50 transition-colors flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}
                       >
                         <svg
                           width="18"
@@ -375,7 +380,7 @@ export default function UserCard({ user, onEdit, onDelete, onEditPermissions, sh
                             color: colors.RED
                           }}
                         >
-                          حذف العضو
+                          {t('members.deleteMember')}
                         </span>
                       </button>
                     </>

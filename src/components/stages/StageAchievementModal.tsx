@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { scale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface StageAchievementModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
   onSubmit,
   stageName
 }) => {
+  const { t } = useTranslation();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -86,7 +88,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
               className="font-ibm-arabic-bold text-gray-900"
               style={{ fontSize: `${scale(18)}px` }}
             >
-              إرفاق إنجاز المرحلة
+              {t('achievementModal.title')}
             </h3>
             <button
               onClick={handleClose}
@@ -117,7 +119,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
               className="block text-gray-700 font-ibm-arabic-semibold mb-3"
               style={{ fontSize: `${scale(14)}px` }}
             >
-              اختر ملف أو صورة
+              {t('achievementModal.chooseFile')}
             </label>
             <input
               type="file"
@@ -138,7 +140,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
                 className="text-gray-700 font-ibm-arabic-semibold mb-3"
                 style={{ fontSize: `${scale(14)}px` }}
               >
-                معاينة
+                {t('achievementModal.preview')}
               </p>
               {previewUrl ? (
                 <img
@@ -201,7 +203,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
             }}
             disabled={isSubmitting}
           >
-            إلغاء
+            {t('achievementModal.cancel')}
           </button>
           <button
             onClick={handleSubmit}
@@ -216,7 +218,7 @@ const StageAchievementModal: React.FC<StageAchievementModalProps> = ({
               fontSize: `${scale(14)}px`
             }}
           >
-            {isSubmitting ? 'جارٍ الرفع...' : 'رفع'}
+            {isSubmitting ? t('achievementModal.uploading') : t('achievementModal.upload')}
           </button>
         </div>
       </div>

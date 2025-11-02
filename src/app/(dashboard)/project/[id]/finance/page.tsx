@@ -12,14 +12,15 @@ import { Tostget } from '@/components/ui/Toast';
 import ResponsiveLayout, { PageHeader, ContentSection, Card } from '@/components/layout/ResponsiveLayout';
 import CreateFinanceModal from '@/components/finance/CreateFinanceModal';
 import ViewFinanceModal from '@/components/finance/ViewFinanceModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Finance Summary Card Component - Modern design
-const FinanceSummaryCard = ({ totals }: { totals: any }) => {
+const FinanceSummaryCard = ({ totals, t, isRTL, dir }: { totals: any; t: any; isRTL: boolean; dir: string }) => {
   const [selectedTotal, setSelectedTotal] = useState({ number: 0, visible: false });
 
   return (
     <Card className="mb-6">
-      <div className="relative">
+      <div className="relative" style={{ direction: dir as 'rtl' | 'ltr' }}>
         {/* Labels Row */}
         <div className="flex items-center justify-around px-4 py-2">
           <div className="flex-1 text-center">
@@ -27,10 +28,11 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
               className="font-ibm-arabic-medium"
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-secondary)',
+                textAlign: 'center'
               }}
             >
-              العهد
+              {t('finance.revenues')}
             </p>
           </div>
           <div className="flex-1 text-center">
@@ -38,10 +40,11 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
               className="font-ibm-arabic-medium"
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-secondary)',
+                textAlign: 'center'
               }}
             >
-              المصروفات
+              {t('finance.expenses')}
             </p>
           </div>
           <div className="flex-1 text-center">
@@ -49,17 +52,18 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
               className="font-ibm-arabic-medium"
               style={{
                 fontSize: 'var(--font-size-sm)',
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-secondary)',
+                textAlign: 'center'
               }}
             >
-              المرتجعات
+              {t('finance.returns')}
             </p>
           </div>
         </div>
 
         {/* Values Row */}
         <div className="flex items-center justify-around px-4 py-2">
-          {/* العهد */}
+          {/* Revenues */}
           <div className="flex flex-col items-center justify-center flex-1">
             <button
               onClick={() => setSelectedTotal({ number: totals?.TotalRevenue || 0, visible: true })}
@@ -87,7 +91,7 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
             }}
           ></div>
 
-          {/* المصروفات */}
+          {/* Expenses */}
           <div className="flex flex-col items-center justify-center flex-1">
             <button
               onClick={() => setSelectedTotal({ number: totals?.TotalExpense || 0, visible: true })}
@@ -115,7 +119,7 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
             }}
           ></div>
 
-          {/* المرتجعات */}
+          {/* Returns */}
           <div className="flex flex-col items-center justify-center flex-1">
             <button
               onClick={() => setSelectedTotal({ number: totals?.TotalReturns || 0, visible: true })}
@@ -150,10 +154,11 @@ const FinanceSummaryCard = ({ totals }: { totals: any }) => {
             className="font-ibm-arabic-medium text-center"
             style={{
               fontSize: 'var(--font-size-sm)',
-              color: 'var(--color-text-secondary)'
+              color: 'var(--color-text-secondary)',
+              textAlign: 'center'
             }}
           >
-            الرصيد المتبقي
+            {t('finance.remainingBalance')}
           </p>
         </div>
 
@@ -212,7 +217,10 @@ const FinanceSection = ({
   onItemEdit,
   onItemDelete,
   onItemView,
-  onFetchData
+  onFetchData,
+  t,
+  isRTL,
+  dir
 }: {
   title: string;
   items: FinanceItem[];
@@ -224,6 +232,9 @@ const FinanceSection = ({
   onItemDelete: (item: FinanceItem) => void;
   onItemView: (item: FinanceItem) => void;
   onFetchData: () => void;
+  t: any;
+  isRTL: boolean;
+  dir: string;
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
@@ -341,7 +352,7 @@ const FinanceSection = ({
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    {Totaltofixt(item.Amount)} ر.س
+                    {Totaltofixt(item.Amount)} {t('finance.sar')}
                   </p>
                 </div>
               </div>
@@ -355,9 +366,9 @@ const FinanceSection = ({
                 onClick={onLoadMore}
                 disabled={loading}
                 className="flex items-center text-blue-600 font-ibm-arabic-regular disabled:opacity-50 hover:underline"
-                style={{ fontSize: 'var(--font-size-sm)' }}
+                style={{ fontSize: 'var(--font-size-sm)', direction: dir as 'rtl' | 'ltr' }}
               >
-                <span className="ml-2">تحميل المزيد</span>
+                <span className={isRTL ? 'ml-2' : 'mr-2'}>{t('finance.loadMore')}</span>
                 {loading ? (
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
                 ) : (
@@ -382,6 +393,7 @@ export default function FinancePage() {
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
   const { project, loading: projectLoading, fetchProjectDetails } = useProjectDetails();
+  const { t, isRTL, dir } = useTranslation();
 
   const {
     expenses,
@@ -453,12 +465,11 @@ export default function FinancePage() {
   };
 
   const handleChat = () => {
-    // مطابق للتطبيق: navigation.navigate('Chate', { typess: 'مالية', ProjectID: idProject, nameRoom: 'المالية' })
     const chatParams = new URLSearchParams({
       ProjectID: projectId.toString(),
       typess: 'مالية',
       nameRoom: 'المالية',
-      nameProject: totals?.Nameproject || 'المشروع'
+      nameProject: totals?.Nameproject || t('finance.project')
     });
     router.push(`/chat?${chatParams.toString()}`);
   };
@@ -472,7 +483,7 @@ export default function FinancePage() {
         setShowAddModal(true);
       }
     } else {
-      Tostget('العمليات المالية اليدوية متوقفه حالياً');
+      Tostget(t('finance.manualOperationsDisabled'));
     }
   };
 
@@ -489,7 +500,7 @@ export default function FinancePage() {
         setShowAddModal(true);
       }
     } else {
-      Tostget('العمليات المالية اليدوية متوقفه حالياً');
+      Tostget(t('finance.manualOperationsDisabled'));
     }
   };
 
@@ -500,9 +511,9 @@ export default function FinancePage() {
       if (await Uservalidation('حذف عمليات مالية' as any, projectId)) {
         // Determine operation type based on item properties
         let operationType = '';
-        if (item.Expenseid) operationType = 'مصروفات';
-        else if (item.RevenueId) operationType = 'عهد';
-        else if (item.ReturnsId) operationType = 'مرتجعات';
+        if (item.Expenseid) operationType = t('finance.expenseType');
+        else if (item.RevenueId) operationType = t('finance.revenueType');
+        else if (item.ReturnsId) operationType = t('finance.returnType');
 
         const success = await deleteFinanceItem(item, operationType);
         if (success) {
@@ -515,7 +526,7 @@ export default function FinancePage() {
         }
       }
     } else {
-      Tostget('العمليات المالية اليدوية متوقفه حالياً');
+      Tostget(t('finance.manualOperationsDisabled'));
     }
   };
 
@@ -548,20 +559,21 @@ export default function FinancePage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-home flex items-center justify-center p-4">
+      <div className="min-h-screen bg-home flex items-center justify-center p-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <div className="bg-white rounded-lg p-6 text-center max-w-md w-full">
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" className="text-red-600">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">خطأ في تحميل البيانات</h3>
+          <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">{t('finance.loadError')}</h3>
           <p className="text-gray-600 mb-4">{error}</p>
           <button
             onClick={() => window.location.reload()}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+            style={{ direction: dir as 'rtl' | 'ltr' }}
           >
-            إعادة المحاولة
+            {t('finance.retry')}
           </button>
         </div>
       </div>
@@ -572,30 +584,30 @@ export default function FinancePage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title="المالية"
-          subtitle={totals?.Nameproject || 'المشروع'}
+          title={t('finance.title')}
+          subtitle={totals?.Nameproject || t('finance.project')}
           backButton={
-            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label="رجوع">
+            <button onClick={handleBack} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" aria-label={t('finance.back')} style={{ direction: dir as 'rtl' | 'ltr' }}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
             </button>
           }
           actions={
-            <div className="flex items-center gap-2">
-              <button onClick={handleChat} className="p-2 hover:bg-gray-100 rounded-lg" title="تواصل" aria-label="تواصل">
+            <div className="flex items-center gap-2" style={{ direction: dir as 'rtl' | 'ltr' }}>
+              <button onClick={handleChat} className="p-2 hover:bg-gray-100 rounded-lg" title={t('finance.chat')} aria-label={t('finance.chat')}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M21 15C21 15.53 20.79 16.04 20.41 16.41C20.04 16.79 19.53 17 19 17H7L3 21V5C3 4.47 3.21 3.96 3.59 3.59C3.96 3.21 4.47 3 5 3H19C19.53 3 20.04 3.21 20.41 3.59C20.79 3.96 21 4.47 21 5V15Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <button onClick={handleArchive} className="p-2 hover:bg-gray-100 rounded-lg" title="أرشيف" aria-label="أرشيف">
+              <button onClick={handleArchive} className="p-2 hover:bg-gray-100 rounded-lg" title={t('finance.archive')} aria-label={t('finance.archive')}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M21 8V21H3V8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M23 3H1V8H23V3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M10 12H14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </button>
-              <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg" title="كشف الحساب" aria-label="كشف الحساب">
+              <button onClick={handleShare} className="p-2 hover:bg-gray-100 rounded-lg" title={t('finance.accountStatement')} aria-label={t('finance.accountStatement')}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M18 8C19.6569 8 21 6.65685 21 5C21 3.34315 19.6569 2 18 2C16.3431 2 15 3.34315 15 5C15 6.65685 16.3431 8 18 8Z" stroke="currentColor" strokeWidth="2"/>
                   <path d="M6 15C7.65685 15 9 13.6569 9 12C9 10.3431 7.65685 9 6 9C4.34315 9 3 10.3431 3 12C3 13.6569 4.34315 15 6 15Z" stroke="currentColor" strokeWidth="2"/>
@@ -611,21 +623,21 @@ export default function FinancePage() {
     >
       <ContentSection>
         {/* Finance Summary Card */}
-        <FinanceSummaryCard totals={totals} />
+        <FinanceSummaryCard totals={totals} t={t} isRTL={isRTL} dir={dir} />
 
         {/* Action Buttons Card */}
         <Card className="mb-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between" style={{ direction: dir as 'rtl' | 'ltr' }}>
             <button
               onClick={handleAddFinance}
               className="inline-flex items-center gap-2 text-blue-600 hover:underline font-ibm-arabic-semibold bg-transparent p-0 transition-colors"
-              style={{ fontSize: 'var(--font-size-base)' }}
+              style={{ fontSize: 'var(--font-size-base)', direction: dir as 'rtl' | 'ltr' }}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="ml-1">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={isRTL ? 'ml-1' : 'mr-1'}>
                 <path d="M12 5V19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 <path d="M5 12H19" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
               </svg>
-              إنشاء عملية
+              {t('finance.createOperation')}
             </button>
 
             <div className="flex items-center gap-2">
@@ -636,10 +648,11 @@ export default function FinancePage() {
                   style={{
                     backgroundColor: 'var(--color-text-secondary)',
                     color: 'var(--color-surface)',
-                    fontSize: 'var(--font-size-sm)'
+                    fontSize: 'var(--font-size-sm)',
+                    direction: dir as 'rtl' | 'ltr'
                   }}
                 >
-                  إلغاء فلتر
+                  {t('finance.clearFilter')}
                 </button>
               )}
 
@@ -647,8 +660,8 @@ export default function FinancePage() {
                 onClick={handleFilter}
                 className="p-2 rounded-lg transition-colors hover:bg-gray-100"
                 style={{ color: 'var(--color-text-secondary)' }}
-                title="فلتر"
-                aria-label="فلتر"
+                title={t('finance.filter')}
+                aria-label={t('finance.filter')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
                   <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -662,7 +675,7 @@ export default function FinancePage() {
         <div className="space-y-0">
           {searchResults.length > 0 ? (
             <FinanceSection
-              title={`نتائج البحث`}
+              title={t('finance.searchResults')}
               items={searchResults}
               type="search"
               onLoadMore={() => {}}
@@ -672,13 +685,16 @@ export default function FinancePage() {
               onItemDelete={handleItemDelete}
               onItemView={handleItemView}
               onFetchData={() => {}}
+              t={t}
+              isRTL={isRTL}
+              dir={dir}
             />
           ) : (
             <>
               <FinanceSection
-                title="عهد"
+                title={t('finance.revenues')}
                 items={revenues}
-                type="عهد"
+                type={t('finance.revenueType')}
                 onLoadMore={handleLoadMoreRevenues}
                 hasMore={revenues.length % 10 === 0 && revenues.length > 0}
                 loading={loading}
@@ -686,12 +702,15 @@ export default function FinancePage() {
                 onItemDelete={handleItemDelete}
                 onItemView={handleItemView}
                 onFetchData={() => fetchRevenues(projectId)}
+                t={t}
+                isRTL={isRTL}
+                dir={dir}
               />
 
               <FinanceSection
-                title="مصروفات"
+                title={t('finance.expenses')}
                 items={expenses}
-                type="مصروفات"
+                type={t('finance.expenseType')}
                 onLoadMore={handleLoadMoreExpenses}
                 hasMore={expenses.length % 10 === 0 && expenses.length > 0}
                 loading={loading}
@@ -699,12 +718,15 @@ export default function FinancePage() {
                 onItemDelete={handleItemDelete}
                 onItemView={handleItemView}
                 onFetchData={() => fetchExpenses(projectId)}
+                t={t}
+                isRTL={isRTL}
+                dir={dir}
               />
 
               <FinanceSection
-                title="إعادة مرتجع"
+                title={t('finance.returns')}
                 items={returns}
-                type="إعادة مرتجع"
+                type={t('finance.returnType')}
                 onLoadMore={handleLoadMoreReturns}
                 hasMore={returns.length % 10 === 0 && returns.length > 0}
                 loading={loading}
@@ -712,6 +734,9 @@ export default function FinancePage() {
                 onItemDelete={handleItemDelete}
                 onItemView={handleItemView}
                 onFetchData={() => fetchReturns(projectId)}
+                t={t}
+                isRTL={isRTL}
+                dir={dir}
               />
             </>
           )}

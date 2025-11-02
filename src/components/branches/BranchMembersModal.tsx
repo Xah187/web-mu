@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppSelector } from '@/store';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
@@ -8,6 +8,7 @@ import { scale, verticalScale } from '@/utils/responsiveSize';
 import ButtonLong from '@/components/design/ButtonLong';
 import { Tostget } from '@/components/ui/Toast';
 import axiosInstance from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface BranchMembersModalProps {
   isOpen: boolean;
@@ -45,26 +46,39 @@ export default function BranchMembersModal({
   branchName,
   onSuccess
 }: BranchMembersModalProps) {
-  const { user, size } = useAppSelector(state => state.user);
+  const { user, size, language } = useAppSelector(state => state.user);
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [currentMemberIds, setCurrentMemberIds] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (isOpen) {
-      loadUsers();
+      setUsers([]);
+      setCurrentMemberIds([]);
+      setSelectedUserIds([]);
+      setHasMore(true);
+      loadUsers(0);
     }
   }, [isOpen]);
 
-  const loadUsers = async () => {
+  const loadUsers = async (number: number = 0) => {
     try {
-      setLoading(true);
-      
-      // مطابق للتطبيق المحمول - جلب جميع مستخدمي الشركة مع معلومات الفرع
+      if (number === 0) {
+        setLoading(true);
+      } else {
+        setLoadingMore(true);
+      }
+
+      // مطابق للتطبيق المحمول - جلب مستخدمي الشركة مع Pagination
+      // في التطبيق: kind='user' يتم تمريره كـ type
       const response = await axiosInstance.get(
-        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=justuser&number=0&kind_request=all`,
+        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=user&number=${number}&kind_request=all`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -74,24 +88,71 @@ export default function BranchMembersModal({
       );
 
       if (response.data?.data) {
-        setUsers(response.data.data);
-        
-        // تحديد الأعضاء الحاليين في الفرع
-        const checkGloble = response.data.checkGloble || {};
-        const currentMembers = response.data.data
-          .filter((user: User) => Object.keys(checkGloble).includes(String(user.id)))
-          .map((user: User) => user.id);
-        
-        setCurrentMemberIds(currentMembers);
-        setSelectedUserIds(currentMembers);
+        const newUsers = response.data.data;
+
+        if (newUsers.length === 0 || newUsers.length < 10) {
+          setHasMore(false);
+        }
+
+        if (number === 0) {
+          setUsers(newUsers);
+
+          const currentMembers = newUsers
+            .filter((user: any) => user.is_in_branch === 'true')
+            .map((user: any) => user.id);
+
+          setCurrentMemberIds(currentMembers);
+          setSelectedUserIds(currentMembers);
+        } else {
+          // تجنب التكرار - تحقق من أن المستخدم غير موجود بالفعل
+          setUsers(prev => {
+            const existingIds = new Set(prev.map(u => u.id));
+            const uniqueNewUsers = newUsers.filter((u: User) => !existingIds.has(u.id));
+
+            // تحديث قائمة الأعضاء الحاليين
+            const newCurrentMembers = uniqueNewUsers
+              .filter((user: any) => user.is_in_branch === 'true')
+              .map((user: any) => user.id);
+
+            if (newCurrentMembers.length > 0) {
+              setCurrentMemberIds(prevMembers => [...prevMembers, ...newCurrentMembers]);
+              setSelectedUserIds(prevSelected => [...prevSelected, ...newCurrentMembers]);
+            }
+
+            return [...prev, ...uniqueNewUsers];
+          });
+        }
+      } else {
+        setHasMore(false);
       }
     } catch (error) {
-      console.error('Error loading users:', error);
-      Tostget('فشل في تحميل قائمة المستخدمين', 'error');
+      Tostget(t('branchSettings.failedToLoadUsers'), 'error');
+      setHasMore(false);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
+
+  const handleLoadMore = useCallback(() => {
+    if (!loadingMore && hasMore && users.length > 0) {
+      const lastUserId = users[users.length - 1].id;
+      loadUsers(lastUserId);
+    }
+  }, [loadingMore, hasMore, users]);
+
+  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    const scrollTop = target.scrollTop;
+    const scrollHeight = target.scrollHeight;
+    const clientHeight = target.clientHeight;
+
+    const scrollPercentage = (scrollTop + clientHeight) / scrollHeight;
+
+    if (scrollPercentage > 0.8) {
+      handleLoadMore();
+    }
+  }, [handleLoadMore]);
 
   const handleUserToggle = (userId: number) => {
     setSelectedUserIds(prev => 
@@ -142,13 +203,13 @@ export default function BranchMembersModal({
         const addedCount = newMembers.length;
         const removedCount = removedMembers.length;
 
-        let message = 'تم تحديث أعضاء الفرع بنجاح';
+        let message = t('branchSettings.membersUpdatedSuccess');
         if (addedCount > 0 && removedCount > 0) {
-          message = `تم إضافة ${addedCount} وإزالة ${removedCount} من أعضاء الفرع`;
+          message = `${t('branchSettings.added')} ${addedCount} ${t('branchSettings.andRemoved')} ${removedCount} ${t('branchSettings.fromBranchMembers')}`;
         } else if (addedCount > 0) {
-          message = `تم إضافة ${addedCount} عضو جديد للفرع`;
+          message = `${t('branchSettings.added')} ${addedCount} ${t('branchSettings.newMemberToBranch')}`;
         } else if (removedCount > 0) {
-          message = `تم إزالة ${removedCount} عضو من الفرع`;
+          message = `${t('branchSettings.removed')} ${removedCount} ${t('branchSettings.memberFromBranch')}`;
         }
 
         Tostget(message, 'success');
@@ -157,7 +218,7 @@ export default function BranchMembersModal({
       }
     } catch (error: any) {
       console.error('Error updating branch members:', error);
-      Tostget(error.response?.data?.message || 'فشل في تحديث أعضاء الفرع', 'error');
+      Tostget(error.response?.data?.message || t('branchSettings.membersUpdatedError'), 'error');
     } finally {
       setSubmitting(false);
     }
@@ -184,7 +245,8 @@ export default function BranchMembersModal({
           backgroundColor: 'var(--theme-card-background)',
           border: '1px solid var(--theme-border)',
           borderRadius: `${scale(20)}px`,
-          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+          direction: language === 'ar' ? 'rtl' : 'ltr'
         }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -222,7 +284,7 @@ export default function BranchMembersModal({
                 lineHeight: 1.4
               }}
             >
-              إدارة أعضاء الفرع
+              {t('branchSettings.manageBranchMembers')}
             </h3>
           </div>
 
@@ -234,7 +296,7 @@ export default function BranchMembersModal({
               marginBottom: scale(8)
             }}
           >
-            إدارة أعضاء فرع "{branchName}"
+            {t('branchSettings.manageBranchMembers')} "{branchName}"
           </p>
 
           <div
@@ -247,12 +309,13 @@ export default function BranchMembersModal({
               fontFamily: fonts.IBMPlexSansArabicMedium
             }}
           >
-            تم اختيار {selectedUserIds.length} من {users.length} مستخدم
+            {t('branchSettings.selected')} {selectedUserIds.length} {t('branchSettings.of')} {users.length} {t('branchSettings.user')}
           </div>
         </div>
 
         {/* Content */}
         <div
+          ref={scrollContainerRef}
           className="overflow-y-auto max-h-[calc(95vh-300px)]"
           style={{
             paddingLeft: scale(24),
@@ -260,15 +323,17 @@ export default function BranchMembersModal({
             paddingBottom: scale(16),
             marginBottom: scale(16)
           }}
+          onScroll={handleScroll}
         >
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <span className="mr-2 text-gray-600">جاري تحميل المستخدمين...</span>
+              <span className={language === 'ar' ? 'mr-2' : 'ml-2'} style={{ color: '#6b7280' }}>{t('branchSettings.loadingUsers')}</span>
             </div>
           ) : users.length > 0 ? (
-            <div className="space-y-3">
-              {users.map((user) => {
+            <>
+              <div className="space-y-3">
+                {users.map((user) => {
                 const isSelected = selectedUserIds.includes(user.id);
                 const isCurrentMember = currentMemberIds.includes(user.id);
                 
@@ -315,7 +380,7 @@ export default function BranchMembersModal({
                                 fontFamily: fonts.IBMPlexSansArabicMedium
                               }}
                             >
-                              ✅ عضو حالي
+                              ✅ {t('branchSettings.currentMember')}
                             </span>
                           )}
                         </div>
@@ -352,10 +417,21 @@ export default function BranchMembersModal({
                   </div>
                 );
               })}
-            </div>
+              </div>
+
+              {/* Loading More Indicator */}
+              {loadingMore && (
+                <div className="flex items-center justify-center py-4">
+                  <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                  <span className={language === 'ar' ? 'mr-2' : 'ml-2'} style={{ color: '#6b7280', fontSize: '14px' }}>
+                    {t('branchSettings.loadingMore')}
+                  </span>
+                </div>
+              )}
+            </>
           ) : (
             <div className="text-center py-8">
-              <p className="text-gray-500">لا توجد مستخدمين متاحين</p>
+              <p className="text-gray-500">{t('branchSettings.noUsersAvailable')}</p>
             </div>
           )}
         </div>
@@ -398,7 +474,7 @@ export default function BranchMembersModal({
                 style={{ width: scale(16), height: scale(16), marginLeft: scale(8) }}
               />
             ) : (
-              '💾 حفظ التغييرات'
+              `💾 ${t('branchSettings.save')}`
             )}
           </button>
 
@@ -421,7 +497,7 @@ export default function BranchMembersModal({
               boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
             }}
           >
-            ❌ إلغاء
+            ❌ {t('branchSettings.cancel')}
           </button>
         </div>
 

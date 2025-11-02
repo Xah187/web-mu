@@ -6,16 +6,19 @@ import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
 import { toast } from '@/lib/toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface StageEditModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (name: string, days: number) => Promise<void>;
+  onSave: (name: string, days: number, ratio?: number, attached?: string) => Promise<void>;
   stage: {
     StageID: number;
     ProjectID: number;
     StageName: string;
     Days: number;
+    Ratio?: number;
+    attached?: string;
   };
   loading?: boolean;
 }
@@ -27,33 +30,45 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
   stage,
   loading = false
 }) => {
+  const { t, isRTL, dir } = useTranslation();
   const [name, setName] = useState('');
   const [days, setDays] = useState('');
+  const [ratio, setRatio] = useState('');
+  const [attached, setAttached] = useState('');
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   useEffect(() => {
     if (isOpen && stage) {
       setName(stage.StageName || '');
       setDays(String(stage.Days || ''));
+      setRatio(String(stage.Ratio || ''));
+      setAttached(stage.attached || '');
     }
   }, [isOpen, stage]);
 
   const handleSave = async () => {
     if (!name.trim()) {
-      toast.error('يجب إدخال اسم المرحلة');
+      toast.error(t('projectModals.editStage.requiredName'));
       return;
     }
 
     if (!days.trim() || isNaN(Number(days)) || Number(days) <= 0) {
-      toast.error('يجب إدخال عدد أيام صحيح');
+      toast.error(t('projectModals.editStage.requiredDays'));
       return;
     }
 
     try {
-      await onSave(name.trim(), Number(days));
+      await onSave(
+        name.trim(),
+        Number(days),
+        ratio.trim() ? Number(ratio) : undefined,
+        attached.trim() || undefined
+      );
       onClose();
       setName('');
       setDays('');
+      setRatio('');
+      setAttached('');
     } catch (error) {
       console.error('Error updating stage:', error);
     }
@@ -131,10 +146,12 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                       fontSize: `${scale(18)}px`,
                       fontFamily: fonts.IBMPlexSansArabicBold,
                       color: 'var(--theme-text-primary)',
-                      lineHeight: 1.4
+                      lineHeight: 1.4,
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
                     }}
                   >
-                    تعديل المرحلة الرئيسية
+                    {t('projectModals.editStage.title')}
                   </h2>
                 </div>
                 <button
@@ -157,33 +174,61 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
               <div className="p-6 space-y-6">
                 {/* Current Info */}
                 <div className="bg-gray-50 rounded-lg p-4">
-                  <p 
+                  <p
                     className="text-gray-600 font-ibm-arabic-medium mb-2"
-                    style={{ fontSize: scale(12) }}
+                    style={{
+                      fontSize: scale(12),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   >
-                    المرحلة الحالية:
+                    {t('projectModals.editStage.currentStage')}
                   </p>
-                  <p 
+                  <p
                     className="text-gray-900 font-ibm-arabic-semibold mb-1"
-                    style={{ fontSize: scale(14) }}
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   >
                     {stage.StageName}
                   </p>
-                  <p 
-                    className="text-gray-600 font-ibm-arabic-medium"
-                    style={{ fontSize: scale(12) }}
+                  <p
+                    className="text-gray-600 font-ibm-arabic-medium mb-1"
+                    style={{
+                      fontSize: scale(12),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   >
-                    عدد الأيام: {stage.Days} يوم
+                    {t('projectModals.editStage.daysCount', { days: stage.Days })}
                   </p>
+                  {stage.Ratio !== undefined && stage.Ratio !== null && (
+                    <p
+                      className="text-gray-600 font-ibm-arabic-medium"
+                      style={{
+                        fontSize: scale(12),
+                        direction: dir as 'rtl' | 'ltr',
+                        textAlign: isRTL ? 'right' : 'left'
+                      }}
+                    >
+                      {t('projectModals.editStage.ratioCount', { ratio: stage.Ratio })}
+                    </p>
+                  )}
                 </div>
 
                 {/* Stage Name Input */}
                 <div className="space-y-2">
-                  <label 
+                  <label
                     className="block font-ibm-arabic-medium text-gray-700"
-                    style={{ fontSize: scale(14) }}
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   >
-                    اسم المرحلة
+                    {t('projectModals.editStage.stageName')}
                   </label>
                   <input
                     type="text"
@@ -191,19 +236,28 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                     onChange={(e) => setName(e.target.value)}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    placeholder="أدخل اسم المرحلة"
-                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular text-right focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    style={{ fontSize: scale(14) }}
+                    placeholder={t('projectModals.editStage.stageNamePlaceholder')}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                    dir={dir as 'rtl' | 'ltr'}
                   />
                 </div>
 
                 {/* Days Input */}
                 <div className="space-y-2">
-                  <label 
+                  <label
                     className="block font-ibm-arabic-medium text-gray-700"
-                    style={{ fontSize: scale(14) }}
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
                   >
-                    عدد أيام المرحلة
+                    {t('projectModals.editStage.daysLabel')}
                   </label>
                   <input
                     type="number"
@@ -211,10 +265,75 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                     onChange={(e) => setDays(e.target.value)}
                     onFocus={handleInputFocus}
                     onBlur={handleInputBlur}
-                    placeholder="أدخل عدد الأيام"
+                    placeholder={t('projectModals.editStage.daysPlaceholder')}
                     min="1"
-                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular text-right focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    style={{ fontSize: scale(14) }}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                    dir={dir as 'rtl' | 'ltr'}
+                  />
+                </div>
+
+                {/* Ratio Input */}
+                <div className="space-y-2">
+                  <label
+                    className="block font-ibm-arabic-medium text-gray-700"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                  >
+                    {t('projectModals.editStage.ratioLabel')}
+                  </label>
+                  <input
+                    type="number"
+                    value={ratio}
+                    onChange={(e) => setRatio(e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder={t('projectModals.editStage.ratioPlaceholder')}
+                    min="0"
+                    max="100"
+                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                    dir={dir as 'rtl' | 'ltr'}
+                  />
+                </div>
+
+                {/* External Guide Input */}
+                <div className="space-y-2">
+                  <label
+                    className="block font-ibm-arabic-medium text-gray-700"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                  >
+                    {t('projectModals.editStage.externalGuideLabel')}
+                  </label>
+                  <input
+                    type="text"
+                    value={attached}
+                    onChange={(e) => setAttached(e.target.value)}
+                    onFocus={handleInputFocus}
+                    onBlur={handleInputBlur}
+                    placeholder={t('projectModals.editStage.externalGuidePlaceholder')}
+                    className="w-full p-3 border border-gray-300 rounded-lg font-ibm-arabic-regular focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    style={{
+                      fontSize: scale(14),
+                      direction: dir as 'rtl' | 'ltr',
+                      textAlign: isRTL ? 'right' : 'left'
+                    }}
+                    dir={dir as 'rtl' | 'ltr'}
                   />
                 </div>
 
@@ -224,11 +343,15 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D97706">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                     </svg>
-                    <span 
+                    <span
                       className="text-yellow-700 font-ibm-arabic-medium"
-                      style={{ fontSize: scale(11) }}
+                      style={{
+                        fontSize: scale(11),
+                        direction: dir as 'rtl' | 'ltr',
+                        textAlign: isRTL ? 'right' : 'left'
+                      }}
                     >
-                      قد لا يتم تغيير عدد الأيام إذا كانت هناك مراحل مقفلة
+                      {t('projectModals.editStage.warning')}
                     </span>
                   </div>
                 </div>
@@ -242,9 +365,9 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                     className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg font-ibm-arabic-semibold hover:bg-gray-200 transition-colors"
                     style={{ fontSize: scale(14) }}
                   >
-                    إلغاء
+                    {t('projectModals.editStage.cancel')}
                   </button>
-                  
+
                   <button
                     onClick={handleSave}
                     disabled={loading || !name.trim() || !days.trim()}
@@ -254,10 +377,10 @@ const StageEditModal: React.FC<StageEditModalProps> = ({
                     {loading ? (
                       <div className="flex items-center justify-center space-x-2 space-x-reverse">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                        <span>جاري الحفظ...</span>
+                        <span>{t('projectModals.editStage.saving')}</span>
                       </div>
                     ) : (
-                      'حفظ التعديل'
+                      t('projectModals.editStage.save')
                     )}
                   </button>
                 </div>

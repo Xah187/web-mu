@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { scale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface StageStatusBadgeProps {
   stage: {
@@ -15,11 +16,12 @@ interface StageStatusBadgeProps {
 }
 
 const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
+  const { t } = useTranslation();
   const isCompleted = stage.Done === 'true';
   const hasNotes = stage.NoteOpen !== null || stage.NoteClosed !== null;
 
   const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'لم يحدد';
+    if (!dateString) return t('stageInfoModal.notSpecified');
 
     try {
       const date = new Date(dateString);
@@ -29,14 +31,14 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
       const day = String(date.getDate()).padStart(2, '0');
       return `${year}-${month}-${day}`;
     } catch {
-      return 'تاريخ غير صحيح';
+      return t('stageInfoModal.invalidDate');
     }
   };
 
   const getStatusInfo = () => {
     if (isCompleted) {
       return {
-        text: 'مرحلة مقفلة',
+        text: t('stageInfoModal.stageClosed'),
         bgColor: 'bg-red-100',
         textColor: 'text-red-700',
         icon: (
@@ -49,7 +51,7 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
       };
     } else if (stage.rate === 100) {
       return {
-        text: 'جاهزة للإغلاق',
+        text: t('stageDetails.readyToClose'),
         bgColor: 'bg-orange-100',
         textColor: 'text-orange-700',
         icon: (
@@ -60,7 +62,7 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
       };
     } else {
       return {
-        text: 'مرحلة مفتوحة',
+        text: t('stageInfoModal.stageOpen'),
         bgColor: 'bg-green-100',
         textColor: 'text-green-700',
         icon: (
@@ -97,11 +99,11 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
           >
             {Math.round(stage.rate)}%
           </span>
-          <span 
+          <span
             className="text-gray-500 font-ibm-arabic-medium"
             style={{ fontSize: scale(12) }}
           >
-            مكتمل
+            {t('stageDetails.taskCompleted')}
           </span>
         </div>
       </div>
@@ -111,13 +113,13 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
         {/* Close Date */}
         {isCompleted && stage.CloseDate && (
           <div className="flex items-center justify-between">
-            <span 
+            <span
               className="text-gray-600 font-ibm-arabic-medium"
               style={{ fontSize: scale(12) }}
             >
-              تاريخ الإغلاق:
+              {t('stageInfoModal.closeDate')}
             </span>
-            <span 
+            <span
               className="text-gray-900 font-ibm-arabic-semibold"
               style={{ fontSize: scale(12) }}
             >
@@ -129,19 +131,19 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
         {/* Difference */}
         {isCompleted && stage.Difference !== undefined && (
           <div className="flex items-center justify-between">
-            <span 
+            <span
               className="text-gray-600 font-ibm-arabic-medium"
               style={{ fontSize: scale(12) }}
             >
-              الفارق:
+              {t('stageInfoModal.difference')}
             </span>
-            <span 
+            <span
               className={`font-ibm-arabic-semibold ${
                 stage.Difference > 0 ? 'text-green-600' : stage.Difference < 0 ? 'text-red-600' : 'text-gray-900'
               }`}
               style={{ fontSize: scale(12) }}
             >
-              {stage.Difference} يوم
+              {stage.Difference} {t('stageInfoModal.days')}
             </span>
           </div>
         )}
@@ -152,11 +154,11 @@ const StageStatusBadge: React.FC<StageStatusBadgeProps> = ({ stage }) => {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <span 
+            <span
               className="text-gray-600 font-ibm-arabic-medium"
               style={{ fontSize: scale(11) }}
             >
-              يحتوي على ملاحظات
+              {t('stageDetails.hasNotes')}
             </span>
           </div>
         )}

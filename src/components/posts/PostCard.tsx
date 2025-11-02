@@ -9,6 +9,7 @@ import LikeIcon from '@/components/icons/LikeIcon';
 import CommentIcon from '@/components/icons/CommentIcon';
 import PlayIcon from '@/components/icons/PlayIcon';
 import { URLFIL } from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PostCardProps {
   post: {
@@ -30,6 +31,7 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post, onLike, onComment, onPress, onCommentPress }: PostCardProps) {
+  const { t } = useTranslation();
   const [imageError, setImageError] = useState(false);
 
   // دالة لإنشاء لون فريد بناءً على اسم المستخدم
@@ -287,7 +289,7 @@ export default function PostCard({ post, onLike, onComment, onPress, onCommentPr
               ) : (
                 <div className="w-full h-full bg-gray-800 flex items-center justify-center">
                   <span className="text-white text-center">
-                    {post.url ? 'لا يمكن تحميل الوسائط' : 'لا توجد وسائط'}
+                    {post.url ? t('publications.cannotLoadMedia') : t('publications.noMedia')}
                   </span>
                 </div>
               )}

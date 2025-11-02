@@ -273,14 +273,8 @@ export const useBranchProjects = (): UseBranchProjectsReturn => {
       );
 
       if (response.status === 200) {
-        // Update project status in local state
-        setProjects(prev => 
-          prev.map(project => 
-            project.id === projectId 
-              ? { ...project, rate: -1 } // Assuming closed projects have rate -1
-              : project
-          )
-        );
+        // Remove closed project from the list (it should now appear in closed projects page)
+        setProjects(prev => prev.filter(project => project.id !== projectId));
       }
     } catch (error: any) {
       console.error('خطأ في إغلاق المشروع:', error);

@@ -19,9 +19,11 @@ import SubStageEditModal from '@/components/stages/SubStageEditModal';
 import SubStageNoteModal from '@/components/stages/SubStageNoteModal';
 import SubStageNotesModal from '@/components/stages/SubStageNotesModal';
 import StageEditModal from '@/components/stages/StageEditModal';
+import StageOptionsModal from '@/components/stages/StageOptionsModal';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 import useSubStageNotes from '@/hooks/useSubStageNotes';
 import StageAchievementModal from '@/components/stages/StageAchievementModal';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 
@@ -35,7 +37,7 @@ const StageHeader = ({
   onBack,
   onChat,
   onDelays,
-  onEdit,
+  onSettings,
   onClose,
   onAttachAchievement,
   isCompleted,
@@ -50,7 +52,7 @@ const StageHeader = ({
   onBack: () => void;
   onChat: () => void;
   onDelays: () => void;
-  onEdit: () => void;
+  onSettings: () => void;
   onClose: () => void;
   onAttachAchievement: () => void;
   isCompleted: boolean;
@@ -58,6 +60,7 @@ const StageHeader = ({
   user: any;
 }) => {
   const { hasPermission } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
     return formatDateEnglish(dateString);
@@ -131,8 +134,8 @@ const StageHeader = ({
               style={{ fontSize: `${scale(13)}px` }}
             >
               {isCompleted
-                ? (canClose ? 'عمليات الفتح' : 'فتح المرحلة')
-                : (canClose ? 'عمليات الاقفال' : 'اقفال المرحلة')
+                ? (canClose ? t('stageDetails.openOperations') : t('stageDetails.openStage'))
+                : (canClose ? t('stageDetails.closeOperations') : t('stageDetails.closeStage'))
               }
             </span>
           </button>
@@ -166,21 +169,33 @@ const StageHeader = ({
         >
           {stageName}
         </h1>
-        {hasPermission('تعديل مرحلة رئيسية') && (
-          <button
-            onClick={onEdit}
-            style={{
-              padding: `${scale(4)}px`,
-              borderRadius: `${scale(6)}px`,
-              transition: 'all 0.2s ease'
-            }}
-            className="hover:bg-blue-50"
-          >
-            <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-          </button>
-        )}
+        <button
+          onClick={onSettings}
+          style={{
+            padding: `${scale(4)}px`,
+            borderRadius: `${scale(6)}px`,
+            transition: 'all 0.2s ease'
+          }}
+          className="hover:bg-gray-100"
+        >
+          <svg width={scale(24)} height={scale(24)} viewBox="0 0 24 24" fill="none">
+            <path
+              d="M12.5 3H11.5C10.9477 3 10.5 3.44772 10.5 4V5C10.5 5.55228 10.9477 6 11.5 6H12.5C13.0523 6 13.5 5.55228 13.5 5V4C13.5 3.44772 13.0523 3 12.5 3Z"
+              stroke="#141B34"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M12.5 10.5H11.5C10.9477 10.5 10.5 10.9477 10.5 11.5V12.5C10.5 13.0523 10.9477 13.5 11.5 13.5H12.5C13.0523 13.5 13.5 13.0523 13.5 12.5V11.5C13.5 10.9477 13.0523 10.5 12.5 10.5Z"
+              stroke="#141B34"
+              strokeWidth="1.5"
+            />
+            <path
+              d="M12.5 18H11.5C10.9477 18 10.5 18.4477 10.5 19V20C10.5 20.5523 10.9477 21 11.5 21H12.5C13.0523 21 13.5 20.5523 13.5 20V19C13.5 18.4477 13.0523 18 12.5 18Z"
+              stroke="#141B34"
+              strokeWidth="1.5"
+            />
+          </svg>
+        </button>
       </div>
 
       {/* Progress Bar */}
@@ -234,7 +249,7 @@ const StageHeader = ({
               marginBottom: `${scale(4)}px`
             }}
           >
-            تاريخ البداية
+            {t('stageDetails.startDateLabel')}
           </p>
           <p
             className="text-blue-700 font-ibm-arabic-bold"
@@ -257,7 +272,7 @@ const StageHeader = ({
               marginBottom: `${scale(4)}px`
             }}
           >
-            تاريخ النهاية
+            {t('stageDetails.endDateLabel')}
           </p>
           <p
             className="text-blue-700 font-ibm-arabic-bold"
@@ -280,7 +295,7 @@ const StageHeader = ({
               marginBottom: `${scale(4)}px`
             }}
           >
-            النسبة التقديرية
+            {t('stageDetails.estimatedRatio')}
           </p>
           <p
             className="text-blue-700 font-ibm-arabic-bold text-center"
@@ -351,7 +366,7 @@ const StageHeader = ({
             className="font-ibm-arabic-semibold text-gray-700"
             style={{ fontSize: `${scale(13)}px` }}
           >
-            إرفاق إنجاز المرحلة
+            {t('stageDetails.attachStageAchievement')}
           </span>
         </button>
       </div>
@@ -381,9 +396,21 @@ const SubStageCard = ({
   onNoteClick?: (note: any) => void;
   user: any;
 }) => {
+  const { t, dir } = useTranslation();
   const [showNotes, setShowNotes] = useState(false);
   const isCompleted = subStage.Done === 'true';
   let completedBy: ClosingOperation | null = null;
+
+  // Function to translate operation types
+  const translateOperationType = (type: string) => {
+    if (type === 'تم الانجاز') {
+      return t('stageDetails.achievementCompleted');
+    }
+    if (type === 'إلغاء الانجاز') {
+      return t('stageDetails.achievementCancelled');
+    }
+    return type;
+  };
 
   if (isCompleted && subStage.closingoperations) {
     try {
@@ -554,17 +581,20 @@ const SubStageCard = ({
                 </p>
               </div>
               <div
-                className="bg-green-100"
+                className={completedBy.type === 'إلغاء الانجاز' ? 'bg-red-100' : 'bg-green-100'}
                 style={{
                   padding: `${scale(6)}px ${scale(12)}px`,
                   borderRadius: `${scale(20)}px`
                 }}
               >
                 <span
-                  className="font-ibm-arabic-medium text-green-700"
-                  style={{ fontSize: `${scale(11)}px` }}
+                  className={`font-ibm-arabic-medium ${completedBy.type === 'إلغاء الانجاز' ? 'text-red-700' : 'text-green-700'}`}
+                  style={{
+                    fontSize: `${scale(11)}px`,
+                    direction: dir as 'rtl' | 'ltr'
+                  }}
                 >
-                  {completedBy.type}
+                  {translateOperationType(completedBy.type)}
                 </span>
               </div>
             </div>
@@ -631,17 +661,20 @@ const SubStageCard = ({
                       </div>
                     </div>
                     <div
-                      className="bg-green-100"
+                      className={achievement.type === 'إلغاء الانجاز' ? 'bg-red-100' : 'bg-green-100'}
                       style={{
                         padding: `${scale(4)}px ${scale(8)}px`,
                         borderRadius: `${scale(12)}px`
                       }}
                     >
                       <span
-                        className="font-ibm-arabic-medium text-green-700"
-                        style={{ fontSize: `${scale(10)}px` }}
+                        className={`font-ibm-arabic-medium ${achievement.type === 'إلغاء الانجاز' ? 'text-red-700' : 'text-green-700'}`}
+                        style={{
+                          fontSize: `${scale(10)}px`,
+                          direction: dir as 'rtl' | 'ltr'
+                        }}
                       >
-                        {achievement.type}
+                        {translateOperationType(achievement.type)}
                       </span>
                     </div>
                   </div>
@@ -744,6 +777,7 @@ const StageDetailsPage = () => {
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation, hasPermission } = useValidityUser();
+  const { t, isRTL, dir } = useTranslation();
 
   const { project, fetchProjectDetails } = useProjectDetails();
   const { subStages, loading: loadingSub, hasMore, fetchInitial, loadMore, error: subError, setSubStages, uploadStageAchievement } = useSubStages();
@@ -774,6 +808,12 @@ const StageDetailsPage = () => {
 
   // Achievement modal state
   const [showAchievementModal, setShowAchievementModal] = useState(false);
+
+  // Stage options modal state
+  const [showStageOptionsModal, setShowStageOptionsModal] = useState(false);
+  const [loadingPDF, setLoadingPDF] = useState(false);
+  const [deletingStage, setDeletingStage] = useState(false);
+  const [showDeleteStageConfirm, setShowDeleteStageConfirm] = useState(false);
 
   // Notes hook
   const { addNote, loading: notesLoading } = useSubStageNotes();
@@ -968,6 +1008,12 @@ const StageDetailsPage = () => {
     }
   };
 
+  // Handle stage settings button click
+  const handleStageSettings = () => {
+    setShowStageOptionsModal(true);
+  };
+
+  // Handle edit stage from options modal
   const handleEditStage = async () => {
     if (!stageDetails) return;
 
@@ -977,19 +1023,101 @@ const StageDetailsPage = () => {
       return;
     }
 
+    setShowStageOptionsModal(false);
     setShowStageEditModal(true);
   };
 
-  const handleUpdateStage = async (name: string, days: number) => {
+  // Handle generate PDF report
+  const handleGeneratePDF = async () => {
     if (!stageDetails) return;
 
     try {
-      await axiosInstance.put('/brinshCompany/UpdateDataStage', {
+      setLoadingPDF(true);
+      const response = await axiosInstance.get(
+        `/brinshCompany/BringreportStage?ProjectID=${projectId}&StageID=${stageDetails.StageID}`,
+        {
+          headers: { Authorization: `Bearer ${user.accessToken}` }
+        }
+      );
+
+      if (response.status === 200 && response.data.namefile) {
+        // Open PDF in new tab - matching mobile app behavior
+        const pdfUrl = `${process.env.NEXT_PUBLIC_FILE_URL}/${response.data.namefile}`;
+        window.open(pdfUrl, '_blank');
+        Tostget(t('stageDetails.pdfGenerated'), 'success');
+        setShowStageOptionsModal(false);
+      } else {
+        Tostget(t('stageDetails.pdfGenerateError'), 'error');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      Tostget(t('stageDetails.pdfGenerateError'), 'error');
+    } finally {
+      setLoadingPDF(false);
+    }
+  };
+
+  // Handle delete stage from options modal
+  const handleDeleteStageClick = async () => {
+    if (!stageDetails) return;
+
+    // التحقق من الصلاحيات
+    const hasPermission = await Uservalidation('حذف مرحلة رئيسية', projectId);
+    if (!hasPermission) {
+      return;
+    }
+
+    setShowStageOptionsModal(false);
+    setShowDeleteStageConfirm(true);
+  };
+
+  // Confirm delete stage
+  const handleConfirmDeleteStage = async () => {
+    if (!stageDetails) return;
+
+    try {
+      setDeletingStage(true);
+      const response = await axiosInstance.get(
+        `/brinshCompany/DeleteStageHome?ProjectID=${projectId}&StageID=${stageDetails.StageID}`,
+        {
+          headers: { Authorization: `Bearer ${user.accessToken}` }
+        }
+      );
+
+      if (response.status === 200) {
+        Tostget(t('stageDetails.stageDeleted'), 'success');
+        setShowDeleteStageConfirm(false);
+        // Navigate back to project page
+        router.push(`/project/${projectId}`);
+      }
+    } catch (error) {
+      console.error('Error deleting stage:', error);
+      Tostget(t('stageDetails.stageDeleteError'), 'error');
+    } finally {
+      setDeletingStage(false);
+    }
+  };
+
+  const handleUpdateStage = async (name: string, days: number, ratio?: number, attached?: string) => {
+    if (!stageDetails) return;
+
+    try {
+      const updateData: any = {
         ProjectID: projectId,
         StageID: stageDetails.StageID,
         StageName: name,
         Days: days
-      }, {
+      };
+
+      // إضافة الحقول الاختيارية إذا كانت موجودة
+      if (ratio !== undefined) {
+        updateData.Ratio = ratio;
+      }
+      if (attached !== undefined) {
+        updateData.attached = attached;
+      }
+
+      await axiosInstance.put('/brinshCompany/UpdateDataStage', updateData, {
         headers: {
           Authorization: `Bearer ${user.accessToken}`,
           'Content-Type': 'application/json'
@@ -1118,11 +1246,11 @@ const StageDetailsPage = () => {
       }
 
       // رسالة نجاح
-      Tostget('تم حذف المهمة الفرعية بنجاح');
+      Tostget(t('stageDetails.taskDeletedSuccess'));
 
     } catch (error) {
       console.error('Error deleting sub-stage:', error);
-      Tostget('فشل في حذف المهمة الفرعية');
+      Tostget(t('stageDetails.taskDeletedError'));
     } finally {
       setDeletingSubStage(false);
     }
@@ -1146,13 +1274,19 @@ const StageDetailsPage = () => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
             </svg>
           </div>
-          <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-2">خطأ في تحميل البيانات</h3>
+          <h3
+            className="text-lg font-ibm-arabic-bold text-gray-900 mb-2"
+            style={{ direction: dir as 'rtl' | 'ltr' }}
+          >
+            {t('stageDetails.loadingError')}
+          </h3>
           <p className="text-gray-600 mb-4">{subError}</p>
           <button
             onClick={() => stageDetails?.StageID && fetchInitial(projectId, stageDetails.StageID)}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors"
+            style={{ direction: dir as 'rtl' | 'ltr' }}
           >
-            إعادة المحاولة
+            {t('stageDetails.retryButton')}
           </button>
         </div>
       </div>
@@ -1163,9 +1297,9 @@ const StageDetailsPage = () => {
     <ResponsiveLayout
       header={
         <PageHeader
-          title={stageDetails?.StageName || 'جارٍ التحميل...'}
+          title={stageDetails?.StageName || t('stageDetails.loading')}
           backButton={
-            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="رجوع">
+            <button onClick={() => router.back()} className="p-2 hover:bg-gray-50 rounded-lg" aria-label={t('stageDetails.back')}>
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -1186,29 +1320,41 @@ const StageDetailsPage = () => {
                   disabled={(typeof stageDetails?.rate === 'number' ? stageDetails.rate : 0) < 100 && stageDetails?.Done !== 'true'}
                 >
                   {stageDetails?.Done === 'true'
-                    ? ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? 'عمليات الفتح' : 'فتح المرحلة')
-                    : ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? 'عمليات الاقفال' : 'اقفال المرحلة')}
+                    ? ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? t('stageDetails.openOperations') : t('stageDetails.openStage'))
+                    : ((stageDetails?.NoteOpen !== null || stageDetails?.NoteClosed !== null) ? t('stageDetails.closeOperations') : t('stageDetails.closeStage'))}
                 </button>
               )}
               {hasPermission('إضافة تأخيرات') && (
-                <button onClick={() => router.push(`/project/${projectId}/stage/${stageId}/delays`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="التأخيرات">
+                <button onClick={() => router.push(`/project/${projectId}/stage/${stageId}/delays`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label={t('stageDetails.delays')}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </button>
               )}
-              <button onClick={() => router.push(`/chat?ProjectID=${projectId}&typess=${encodeURIComponent(String(stageId))}&nameRoom=${encodeURIComponent('تواصل')}&nameProject=${encodeURIComponent(stageDetails?.StageName || '')}`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تواصل">
+              <button onClick={() => router.push(`/chat?ProjectID=${projectId}&typess=${encodeURIComponent(String(stageId))}&nameRoom=${encodeURIComponent(t('stageDetails.chat'))}&nameProject=${encodeURIComponent(stageDetails?.StageName || '')}`)} className="p-2 hover:bg-gray-50 rounded-lg" aria-label={t('stageDetails.chat')}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
               </button>
-              {hasPermission('تعديل مرحلة رئيسية') && (
-                <button onClick={handleEditStage} className="p-2 hover:bg-gray-50 rounded-lg" aria-label="تعديل">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3B82F6">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                </button>
-              )}
+              <button onClick={handleStageSettings} className="p-2 hover:bg-gray-50 rounded-lg" aria-label={t('stageOptions.settings')}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M12.5 3H11.5C10.9477 3 10.5 3.44772 10.5 4V5C10.5 5.55228 10.9477 6 11.5 6H12.5C13.0523 6 13.5 5.55228 13.5 5V4C13.5 3.44772 13.0523 3 12.5 3Z"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M12.5 10.5H11.5C10.9477 10.5 10.5 10.9477 10.5 11.5V12.5C10.5 13.0523 10.9477 13.5 11.5 13.5H12.5C13.0523 13.5 13.5 13.0523 13.5 12.5V11.5C13.5 10.9477 13.0523 10.5 12.5 10.5Z"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                  />
+                  <path
+                    d="M12.5 18H11.5C10.9477 18 10.5 18.4477 10.5 19V20C10.5 20.5523 10.9477 21 11.5 21H12.5C13.0523 21 13.5 20.5523 13.5 20V19C13.5 18.4477 13.0523 18 12.5 18Z"
+                    stroke="#6B7280"
+                    strokeWidth="1.5"
+                  />
+                </svg>
+              </button>
             </div>
           }
         />
@@ -1250,7 +1396,7 @@ const StageDetailsPage = () => {
                     marginBottom: `${scale(4)}px`
                   }}
                 >
-                  تاريخ البداية
+                  {t('stageDetails.startDateLabel')}
                 </p>
                 <p
                   className="text-blue-700 font-ibm-arabic-bold"
@@ -1273,7 +1419,7 @@ const StageDetailsPage = () => {
                     marginBottom: `${scale(4)}px`
                   }}
                 >
-                  تاريخ النهاية
+                  {t('stageDetails.endDateLabel')}
                 </p>
                 <p
                   className="text-blue-700 font-ibm-arabic-bold"
@@ -1296,7 +1442,7 @@ const StageDetailsPage = () => {
                     marginBottom: `${scale(4)}px`
                   }}
                 >
-                  النسبة التقديرية
+                  {t('stageDetails.estimatedRatio')}
                 </p>
                 <p
                   className="text-blue-700 font-ibm-arabic-bold text-center"
@@ -1325,7 +1471,7 @@ const StageDetailsPage = () => {
                   className="font-ibm-arabic-semibold text-gray-700"
                   style={{ fontSize: `${scale(13)}px` }}
                 >
-                  إرفاق إنجاز المرحلة
+                  {t('stageDetails.attachStageAchievement')}
                 </span>
               </button>
             </div>
@@ -1347,7 +1493,7 @@ const StageDetailsPage = () => {
                 fontSize: `${scale(14)}px`
               }}
             >
-              إنشاء مهمة فرعية جديدة
+              {t('stageDetails.addTask')}
             </button>
           )}
 
@@ -1365,7 +1511,7 @@ const StageDetailsPage = () => {
                   fontSize: `${scale(13)}px`
                 }}
               >
-                إلغاء
+                {t('common.cancel')}
               </button>
             )}
             <button
@@ -1377,7 +1523,7 @@ const StageDetailsPage = () => {
                 fontSize: `${scale(14)}px`
               }}
             >
-              {isSelectMode ? 'حفظ' : 'تحديد'}
+              {isSelectMode ? t('stageDetails.save') : t('stageDetails.select')}
             </button>
           </div>
         </div>
@@ -1387,7 +1533,12 @@ const StageDetailsPage = () => {
         {(loadingStage || (loadingSub && subStages.length === 0)) ? (
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600" />
-            <span className="mr-3 text-gray-600 font-ibm-arabic-medium">جاري تحميل المراحل الفرعية...</span>
+            <span
+              className={`${isRTL ? 'mr-3' : 'ml-3'} text-gray-600 font-ibm-arabic-medium`}
+              style={{ direction: dir as 'rtl' | 'ltr' }}
+            >
+              {t('stageDetails.loadingSubStages')}
+            </span>
           </div>
         ) : subStages.length === 0 ? (
           <div className="text-center py-12">
@@ -1396,7 +1547,7 @@ const StageDetailsPage = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
             </div>
-            <p className="text-gray-500 font-ibm-arabic-medium">لا توجد مراحل فرعية</p>
+            <p className="text-gray-500 font-ibm-arabic-medium">{t('stageDetails.noTasks')}</p>
           </div>
         ) : (
           <div
@@ -1454,7 +1605,7 @@ const StageDetailsPage = () => {
                       }}
                     />
                   )}
-                  {loadingSub ? 'جاري التحميل...' : 'تحميل المزيد'}
+                  {loadingSub ? t('stageDetails.loading') : t('stageDetails.loadMore')}
                 </button>
               </div>
             )}
@@ -1478,9 +1629,12 @@ const StageDetailsPage = () => {
                 />
                 <span
                   className="text-gray-600 font-ibm-arabic-medium"
-                  style={{ fontSize: `${scale(13)}px` }}
+                  style={{
+                    fontSize: `${scale(13)}px`,
+                    direction: dir as 'rtl' | 'ltr'
+                  }}
                 >
-                  جاري تحميل المزيد...
+                  {t('stageDetails.loadingMoreSubStages')}
                 </span>
               </div>
             )}
@@ -1536,7 +1690,7 @@ const StageDetailsPage = () => {
                     lineHeight: 1.4
                   }}
                 >
-                  إضافة مهمة فرعية جديدة
+                  {t('stageDetails.addNewTask')}
                 </h3>
               </div>
               <button
@@ -1575,13 +1729,13 @@ const StageDetailsPage = () => {
                         marginBottom: '8px'
                       }}
                     >
-                      اسم المهمة
+                      {t('stageDetails.taskName')}
                     </label>
                     <input
                       name="name"
                       type="text"
                       required
-                      placeholder="أدخل اسم المهمة الفرعية"
+                      placeholder={t('stageDetails.enterTaskName')}
                       className="w-full rounded-xl transition-all duration-200 focus:scale-[1.02]"
                       style={{
                         padding: '12px 16px',
@@ -1603,7 +1757,7 @@ const StageDetailsPage = () => {
                         marginBottom: '8px'
                       }}
                     >
-                      مرفق (اختياري)
+                      {t('stageDetails.attachment')}
                     </label>
                     <input
                       name="file"
@@ -1647,7 +1801,7 @@ const StageDetailsPage = () => {
                       width: '45%'
                     }}
                   >
-                    إضافة
+                    {t('stageDetails.add')}
                   </button>
                   <button
                     type="button"
@@ -1663,7 +1817,7 @@ const StageDetailsPage = () => {
                       width: '45%'
                     }}
                   >
-                    إلغاء
+                    {t('stageDetails.cancel')}
                   </button>
                 </div>
               </form>
@@ -1757,11 +1911,11 @@ const StageDetailsPage = () => {
           setPendingSubStageId(null);
         }}
         onConfirm={confirmToggleComplete}
-        title="تأكيد العملية"
+        title={t('stageDetails.confirmOperation')}
         message={
           pendingSubStageId && subStages.find(stage => stage.StageSubID === pendingSubStageId)?.Done === 'true'
-            ? 'هل ترغب بالفعل إلغاء الإنجاز؟'
-            : 'هل ترغب بالفعل تنفيذ المرحلة؟'
+            ? t('stageDetails.confirmCancelCompletion')
+            : t('stageDetails.confirmExecuteStage')
         }
         isLoading={isToggleLoading}
       />
@@ -1799,6 +1953,36 @@ const StageDetailsPage = () => {
         onClose={() => setShowAchievementModal(false)}
         onSubmit={handleUploadAchievement}
         stageName={stageDetails?.StageName || ''}
+      />
+
+      {/* Stage Options Modal (Three-dot menu) */}
+      {stageDetails && (
+        <StageOptionsModal
+          isOpen={showStageOptionsModal}
+          onClose={() => setShowStageOptionsModal(false)}
+          onEdit={handleEditStage}
+          onGeneratePDF={handleGeneratePDF}
+          onDelete={handleDeleteStageClick}
+          loading={deletingStage}
+          loadingPDF={loadingPDF}
+          stage={{
+            StageID: stageDetails.StageID,
+            ProjectID: stageDetails.ProjectID,
+            StageName: stageDetails.StageName
+          }}
+        />
+      )}
+
+      {/* Delete Stage Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={showDeleteStageConfirm}
+        onClose={() => setShowDeleteStageConfirm(false)}
+        onConfirm={handleConfirmDeleteStage}
+        title={t('stageOptions.deleteMainStage')}
+        message={`${t('common.confirmDelete')} "${stageDetails?.StageName}"?`}
+        confirmText={t('common.delete')}
+        cancelText={t('common.cancel')}
+        isLoading={deletingStage}
       />
     </ResponsiveLayout>
   );

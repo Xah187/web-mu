@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface LogoutModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
   isLoading = false
 }) => {
   const { size } = useAppSelector(state => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   return (
     <AnimatePresence>
@@ -56,6 +58,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
               ease: [0.25, 0.46, 0.45, 0.94]
             }}
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md mx-4"
+            dir={dir}
             style={{
               backgroundColor: 'var(--color-surface)',
               border: '2px solid var(--color-text-primary)',
@@ -127,7 +130,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                   marginBottom: `${scale(16)}px`
                 }}
               >
-                تأكيد تسجيل الخروج
+                {t('settings.logoutConfirm')}
               </h3>
 
               {/* Message */}
@@ -144,7 +147,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                   marginRight: 'auto'
                 }}
               >
-                هل أنت متأكد من رغبتك في تسجيل الخروج من حسابك؟
+                {t('common.confirmLogoutMessage')}
               </p>
             </div>
 
@@ -210,7 +213,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                         marginBottom: `${scale(6)}px`
                       }}
                     >
-                      تنبيه مهم
+                      {t('common.importantNote')}
                     </p>
                     <p
                       style={{
@@ -222,7 +225,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                         opacity: 1
                       }}
                     >
-                      سيتم إنهاء جلستك الحالية وستحتاج إلى تسجيل الدخول مرة أخرى للوصول إلى حسابك.
+                      {t('common.logoutWarning')}
                     </p>
                   </div>
                 </div>
@@ -259,7 +262,7 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                     e.currentTarget.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
                   }}
                 >
-                  إلغاء
+                  {t('common.cancel')}
                 </button>
 
                 {/* Confirm Button */}
@@ -297,10 +300,10 @@ const LogoutModal: React.FC<LogoutModalProps> = ({
                         className="border-2 border-white border-t-transparent rounded-full animate-spin"
                         style={{ width: scale(18), height: scale(18) }}
                       />
-                      <span>جاري تسجيل الخروج...</span>
+                      <span>{t('common.loggingOut')}</span>
                     </div>
                   ) : (
-                    'تسجيل الخروج'
+                    t('nav.logout')
                   )}
                 </button>
               </div>

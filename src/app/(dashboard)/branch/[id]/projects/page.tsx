@@ -16,6 +16,7 @@ import { EmployeeOnly, PermissionBasedVisibility, RequestsPermissionGuard } from
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
 import useDataHome from '@/hooks/useDataHome';
+import { useTranslation } from '@/hooks/useTranslation';
 
 /**
  * Get color for contract type - مطابق للتطبيق المحمول
@@ -38,26 +39,28 @@ const getContractTypeColor = (typeContract: string): string => {
 // Project Card Component - Exactly matching mobile app BoxProject
 const ProjectCardMobile = ({
   project,
-  notificationCount,
   onPress,
-  onNotifications,
   onLocation,
   onGuard,
   onClose,
   onDelete,
   user,
-  loading
+  loading,
+  t,
+  isRTL,
+  dir
 }: {
   project: Project;
-  notificationCount: number;
   onPress: () => void;
-  onNotifications: () => void;
   onLocation: () => void;
   onGuard: () => void;
   onClose: () => void;
   onDelete: () => void;
   user: any;
   loading: boolean;
+  t: (key: string, params?: any) => string;
+  isRTL: boolean;
+  dir: string;
 }) => {
   const [showFullCost, setShowFullCost] = useState(false);
   const { hasPermission } = useValidityUser();
@@ -66,32 +69,13 @@ const ProjectCardMobile = ({
   const contractColor = getContractTypeColor(project.TypeOFContract || '');
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+    <div className="bg-white rounded-2xl p-4 shadow-lg border-2 border-gray-100 hover:border-blue-200 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1" style={{ direction: dir as 'rtl' | 'ltr' }}>
       {/* Header - Clickable area to enter project */}
       <div
         className="relative mb-4 cursor-pointer hover:bg-gray-50 rounded-lg p-3 transition-colors"
         onClick={onPress}
       >
-        {/* زر الإشعارات ثابت ولا يؤثر على التوسيط */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onNotifications();
-          }}
-          className="absolute left-2 top-2 p-2 hover:bg-gray-50 rounded-lg transition-colors"
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
-          {notificationCount > 0 && (
-            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-              {notificationCount}
-            </span>
-          )}
-        </button>
-
-        {/* زر الحذف في نفس مستوى زر الإشعارات */}
+        {/* زر الحذف */}
         {hasPermission('حذف المشروع') && (
           <button
             onClick={(e) => {
@@ -186,7 +170,7 @@ const ProjectCardMobile = ({
       </div>
 
       {/* Details Section */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <div className="flex items-center">
           {showFullCost && (
             <div
@@ -200,29 +184,29 @@ const ProjectCardMobile = ({
           )}
           <button
             onClick={() => setShowFullCost(!showFullCost)}
-            className="text-right"
+            style={{ textAlign: isRTL ? 'right' : 'left' }}
           >
             <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13) }}>
-              الرصيد:
+              {t('projectsPage.balance')}:
             </p>
             <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13) }}>
-              {Totaltofixt(project.cost || 0)} ر.س
+              {Totaltofixt(project.cost || 0)} {isRTL ? 'ر.س' : 'SAR'}
             </p>
           </button>
         </div>
 
         <div className="text-center">
           <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13) }}>
-            بداية المشروع
+            {t('projectsPage.projectStart')}
           </p>
           <p className="font-ibm-arabic-semibold text-gray-900" style={{ fontSize: scale(13) }}>
-            {project.ProjectStartdate ? formatDateEnglish(project.ProjectStartdate) : 'لم يحدد بعد'}
+            {project.ProjectStartdate ? formatDateEnglish(project.ProjectStartdate) : t('projectsPage.notSetYet')}
           </p>
         </div>
       </div>
 
       {/* Action Buttons */}
-      <div className="flex items-center justify-between mb-4 space-x-2 space-x-reverse">
+      <div className="flex items-center justify-between mb-4 space-x-2 space-x-reverse" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <button
           onClick={(e) => {
             e.stopPropagation();
@@ -234,7 +218,7 @@ const ProjectCardMobile = ({
             <path d="M15.5 11C15.5 12.933 13.933 14.5 12 14.5C10.067 14.5 8.5 12.933 8.5 11C8.5 9.067 10.067 7.5 12 7.5C13.933 7.5 15.5 9.067 15.5 11Z"/>
             <path d="M12 2C16.8706 2 21 6.03298 21 10.9258C21 15.8965 16.8033 19.3847 12.927 21.7567C12.6445 21.9162 12.325 22 12 22C11.675 22 11.3555 21.9162 11.073 21.7567C7.2039 19.3616 3 15.9137 3 10.9258C3 6.03298 7.12944 2 12 2Z"/>
           </svg>
-          <span className="font-ibm-arabic-semibold text-gray-900 text-xs mt-1">الموقع</span>
+          <span className="font-ibm-arabic-semibold text-gray-900 text-xs mt-1">{t('projectsPage.location')}</span>
         </button>
 
         <button
@@ -247,7 +231,7 @@ const ProjectCardMobile = ({
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2117FB" strokeWidth="1.5">
             <path d="M5.4221 11.9539C4.66368 10.6314 4.29748 9.55158 4.07667 8.45696C3.7501 6.83806 4.49745 5.25665 5.7355 4.24758C6.25876 3.82111 6.85858 3.96682 7.168 4.52192L7.86654 5.77513C8.42023 6.76845 8.69707 7.26511 8.64216 7.79167C8.58726 8.31823 8.2139 8.74708 7.46718 9.6048L5.4221 11.9539ZM5.4221 11.9539C6.95721 14.6306 9.36627 17.041 12.0461 18.5779M12.0461 18.5779C13.3686 19.3363 14.4484 19.7025 15.543 19.9233C17.1619 20.2499 18.7434 19.5025 19.7524 18.2645C20.1789 17.7413 20.0332 17.1414 19.4781 16.832L18.2249 16.1334C17.2315 15.5797 16.7349 15.3029 16.2083 15.3578C15.6818 15.4127 15.2529 15.7861 14.3952 16.5328L12.0461 18.5779Z"/>
           </svg>
-          <span className="font-ibm-arabic-semibold text-gray-900 text-xs mt-1">الحارس</span>
+          <span className="font-ibm-arabic-semibold text-gray-900 text-xs mt-1">{t('projectsPage.guard')}</span>
         </button>
 
         {project.rate !== undefined && project.rate >= 0 && (
@@ -258,7 +242,7 @@ const ProjectCardMobile = ({
             }}
             className="flex-1 flex flex-col items-center p-2 rounded-lg transition-colors bg-red-50 hover:bg-red-100 text-red-600"
             disabled={loading}
-            aria-label="إغلاق المشروع"
+            aria-label={t('projectsPage.closeProject')}
           >
             {loading ? (
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
@@ -268,7 +252,7 @@ const ProjectCardMobile = ({
                   <rect x="3" y="11" width="18" height="10" rx="2" />
                   <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
-                <span className="font-ibm-arabic-semibold text-xs mt-1">إغلاق المشروع</span>
+                <span className="font-ibm-arabic-semibold text-xs mt-1">{t('projectsPage.closeProject')}</span>
               </>
             )}
           </button>
@@ -319,8 +303,9 @@ const BranchProjectsPage = () => {
   const branchName = searchParams.get('name') || 'الفرع';
 
   const { user } = useSelector((state: any) => state.user || {});
-  const { Uservalidation, hasPermission } = useValidityUser();
+  const { Uservalidation } = useValidityUser();
   const { saveBranchData } = useDataHome();
+  const { t, isRTL, dir } = useTranslation();
 
   const {
     projects,
@@ -341,7 +326,6 @@ const BranchProjectsPage = () => {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
   const [searchTitle, setSearchTitle] = useState('');
   const [isSearching, setIsSearching] = useState(false);
-  const [notificationCounts, setNotificationCounts] = useState<{ [key: number]: number }>({});
   const [showUserProfile, setShowUserProfile] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showEditBranchModal, setShowEditBranchModal] = useState(false);
@@ -415,10 +399,6 @@ const BranchProjectsPage = () => {
 
   const handleSettings = () => {
     setShowSettingsModal(true);
-  };
-
-  const handleNotificationsBranch = () => {
-    router.push(`/notifications?branchId=${branchId}&type=allBrinsh`);
   };
 
   const handleUserProfile = () => {
@@ -517,20 +497,16 @@ const BranchProjectsPage = () => {
     router.push(`/project/${project.id}`);
   };
 
-  const handleProjectNotifications = (projectId: number) => {
-    router.push(`/project/${projectId}/notifications`);
-  };
-
   const handleProjectLocation = async (project: Project) => {
     if (project.LocationProject) {
       try {
         window.open(project.LocationProject, '_blank');
       } catch (error) {
         console.error('Error opening location:', error);
-        alert('لم يتم تحديد موقع للمشروع');
+        alert(t('projectsPage.noLocationSet'));
       }
     } else {
-      alert('لم يتم تحديد موقع للمشروع');
+      alert(t('projectsPage.noLocationSet'));
     }
   };
 
@@ -546,7 +522,7 @@ const BranchProjectsPage = () => {
 
         // التأكد من أن الرقم ليس فارغاً بعد التنظيف
         if (phoneNumber.length === 0) {
-          alert('رقم الحارس غير صحيح');
+          alert(t('projectsPage.invalidGuardNumber'));
           return;
         }
 
@@ -570,10 +546,10 @@ const BranchProjectsPage = () => {
         console.log(`محاولة الاتصال بـ: ${phoneNumber}`);
       } catch (error) {
         console.error('خطأ في معالجة رقم الهاتف:', error);
-        alert('خطأ في رقم الحارس');
+        alert(t('projectsPage.guardNumberError'));
       }
     } else {
-      alert('لم يتم تحديد رقم للحارس');
+      alert(t('projectsPage.noGuardSet'));
     }
   };
 
@@ -603,17 +579,19 @@ const BranchProjectsPage = () => {
     setActionLoading(prev => ({ ...prev, [selectedProject.id]: true }));
     try {
       if (actionType === 'close') {
-        await axiosInstance.get('/brinshCompany/CloseOROpenProject', {
-          params: { idProject: selectedProject.id },
+        const response = await axiosInstance.get(`/brinshCompany/CloseOROpenProject?idProject=${selectedProject.id}`, {
           headers: { Authorization: `Bearer ${user?.accessToken}` }
         });
-        alert('تمت عملية إغلاق المشروع بنجاح');
+
+        if (response.status === 200) {
+          alert(t('projectsPage.closeSuccess'));
+        }
       } else if (actionType === 'delete') {
         await axiosInstance.get('/brinshCompany/DeletProjectwithDependencies', {
           params: { idProject: selectedProject.id },
           headers: { Authorization: `Bearer ${user?.accessToken}` }
         });
-        alert('تمت عملية حذف المشروع بنجاح');
+        alert(t('projectsPage.deleteSuccess'));
       }
 
       setShowDeleteModal(false);
@@ -624,7 +602,7 @@ const BranchProjectsPage = () => {
       await refreshProjects(branchId);
     } catch (error) {
       console.error(`Error ${actionType}ing project:`, error);
-      alert(`فشل في ${actionType === 'close' ? 'إغلاق' : 'حذف'} المشروع`);
+      alert(actionType === 'close' ? t('projectsPage.closeFailed') : t('projectsPage.deleteFailed'));
     } finally {
       setActionLoading(prev => ({ ...prev, [selectedProject.id]: false }));
     }
@@ -655,11 +633,11 @@ const BranchProjectsPage = () => {
 
       // عرض رسالة إذا لم توجد نتائج
       if (searchResults.length === 0) {
-        alert('لم يتم العثور على مشاريع تطابق البحث');
+        alert(t('projectsPage.noSearchResultsMessage'));
       }
     } catch (error) {
       console.error('خطأ في البحث:', error);
-      alert('فشل في البحث');
+      Tostget(t('common.error'), 'error');
     }
   };
 
@@ -675,10 +653,10 @@ const BranchProjectsPage = () => {
 
   if (loading && projects.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-ibm-arabic-medium">جاري تحميل المشاريع...</p>
+          <p className="text-gray-600 font-ibm-arabic-medium">{t('projectsPage.loadingProjects')}</p>
         </div>
       </div>
     );
@@ -686,14 +664,14 @@ const BranchProjectsPage = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center" style={{ direction: dir as 'rtl' | 'ltr' }}>
         <div className="text-center">
-          <p className="text-red-600 font-ibm-arabic-medium mb-4">حدث خطأ في تحميل المشاريع</p>
+          <p className="text-red-600 font-ibm-arabic-medium mb-4">{t('projectsPage.errorLoadingProjects')}</p>
           <button
             onClick={() => fetchProjects(branchId)}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg font-ibm-arabic-semibold"
           >
-            إعادة المحاولة
+            {t('projectsPage.retryLoading')}
           </button>
         </div>
       </div>
@@ -751,17 +729,6 @@ const BranchProjectsPage = () => {
                 </PermissionBasedVisibility>
               </EmployeeOnly>
 
-              <button onClick={handleNotificationsBranch} className="relative p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإشعارات">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                  <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                </svg>
-                {Object.values(notificationCounts).reduce((a, b) => a + b, 0) > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
-                    {Object.values(notificationCounts).reduce((a, b) => a + b, 0) > 99 ? '99+' : Object.values(notificationCounts).reduce((a, b) => a + b, 0)}
-                  </span>
-                )}
-              </button>
               <button onClick={handleUserProfile} className="w-9 h-9 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center" aria-label="الملف الشخصي">
                 <Image src="/images/figma/male.png" alt="User" width={36} height={36} className="rounded-full" />
               </button>
@@ -784,7 +751,7 @@ const BranchProjectsPage = () => {
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 5v14m-7-7h14"/>
               </svg>
-              إنشاء مشروع
+              {t('projectsPage.createProject')}
             </button>
           </PermissionBasedVisibility>
         </EmployeeOnly>
@@ -796,14 +763,14 @@ const BranchProjectsPage = () => {
               onClick={handleClearSearch}
               className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg font-ibm-arabic-medium border border-gray-200 hover:bg-gray-200 transition-colors shadow-sm"
             >
-              إلغاء البحث
+              {t('projectsPage.cancelSearch')}
             </button>
           )}
 
           <button
             onClick={handleSearch}
             className="p-2 bg-gray-100 rounded-lg border border-gray-200 hover:bg-gray-200 transition-colors shadow-sm"
-            title="بحث"
+            title={t('projectsPage.search')}
           >
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="11" cy="11" r="8" strokeWidth="2"/>
@@ -820,15 +787,15 @@ const BranchProjectsPage = () => {
       <div className="px-4 pb-20 pt-4">
         {/* Search Results Info */}
         {isSearching && searchTitle && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-8">
-            <p className="text-blue-800 font-ibm-arabic-medium text-sm text-right">
-              نتائج البحث عن: "{searchTitle}" ({projects.length} مشروع)
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-8" style={{ direction: dir as 'rtl' | 'ltr' }}>
+            <p className="text-blue-800 font-ibm-arabic-medium text-sm" style={{ textAlign: isRTL ? 'right' : 'left' }}>
+              {t('projectsPage.searchResults', { query: searchTitle, count: projects.length })}
             </p>
           </div>
         )}
 
         {projects.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12" style={{ direction: dir as 'rtl' | 'ltr' }}>
             <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" className="mx-auto mb-4 text-gray-400">
               {isSearching ? (
                 <>
@@ -844,12 +811,12 @@ const BranchProjectsPage = () => {
               )}
             </svg>
             <h3 className="text-lg font-ibm-arabic-semibold text-gray-900 mb-2">
-              {isSearching ? 'لم يتم العثور على مشاريع' : 'لا توجد مشاريع'}
+              {isSearching ? t('projectsPage.noSearchResults') : t('projectsPage.noProjects')}
             </h3>
             <p className="text-gray-600 font-ibm-arabic-regular">
               {isSearching
-                ? 'لم يتم العثور على مشاريع تطابق البحث'
-                : (canShowEmployee ? 'ابدأ بإنشاء أول مشروع' : 'لم يتم العثور على مشاريع في هذا الفرع')
+                ? t('projectsPage.noSearchResultsMessage')
+                : (canShowEmployee ? t('projectsPage.startCreatingProjects') : t('projectsPage.noProjectsInBranch'))
               }
             </p>
             {isSearching && (
@@ -857,7 +824,7 @@ const BranchProjectsPage = () => {
                 onClick={handleClearSearch}
                 className="mt-3 text-blue-600 font-ibm-arabic-medium hover:text-blue-800 transition-colors"
               >
-                عرض جميع المشاريع
+                {t('projectsPage.showAllProjects')}
               </button>
             )}
 
@@ -921,15 +888,16 @@ const BranchProjectsPage = () => {
                   <div key={`${project.id}-${index}`}>
                     <ProjectCardMobile
                       project={project}
-                      notificationCount={notificationCounts[project.id] || 0}
                       onPress={() => handleProjectPress(project)}
-                      onNotifications={() => handleProjectNotifications(project.id)}
                       onLocation={() => handleProjectLocation(project)}
                       onGuard={() => handleProjectGuard(project)}
                       onClose={() => handleCloseProject(project)}
                       onDelete={() => handleDeleteProject(project)}
                       user={user}
                       loading={actionLoading[project.id] || false}
+                      t={t}
+                      isRTL={isRTL}
+                      dir={dir}
                     />
                   </div>
                 ))}
@@ -947,10 +915,10 @@ const BranchProjectsPage = () => {
                   {loadingMore ? (
                     <div className="flex items-center space-x-2 space-x-reverse">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>جاري التحميل...</span>
+                      <span>{t('projectsPage.loading')}</span>
                     </div>
                   ) : (
-                    'تحميل المزيد'
+                    t('projectsPage.loadMore')
                   )}
                 </button>
               </div>
@@ -964,14 +932,14 @@ const BranchProjectsPage = () => {
       {/* Modals */}
       {showDeleteModal && selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md" style={{ direction: dir as 'rtl' | 'ltr' }}>
             <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4 text-center">
-              {actionType === 'delete' ? 'تأكيد الحذف' : 'تأكيد الإغلاق'}
+              {actionType === 'delete' ? t('projectsPage.confirmDelete') : t('projectsPage.confirmClose')}
             </h3>
             <p className="text-gray-600 font-ibm-arabic-regular mb-6 text-center">
               {actionType === 'delete'
-                ? `هل أنت متأكد من حذف المشروع "${selectedProject.Nameproject}"؟ هذا الإجراء لا يمكن التراجع عنه.`
-                : `هل أنت متأكد من إغلاق المشروع "${selectedProject.Nameproject}"؟`
+                ? t('projectsPage.deleteConfirmMessage', { name: selectedProject.Nameproject })
+                : t('projectsPage.closeConfirmMessage', { name: selectedProject.Nameproject })
               }
             </p>
             <div className="flex space-x-3 space-x-reverse">
@@ -984,7 +952,7 @@ const BranchProjectsPage = () => {
                 className="flex-1 bg-gray-200 text-gray-800 py-2 rounded-lg font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
                 disabled={actionLoading[selectedProject.id]}
               >
-                إلغاء
+                {t('common.cancel')}
               </button>
               <button
                 onClick={confirmAction}
@@ -996,8 +964,8 @@ const BranchProjectsPage = () => {
                 disabled={actionLoading[selectedProject.id]}
               >
                 {actionLoading[selectedProject.id]
-                  ? (actionType === 'delete' ? 'جاري الحذف...' : 'جاري الإغلاق...')
-                  : (actionType === 'delete' ? 'حذف' : 'إغلاق')
+                  ? (actionType === 'delete' ? t('projectsPage.deleting') : t('projectsPage.closing'))
+                  : (actionType === 'delete' ? t('projectsPage.delete') : t('projectsPage.close'))
                 }
               </button>
             </div>
@@ -1007,8 +975,8 @@ const BranchProjectsPage = () => {
 
       {showSearchModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">البحث في المشاريع</h3>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md" style={{ direction: dir as 'rtl' | 'ltr' }}>
+            <h3 className="text-lg font-ibm-arabic-bold text-gray-900 mb-4">{t('projectsPage.searchProjects')}</h3>
 
             {/* Search Input */}
             <div className="mb-6">
@@ -1017,8 +985,9 @@ const BranchProjectsPage = () => {
                   type="text"
                   value={searchTitle}
                   onChange={(e) => setSearchTitle(e.target.value)}
-                  placeholder="ادخل اسم المشروع هنا"
-                  className="w-full p-4 pr-12 border border-gray-200 rounded-xl font-ibm-arabic-medium text-right focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  placeholder={t('projectsPage.enterProjectName')}
+                  className="w-full p-4 pr-12 border border-gray-200 rounded-xl font-ibm-arabic-medium focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                  style={{ textAlign: isRTL ? 'right' : 'left', paddingRight: isRTL ? '3rem' : '1rem', paddingLeft: isRTL ? '1rem' : '3rem' }}
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -1026,7 +995,7 @@ const BranchProjectsPage = () => {
                     }
                   }}
                 />
-                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                <div className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2`}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7280">
                     <circle cx="11" cy="11" r="8" strokeWidth="2"/>
                     <path d="m21 21-4.35-4.35" strokeWidth="2" strokeLinecap="round"/>
@@ -1041,14 +1010,14 @@ const BranchProjectsPage = () => {
                 onClick={() => setShowSearchModal(false)}
                 className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
               >
-                إلغاء
+                {t('common.cancel')}
               </button>
               <button
                 onClick={performSearch}
                 disabled={!searchTitle.trim()}
                 className="flex-1 bg-blue-600 text-white py-3 rounded-xl font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                بحث
+                {t('projectsPage.search')}
               </button>
             </div>
           </div>

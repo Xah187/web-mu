@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
@@ -39,10 +39,19 @@ export default function AddMemberModal({
   const [loadingMore, setLoadingMore] = useState(false);
   const [currentBranchMembers, setCurrentBranchMembers] = useState<{[key: number]: any}>({});
 
+  // حفظ الأعضاء الأصليين عند فتح المودال - مطابق للتطبيق المحمول original_is_in
+  const originalBranchMemberIdsRef = useRef<number[]>([]);
+
   useEffect(() => {
     if (isOpen) {
       fetchCurrentBranchMembers();
       fetchCompanyMembers(true);
+    } else {
+      // تنظيف الحالة عند إغلاق المودال
+      setSearchTerm('');
+      setLastUserId(null);
+      setHasMore(true);
+      setCompanyMembers([]);
     }
   }, [isOpen]);
 
@@ -66,10 +75,15 @@ export default function AddMemberModal({
         setCurrentBranchMembers(response.data.checkGloble);
         console.log('✅ checkGloble:', response.data.checkGloble);
 
-        // تحديد الأعضاء الموجودين مسبقاً
+        // تحديد الأعضاء الموجودين مسبقاً وحفظهم في ref
         const existingMemberIds = Object.keys(response.data.checkGloble).map(id => parseInt(id));
+        originalBranchMemberIdsRef.current = existingMemberIds;
         setSelectedMembers(existingMemberIds);
         console.log('🔄 الأعضاء المحددين مسبقاً:', existingMemberIds);
+      } else {
+        // لا يوجد أعضاء في الفرع
+        originalBranchMemberIdsRef.current = [];
+        setSelectedMembers([]);
       }
     } catch (error) {
       console.error('Error fetching current branch members:', error);
@@ -186,14 +200,32 @@ export default function AddMemberModal({
     setLoading(true);
     try {
       // تحضير البيانات مطابق للتطبيق المحمول PageUsers.tsx
-      const originalBranchMemberIds = Object.keys(currentBranchMembers).map(id => parseInt(id));
+      // استخدام ref للحصول على القيمة الأصلية المحفوظة عند فتح المودال
+      const originalBranchMemberIds = originalBranchMemberIdsRef.current;
       const currentSelectedIds = selectedMembers;
+
+      console.log('🔍 التحقق من التغييرات:', {
+        original: originalBranchMemberIds,
+        current: currentSelectedIds
+      });
 
       // الأعضاء الجدد (موجودين في التحديد لكن غير موجودين أصلاً)
       const newMemberIds = currentSelectedIds.filter(id => !originalBranchMemberIds.includes(id));
 
       // الأعضاء المحذوفين (موجودين أصلاً لكن غير محددين الآن)
       const removedMemberIds = originalBranchMemberIds.filter(id => !currentSelectedIds.includes(id));
+
+      console.log('📊 نتائج المقارنة:', {
+        newMembers: newMemberIds,
+        removedMembers: removedMemberIds
+      });
+
+      // التحقق من وجود تغييرات
+      if (newMemberIds.length === 0 && removedMemberIds.length === 0) {
+        Tostget('لم يتم إجراء أي تغييرات');
+        setLoading(false);
+        return;
+      }
 
       // بناء checkGloblenew كـ object مطابق للتطبيق المحمول
       // في التطبيق المحمول: checkGloblenew[id] = { id, Validity: [] }
@@ -210,6 +242,7 @@ export default function AddMemberModal({
       });
 
       console.log('📊 تحديث أعضاء الفرع:', {
+        branchId,
         originalMembers: originalBranchMemberIds,
         currentSelected: currentSelectedIds,
         newMembers: newMemberIds,
@@ -220,22 +253,30 @@ export default function AddMemberModal({
 
       // إرسال التحديث - مطابق للتطبيق المحمول
       // في التطبيق المحمول: type='user', kind='user'
-      const response = await axiosInstance.put('/user/updat/userBrinshv2', {
+      const requestData = {
         idBrinsh: branchId,
         type: 'user',
         checkGloblenew: checkGloblenew,
         checkGlobleold: checkGlobleold,
         kind: 'user'
-      }, {
+      };
+
+      console.log('📤 إرسال الطلب:', requestData);
+
+      const response = await axiosInstance.put('/user/updat/userBrinshv2', requestData, {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${user?.accessToken}`
         }
       });
 
-      console.log('📊 API Response:', response.data);
+      console.log('📊 API Response:', {
+        status: response.status,
+        data: response.data
+      });
 
-      if (response.data?.success === 'successfuly') {
+      // الباك اند يرجع success: true أو message: "successfuly"
+      if (response.data?.success === true || response.data?.message === 'successfuly' || response.status === 200) {
         const addedCount = newMemberIds.length;
         const removedCount = removedMemberIds.length;
 
@@ -255,11 +296,12 @@ export default function AddMemberModal({
         setSearchTerm('');
         setCurrentBranchMembers({});
       } else {
-        Tostget('فشل في تحديث أعضاء الفرع');
+        Tostget(response.data?.message || 'فشل في تحديث أعضاء الفرع');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating branch members:', error);
-      Tostget('خطأ في تحديث أعضاء الفرع');
+      const errorMessage = error.response?.data?.message || error.message || 'خطأ في تحديث أعضاء الفرع';
+      Tostget(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -396,16 +438,16 @@ export default function AddMemberModal({
 
           <button
             onClick={handleSubmit}
-            disabled={loading || selectedMembers.length === 0}
+            disabled={loading}
             className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-ibm-arabic-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                جاري الإضافة...
+                جاري الحفظ...
               </>
             ) : (
-              `إضافة ${selectedMembers.length} عضو`
+              selectedMembers.length > 0 ? `حفظ (${selectedMembers.length} محدد)` : 'حفظ التغييرات'
             )}
           </button>
         </div>

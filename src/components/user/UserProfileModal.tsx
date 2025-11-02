@@ -5,6 +5,7 @@ import { useAppSelector } from '@/store';
 import { colors } from '@/constants/colors';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import Image from 'next/image';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -13,6 +14,7 @@ interface UserProfileModalProps {
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
   const { user, size } = useAppSelector((state: any) => state.user);
+  const { t } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -43,55 +45,55 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
             />
           </div>
           
-          <h3 
+          <h3
             className="font-ibm-arabic-bold text-gray-900 text-center mb-2"
             style={{ fontSize: verticalScale(16 + size) }}
           >
-            {user?.data?.userName || 'المستخدم'}
+            {user?.data?.userName || t('profile.user')}
           </h3>
-          
-          <p 
+
+          <p
             className="font-ibm-arabic-medium text-gray-600 text-center"
             style={{ fontSize: verticalScale(14 + size) }}
           >
-            {user?.data?.job || 'غير محدد'}
+            {user?.data?.job || t('profile.notSpecified')}
           </p>
         </div>
 
         {/* User Details */}
         <div className="space-y-4 mb-6">
           <div className="bg-gray-50 rounded-xl p-4">
-            <p 
+            <p
               className="font-ibm-arabic-medium text-gray-700 text-right"
               style={{ fontSize: verticalScale(13 + size) }}
             >
-              <span className="text-gray-500">رقم الجوال: </span>
+              <span className="text-gray-500">{t('profile.phoneNumber')}: </span>
               <span className="font-ibm-arabic-semibold">
-                {user?.data?.PhoneNumber || 'غير محدد'}
+                {user?.data?.PhoneNumber || t('profile.notSpecified')}
               </span>
             </p>
           </div>
-          
+
           <div className="bg-gray-50 rounded-xl p-4">
-            <p 
+            <p
               className="font-ibm-arabic-medium text-gray-700 text-right"
               style={{ fontSize: verticalScale(13 + size) }}
             >
-              <span className="text-gray-500">رقم البطاقة: </span>
+              <span className="text-gray-500">{t('profile.idNumber')}: </span>
               <span className="font-ibm-arabic-semibold">
-                {user?.data?.IDNumber || 'غير محدد'}
+                {user?.data?.IDNumber || t('profile.notSpecified')}
               </span>
             </p>
           </div>
-          
+
           <div className="bg-gray-50 rounded-xl p-4">
-            <p 
+            <p
               className="font-ibm-arabic-medium text-gray-700 text-right"
               style={{ fontSize: verticalScale(13 + size) }}
             >
-              <span className="text-gray-500">الوصف الوظيفي: </span>
+              <span className="text-gray-500">{t('profile.jobDescription')}: </span>
               <span className="font-ibm-arabic-semibold">
-                {user?.data?.jobdiscrption || 'غير محدد'}
+                {user?.data?.jobdiscrption || t('profile.notSpecified')}
               </span>
             </p>
           </div>
@@ -100,13 +102,13 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
         {/* Permissions Section */}
         {user?.data?.Validity && user.data.Validity.filter((item: any) => item?.NameBransh !== undefined).length > 0 && (
           <div className="mb-6">
-            <h4 
+            <h4
               className="font-ibm-arabic-bold text-gray-900 text-right mb-4"
               style={{ fontSize: verticalScale(15 + size) }}
             >
-              الصلاحيات
+              {t('profile.permissions')}
             </h4>
-            
+
             <div className="space-y-3">
               {user.data.Validity
                 .filter((item: any) => item?.NameBransh !== undefined)
@@ -114,19 +116,19 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
                   <div key={index} className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                     <div className="flex justify-between items-center">
                       <div className="flex-1 text-right">
-                        <p 
+                        <p
                           className="font-ibm-arabic-semibold text-blue-800"
                           style={{ fontSize: verticalScale(13 + size) }}
                         >
-                          {item?.job || 'غير محدد'}
+                          {item?.job || t('profile.notSpecified')}
                         </p>
                       </div>
                       <div className="flex-1 text-left">
-                        <p 
+                        <p
                           className="font-ibm-arabic-medium text-blue-600"
                           style={{ fontSize: verticalScale(13 + size) }}
                         >
-                          {item?.NameBransh || 'غير محدد'}
+                          {item?.NameBransh || t('profile.notSpecified')}
                         </p>
                       </div>
                     </div>
@@ -142,7 +144,7 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
           className="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
           style={{ fontSize: verticalScale(14 + size) }}
         >
-          إغلاق
+          {t('common.close')}
         </button>
       </div>
     </div>
