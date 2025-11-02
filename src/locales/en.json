@@ -134,6 +134,9 @@
       "helpTitle": "We're Here to Help",
       "helpDesc": "Our technical support team is available to help you with any inquiry or problem you face. Don't hesitate to contact us."
     },
+    "management": "Management",
+    "settingsTitle": "Settings",
+    "deleteAccountSoon": "Account will be deleted soon",
     "noPermission": "Not within your permissions",
     "incompleteUserData": "User data is incomplete",
     "operationSuccess": "Operation completed successfully",
