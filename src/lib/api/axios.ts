@@ -5,8 +5,8 @@ import axiosRetry from 'axios-retry';
 // NOTE: Mobile app uses http://35.247.12.97:8080 directly
 // But web must use https://mushrf.net (which proxies to 35.247.12.97:8080)
 // because direct IP access may be blocked by firewall
-// export const Api = 'https://mushrf.net';
-export const Api = 'http://35.247.12.97:8080'; // fallback/debug only
+export const Api = 'https://mushrf.net';
+//export const Api = 'http://35.247.12.97:8080'; // fallback/debug only
 // URLs للملفات والتحميلات - matching mobile app exactly
 export const URLFILDonlwod = `${Api}/upload`;
 export const URLFIL = `https://storage.googleapis.com/demo_backendmoshrif_bucket-1`;
