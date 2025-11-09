@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
-import { scale, verticalScale } from '@/utils/responsiveSize';
+import { verticalScale } from '@/utils/responsiveSize';
 import { Branch, Project } from '@/hooks/useReports';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface SelectionModalProps {
   isOpen: boolean;
@@ -28,6 +29,7 @@ export default function SelectionModal({
   hasMore = false
 }: SelectionModalProps) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const { t, isRTL } = useTranslation();
 
   if (!isOpen) return null;
 
@@ -108,14 +110,15 @@ export default function SelectionModal({
           {loading && items.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-              <span 
+              <span
                 className="mr-3 text-gray-600"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicRegular,
                   fontSize: verticalScale(14)
                 }}
+                dir={isRTL ? 'rtl' : 'ltr'}
               >
-                جاري التحميل...
+                {t('reports.loading')}
               </span>
             </div>
           ) : items.length === 0 ? (
@@ -126,15 +129,15 @@ export default function SelectionModal({
                   <path d="m21 21-4.35-4.35"/>
                 </svg>
               </div>
-              <p 
+              <p
                 className="text-gray-500 text-center"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicRegular,
                   fontSize: verticalScale(14)
                 }}
-                dir="rtl"
+                dir={isRTL ? 'rtl' : 'ltr'}
               >
-                لا توجد عناصر متاحة
+                {t('reports.noItemsAvailable')}
               </p>
             </div>
           ) : (
@@ -173,8 +176,9 @@ export default function SelectionModal({
                       fontFamily: fonts.IBMPlexSansArabicRegular,
                       fontSize: verticalScale(14)
                     }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    جاري تحميل المزيد...
+                    {t('reports.loadingMore')}
                   </span>
                 </div>
               )}
@@ -188,8 +192,9 @@ export default function SelectionModal({
                       fontFamily: fonts.IBMPlexSansArabicRegular,
                       fontSize: verticalScale(12)
                     }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    تم تحميل جميع العناصر
+                    {t('reports.allItemsLoaded')}
                   </span>
                 </div>
               )}

@@ -5,10 +5,8 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale as _scale, verticalScale } from '@/utils/responsiveSize';
 import useReports, { Branch, Project } from '@/hooks/useReports';
-import SelectionModal from '@/components/reports/SelectionModal';
 import ProgressChart from '@/components/reports/ProgressChart';
 import { FinancialBarChart } from '@/components/reports/BarChart';
-import PDFPreview from '@/components/reports/PDFPreview';
 import { Tostget } from '@/components/ui/Toast';
 import Image from 'next/image';
 import ResponsiveLayout, { PageHeader, ContentSection } from '@/components/layout/ResponsiveLayout';
@@ -25,6 +23,7 @@ export default function ReportsPage() {
   const { t, isRTL } = useTranslation();
   const userState = useAppSelector((state) => state.user);
   const _user = userState?.user; // Extract the actual user object
+  const { theme } = useAppSelector(state => state.user);
 
   const {
     branches,
@@ -44,8 +43,8 @@ export default function ReportsPage() {
     generateTimelineReport
   } = useReports();
 
-  const [showBranchModal, setShowBranchModal] = useState(false);
-  const [showPDFPreview, setShowPDFPreview] = useState(false);
+  const [showBranchDropdown, setShowBranchDropdown] = useState(false);
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
 
 
@@ -53,27 +52,46 @@ export default function ReportsPage() {
 
   const handleBranchSelect = async (branch: Branch) => {
     await selectBranch(branch);
-    Tostget(`تم اختيار الفرع: ${branch.NameSub}`);
+    Tostget(`${t('reports.branchSelected')}: ${branch.NameSub}`);
   };
 
   const handleProjectSelect = async (project: Project) => {
     await selectProject(project);
-    Tostget(`تم اختيار المشروع: ${project.Nameproject}`);
+    Tostget(`${t('reports.projectSelected')}: ${project.Nameproject}`);
   };
 
   // Handle report generation - Matching mobile app switchReport function
   const handleGenerateReport = async (type: number) => {
     if (!selectedProject?.id) {
-      Tostget('الرجاء اختيار مشروع أولاً');
+      Tostget(t('reports.pleaseSelectProject'));
       return;
     }
 
     let fileUrl: string | null = null;
 
     switch (type) {
-      case 5: // Statistical Report - Display in page (like mobile app case 5)
-        // This is already handled by selectProject, just show success message
-        Tostget(t('reports.statisticalReportLoaded'));
+      case 5: // Statistical Report - Generate PDF directly (matching mobile app behavior)
+        console.log('Case 5: Statistical Report clicked');
+        console.log('reportData:', reportData);
+        if (reportData) {
+          setIsGeneratingPDF(true);
+          try {
+            console.log('Importing generatePDF...');
+            const { generatePDF } = await import('@/utils/pdfGenerator');
+            console.log('generatePDF imported, starting generation...');
+            await generatePDF(reportData);
+            console.log('PDF generation completed');
+            Tostget(t('reports.reportGenerated'));
+          } catch (error) {
+            console.error('Error generating PDF:', error);
+            Tostget(`خطأ: ${error instanceof Error ? error.message : 'فشل في إنشاء التقرير'}`);
+          } finally {
+            setIsGeneratingPDF(false);
+          }
+        } else {
+          console.log('No reportData available');
+          Tostget(t('reports.pleaseSelectProject'));
+        }
         break;
       case 1: // Requests Report - Part
         fileUrl = await generateRequestsReport(selectedProject.id, 'part');
@@ -126,63 +144,157 @@ export default function ReportsPage() {
       header={
         <PageHeader
           title={t('reports.title')}
-          actions={
-            reportData ? (
-              <button
-                onClick={() => setShowPDFPreview(true)}
-                className="px-4 py-2 rounded-lg text-white font-medium hover:opacity-90 transition-opacity"
-                style={{ backgroundColor: colors.BLUE }}
-              >
-                تصدير PDF
-              </button>
-            ) : null
-          }
         />
       }
     >
       <ContentSection>
         {/* Selection Buttons */}
           <div className="flex flex-col md:flex-row gap-4">
-            {/* Branch Selection */}
-            <div className="flex-1 flex gap-2">
-              <button
-                onClick={() => setShowBranchModal(true)}
-                disabled={branchesLoading}
-                className="flex-1 p-4 border-2 border-dashed rounded-xl text-center hover:bg-gray-50 transition-colors"
-                style={{
-                  borderColor: 'rgba(27, 78, 209, 0.2)',
-                  backgroundColor: colors.WHITE
-                }}
-              >
-                <span
+            {/* Branch Selection Dropdown */}
+            <div className="flex-1">
+              {branchesLoading ? (
+                <div className="p-4 border-2 border-dashed rounded-xl text-center"
                   style={{
-                    fontFamily: fonts.IBMPlexSansArabicMedium,
-                    fontSize: verticalScale(16),
-                    color: colors.BLACK
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
                   }}
-                  dir="rtl"
                 >
-                  {branchesLoading ? 'جاري التحميل...' : (selectedBranch?.NameSub || 'اختر الفرع')}
-                </span>
-              </button>
+                  <div className="flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ml-2"
+                      style={{
+                        borderColor: theme === 'dark' ? 'var(--color-primary)' : colors.BLUE,
+                        borderTopColor: 'transparent'
+                      }}
+                    ></div>
+                    <span
+                      style={{
+                        fontFamily: fonts.IBMPlexSansArabicMedium,
+                        fontSize: verticalScale(16),
+                        color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
+                      }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
+                    >
+                      {t('reports.loading')}
+                    </span>
+                  </div>
+                </div>
+              ) : branches.length > 0 ? (
+                <div className="border-2 rounded-xl relative"
+                  style={{
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
+                  }}
+                >
+                  <button
+                    onClick={() => setShowBranchDropdown(!showBranchDropdown)}
+                    className="w-full px-4 py-3.5 flex items-center justify-between transition-colors rounded-xl"
+                    style={{
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface)' : 'transparent'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : 'rgba(243, 244, 246, 1)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface)' : 'transparent';
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                        fontSize: verticalScale(15),
+                        color: theme === 'dark' ? 'var(--color-primary)' : colors.BLUE
+                      }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
+                    >
+                      {selectedBranch?.NameSub || t('reports.selectBranch')}
+                    </span>
+                    <svg
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke={theme === 'dark' ? 'var(--color-text-secondary)' : 'currentColor'}
+                      strokeWidth="2"
+                      style={{
+                        transform: showBranchDropdown ? 'rotate(180deg)' : 'rotate(0deg)',
+                        transition: 'transform 0.2s'
+                      }}
+                    >
+                      <polyline points="6 9 12 15 18 9"></polyline>
+                    </svg>
+                  </button>
 
-              {/* Refresh Branches Button */}
-              <button
-                onClick={() => fetchBranches()}
-                disabled={branchesLoading}
-                className="px-4 py-2 rounded-xl border-2 hover:bg-gray-50 transition-colors"
-                style={{
-                  borderColor: 'rgba(27, 78, 209, 0.2)',
-                  backgroundColor: colors.WHITE
-                }}
-                title={t('reports.updateBranches')}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="23 4 23 10 17 10"></polyline>
-                  <polyline points="1 20 1 14 7 14"></polyline>
-                  <path d="m3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-                </svg>
-              </button>
+                  {showBranchDropdown && (
+                    <div className="absolute top-full left-0 right-0 mt-2 border-2 rounded-xl max-h-60 overflow-y-auto z-10 shadow-lg"
+                      style={{
+                        borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                        backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE,
+                        boxShadow: theme === 'dark' ? '0 10px 15px -3px rgba(0, 0, 0, 0.5)' : '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
+                      }}
+                    >
+                      {branches.map((branch) => (
+                        <button
+                          key={branch.id}
+                          onClick={() => {
+                            handleBranchSelect(branch);
+                            setShowBranchDropdown(false);
+                          }}
+                          className="w-full px-4 py-3 text-right transition-colors last:border-b-0"
+                          style={{
+                            backgroundColor: selectedBranch?.id === branch.id
+                              ? (theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(27, 78, 209, 0.1)')
+                              : 'transparent',
+                            borderBottom: theme === 'dark' ? '1px solid var(--color-border)' : '1px solid rgba(243, 244, 246, 1)'
+                          }}
+                          onMouseEnter={(e) => {
+                            if (selectedBranch?.id !== branch.id) {
+                              e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : 'rgba(239, 246, 255, 1)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (selectedBranch?.id !== branch.id) {
+                              e.currentTarget.style.backgroundColor = 'transparent';
+                            } else {
+                              e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(27, 78, 209, 0.1)';
+                            }
+                          }}
+                        >
+                          <span
+                            style={{
+                              fontFamily: fonts.IBMPlexSansArabicMedium,
+                              fontSize: verticalScale(14),
+                              color: selectedBranch?.id === branch.id
+                                ? (theme === 'dark' ? 'var(--color-primary)' : colors.BLUE)
+                                : (theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK)
+                            }}
+                            dir={isRTL ? 'rtl' : 'ltr'}
+                          >
+                            {branch.NameSub}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="p-4 border-2 border-dashed rounded-xl text-center"
+                  style={{
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
+                  }}
+                >
+                  <span
+                    style={{
+                      fontFamily: fonts.IBMPlexSansArabicMedium,
+                      fontSize: verticalScale(16),
+                      color: theme === 'dark' ? 'var(--color-text-secondary)' : colors.GREAY
+                    }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
+                  >
+                    {t('reports.noBranchesAvailable')}
+                  </span>
+                </div>
+              )}
             </div>
 
             {/* Project Selection */}
@@ -190,35 +302,40 @@ export default function ReportsPage() {
               {!selectedBranch ? (
                 <div className="p-4 border-2 border-dashed rounded-xl text-center opacity-50"
                   style={{
-                    borderColor: 'rgba(27, 78, 209, 0.2)',
-                    backgroundColor: colors.WHITE
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
                   }}
                 >
                   <span
                     style={{
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       fontSize: verticalScale(16),
-                      color: colors.BLACK
+                      color: theme === 'dark' ? 'var(--color-text-secondary)' : colors.BLACK
                     }}
-                    dir="rtl"
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    اختر الفرع أولاً
+                    {t('reports.pleaseSelectBranchFirst')}
                   </span>
                 </div>
               ) : projectsLoading ? (
                 <div className="p-4 border-2 border-dashed rounded-xl text-center"
                   style={{
-                    borderColor: 'rgba(27, 78, 209, 0.2)',
-                    backgroundColor: colors.WHITE
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
                   }}
                 >
                   <div className="flex items-center justify-center">
-                    <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin ml-2"></div>
+                    <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin ml-2"
+                      style={{
+                        borderColor: theme === 'dark' ? 'var(--color-primary)' : colors.BLUE,
+                        borderTopColor: 'transparent'
+                      }}
+                    ></div>
                     <span
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicMedium,
                         fontSize: verticalScale(16),
-                        color: colors.BLACK
+                        color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                       }}
                       dir="rtl"
                     >
@@ -229,36 +346,58 @@ export default function ReportsPage() {
               ) : projects.length > 0 ? (
                 <div className="border-2 rounded-xl"
                   style={{
-                    borderColor: 'rgba(27, 78, 209, 0.2)',
-                    backgroundColor: colors.WHITE
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
                   }}
                 >
-                  <div className="p-3 border-b border-gray-200">
+                  <div className="px-4 py-3.5"
+                    style={{
+                      borderBottom: theme === 'dark' ? '1px solid var(--color-border)' : '1px solid rgba(229, 231, 235, 1)'
+                    }}
+                  >
                     <span
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
-                        fontSize: verticalScale(14),
-                        color: colors.BLUE
+                        fontSize: verticalScale(15),
+                        color: theme === 'dark' ? 'var(--color-primary)' : colors.BLUE
                       }}
                       dir="rtl"
                     >
                       {t('reports.projects')} ({projects.length})
                     </span>
                   </div>
-                  <div className="max-h-40 overflow-y-auto">
+                  <div className="max-h-48 overflow-y-auto">
                     {projects.map((project) => (
                       <button
                         key={project.id}
                         onClick={() => handleProjectSelect(project)}
-                        className={`w-full text-right px-4 py-3 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-b-0 ${
-                          selectedProject?.id === project.id ? 'bg-blue-50' : ''
-                        }`}
+                        className="w-full text-right px-4 py-3 transition-colors last:border-b-0"
+                        style={{
+                          backgroundColor: selectedProject?.id === project.id
+                            ? (theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)')
+                            : 'transparent',
+                          borderBottom: theme === 'dark' ? '1px solid var(--color-border)' : '1px solid rgba(243, 244, 246, 1)'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (selectedProject?.id !== project.id) {
+                            e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : 'rgba(249, 250, 251, 1)';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (selectedProject?.id !== project.id) {
+                            e.currentTarget.style.backgroundColor = 'transparent';
+                          } else {
+                            e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                          }
+                        }}
                       >
                         <span
                           style={{
-                            fontFamily: fonts.IBMPlexSansArabicRegular,
+                            fontFamily: fonts.IBMPlexSansArabicMedium,
                             fontSize: verticalScale(14),
-                            color: selectedProject?.id === project.id ? colors.BLUE : colors.BLACK
+                            color: selectedProject?.id === project.id
+                              ? (theme === 'dark' ? 'var(--color-primary)' : colors.BLUE)
+                              : (theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK)
                           }}
                           dir="rtl"
                         >
@@ -271,19 +410,19 @@ export default function ReportsPage() {
               ) : (
                 <div className="p-4 border-2 border-dashed rounded-xl text-center"
                   style={{
-                    borderColor: 'rgba(27, 78, 209, 0.2)',
-                    backgroundColor: colors.WHITE
+                    borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                    backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
                   }}
                 >
                   <span
                     style={{
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       fontSize: verticalScale(16),
-                      color: colors.BLACK
+                      color: theme === 'dark' ? 'var(--color-text-secondary)' : colors.BLACK
                     }}
-                    dir="rtl"
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    لا توجد مشاريع متاحة
+                    {t('reports.noProjectsAvailable')}
                   </span>
                 </div>
               )}
@@ -293,13 +432,17 @@ export default function ReportsPage() {
           {/* Report Type Buttons - Matching Mobile App */}
           {selectedProject && (
             <div className="mt-6">
-              <div className="bg-white rounded-2xl p-6 shadow-sm" style={{ backgroundColor: colors.WHITE }}>
+              <div className="rounded-2xl p-6 shadow-sm"
+                style={{
+                  backgroundColor: theme === 'dark' ? 'var(--color-surface)' : colors.WHITE
+                }}
+              >
                 <h3
                   className="mb-4 text-center"
                   style={{
                     fontFamily: fonts.IBMPlexSansArabicSemiBold,
                     fontSize: verticalScale(16),
-                    color: colors.BLACK
+                    color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                   }}
                   dir="rtl"
                 >
@@ -310,15 +453,25 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleGenerateReport(1)}
                     disabled={reportLoading}
-                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-4 border-2 rounded-xl text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      borderColor: 'rgba(27, 78, 209, 0.2)',
-                      backgroundColor: colors.WHITE
+                      borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!reportLoading) {
+                        e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                        e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-primary)' : 'rgba(147, 197, 253, 1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE;
+                      e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)';
                     }}
                   >
                     <div className="flex flex-col items-center gap-2">
                       {/* Shopping cart icon for requests/orders */}
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <circle cx="9" cy="21" r="1"/>
                         <circle cx="20" cy="21" r="1"/>
                         <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
@@ -327,7 +480,7 @@ export default function ReportsPage() {
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
-                          color: colors.BLACK
+                          color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                         }}
                         dir="rtl"
                       >
@@ -340,23 +493,33 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleGenerateReport(2)}
                     disabled={reportLoading}
-                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-4 border-2 rounded-xl text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      borderColor: 'rgba(27, 78, 209, 0.2)',
-                      backgroundColor: colors.WHITE
+                      borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!reportLoading) {
+                        e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                        e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-primary)' : 'rgba(147, 197, 253, 1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE;
+                      e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)';
                     }}
                   >
                     <div className="flex flex-col items-center gap-2">
                       {/* Covenant/Financial custody icon - matching projects page */}
                       <svg width="28" height="28" viewBox="0 0 1124.14 1256.39" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill={colors.BLUE}/>
-                        <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill={colors.BLUE}/>
+                        <path d="M699.62,1113.02h0c-20.06,44.48-33.32,92.75-38.4,143.37l424.51-90.24c20.06-44.47,33.31-92.75,38.4-143.37l-424.51,90.24Z" fill={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE}/>
+                        <path d="M1085.73,895.8c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.33v-135.2l292.27-62.11c20.06-44.47,33.32-92.75,38.4-143.37l-330.68,70.27V66.13c-50.67,28.45-95.67,66.32-132.25,110.99v403.35l-132.25,28.11V0c-50.67,28.44-95.67,66.32-132.25,110.99v525.69l-295.91,62.88c-20.06,44.47-33.33,92.75-38.42,143.37l334.33-71.05v170.26l-358.3,76.14c-20.06,44.47-33.32,92.75-38.4,143.37l375.04-79.7c30.53-6.35,56.77-24.4,73.83-49.24l68.78-101.97v-.02c7.14-10.55,11.3-23.27,11.3-36.97v-149.98l132.25-28.11v270.4l424.53-90.28Z" fill={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE}/>
                       </svg>
                       <span
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
-                          color: colors.BLACK
+                          color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                         }}
                         dir="rtl"
                       >
@@ -369,15 +532,25 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleGenerateReport(3)}
                     disabled={reportLoading}
-                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-4 border-2 rounded-xl text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      borderColor: 'rgba(27, 78, 209, 0.2)',
-                      backgroundColor: colors.WHITE
+                      borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!reportLoading) {
+                        e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                        e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-primary)' : 'rgba(147, 197, 253, 1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE;
+                      e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)';
                     }}
                   >
                     <div className="flex flex-col items-center gap-2">
                       {/* Credit card icon for expenses */}
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
                         <line x1="1" y1="10" x2="23" y2="10"/>
                       </svg>
@@ -385,7 +558,7 @@ export default function ReportsPage() {
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
-                          color: colors.BLACK
+                          color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                         }}
                         dir="rtl"
                       >
@@ -398,15 +571,25 @@ export default function ReportsPage() {
                   <button
                     onClick={() => handleGenerateReport(4)}
                     disabled={reportLoading}
-                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="p-4 border-2 rounded-xl text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      borderColor: 'rgba(27, 78, 209, 0.2)',
-                      backgroundColor: colors.WHITE
+                      borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!reportLoading) {
+                        e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                        e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-primary)' : 'rgba(147, 197, 253, 1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE;
+                      e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)';
                     }}
                   >
                     <div className="flex flex-col items-center gap-2">
                       {/* Calendar icon for timeline/schedule */}
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                         <line x1="16" y1="2" x2="16" y2="6"/>
                         <line x1="8" y1="2" x2="8" y2="6"/>
@@ -416,11 +599,11 @@ export default function ReportsPage() {
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
-                          color: colors.BLACK
+                          color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                         }}
-                        dir="rtl"
+                        dir={isRTL ? 'rtl' : 'ltr'}
                       >
-                        الجدول الزمني
+                        {t('reports.timelineReport')}
                       </span>
                     </div>
                   </button>
@@ -428,16 +611,26 @@ export default function ReportsPage() {
                   {/* Report 5: Statistical Report (تقرير احصائي للمشروع) */}
                   <button
                     onClick={() => handleGenerateReport(5)}
-                    disabled={reportLoading}
-                    className="p-4 border-2 rounded-xl text-center hover:bg-blue-50 hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={reportLoading || isGeneratingPDF}
+                    className="p-4 border-2 rounded-xl text-center transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     style={{
-                      borderColor: 'rgba(27, 78, 209, 0.2)',
-                      backgroundColor: colors.WHITE
+                      borderColor: theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)',
+                      backgroundColor: theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!reportLoading) {
+                        e.currentTarget.style.backgroundColor = theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)';
+                        e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-primary)' : 'rgba(147, 197, 253, 1)';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = theme === 'dark' ? 'var(--color-surface-secondary)' : colors.WHITE;
+                      e.currentTarget.style.borderColor = theme === 'dark' ? 'var(--color-border)' : 'rgba(27, 78, 209, 0.2)';
                     }}
                   >
                     <div className="flex flex-col items-center gap-2">
                       {/* Pie chart icon for statistical report */}
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke={theme === 'dark' ? 'var(--color-primary)' : colors.BLUE} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
                         <path d="M22 12A10 10 0 0 0 12 2v10z"/>
                       </svg>
@@ -445,7 +638,7 @@ export default function ReportsPage() {
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
-                          color: colors.BLACK
+                          color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                         }}
                         dir="rtl"
                       >
@@ -457,13 +650,22 @@ export default function ReportsPage() {
 
                 {/* Loading Indicator for Report Generation */}
                 {reportLoading && (
-                  <div className="flex items-center justify-center mt-4 pt-4 border-t border-gray-200">
-                    <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin ml-2"></div>
+                  <div className="flex items-center justify-center mt-4 pt-4"
+                    style={{
+                      borderTop: theme === 'dark' ? '1px solid var(--color-border)' : '1px solid rgba(229, 231, 235, 1)'
+                    }}
+                  >
+                    <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin ml-2"
+                      style={{
+                        borderColor: theme === 'dark' ? 'var(--color-primary)' : colors.BLUE,
+                        borderTopColor: 'transparent'
+                      }}
+                    ></div>
                     <span
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14),
-                        color: colors.BLACK
+                        color: theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK
                       }}
                       dir="rtl"
                     >
@@ -529,7 +731,7 @@ export default function ReportsPage() {
                 <div className="bg-white rounded-2xl p-5 shadow-md mb-4">
                   <Image
                     src="/logo-new.png"
-                    alt="شعار مُشرِف"
+                    alt={t('reports.moshrifLogo')}
                     width={160}
                     height={80}
                     className="h-20 w-auto"
@@ -559,16 +761,17 @@ export default function ReportsPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-4">
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      المشترك:
+                      {t('reports.subscriber')}:
                     </span>
-                    <span 
+                    <span
                       className="font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -580,16 +783,17 @@ export default function ReportsPage() {
                     </span>
                   </div>
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      اسم المشروع:
+                      {t('reports.projectName')}:
                     </span>
-                    <span 
+                    <span
                       className="font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -601,14 +805,15 @@ export default function ReportsPage() {
                     </span>
                   </div>
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      النوع:
+                      {t('reports.type')}:
                     </span>
                     <span
                       className="font-semibold theme-text-primary"
@@ -621,19 +826,20 @@ export default function ReportsPage() {
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      تاريخ البداية:
+                      {t('reports.startDate')}:
                     </span>
-                    <span 
+                    <span
                       className="font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -645,16 +851,17 @@ export default function ReportsPage() {
                     </span>
                   </div>
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      تاريخ النهاية:
+                      {t('reports.endDate')}:
                     </span>
-                    <span 
+                    <span
                       className="font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
@@ -666,24 +873,26 @@ export default function ReportsPage() {
                     </span>
                   </div>
                   <div>
-                    <span 
+                    <span
                       className="text-gray-600 block"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicRegular,
                         fontSize: verticalScale(14)
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      الزمن المتبقي:
+                      {t('reports.remainingTime')}:
                     </span>
-                    <span 
+                    <span
                       className="font-semibold"
                       style={{
                         fontFamily: fonts.IBMPlexSansArabicSemiBold,
                         fontSize: verticalScale(16),
                         color: (reportData.Daysremaining || 0) < 0 ? colors.RED : colors.BLACK
                       }}
+                      dir={isRTL ? 'rtl' : 'ltr'}
                     >
-                      {reportData.Daysremaining} يوم
+                      {reportData.Daysremaining} {t('reports.day')}
                     </span>
                   </div>
                 </div>
@@ -702,20 +911,20 @@ export default function ReportsPage() {
             </div>
 
             {/* Financial Summary */}
-            <div 
+            <div
               className="bg-white rounded-2xl p-6 shadow-sm"
               style={{ backgroundColor: colors.WHITE }}
             >
-              <h3 
+              <h3
                 className="text-lg font-semibold mb-4"
                 style={{
                   fontFamily: fonts.IBMPlexSansArabicSemiBold,
                   fontSize: verticalScale(18),
                   color: colors.BLACK
                 }}
-                dir="rtl"
+                dir={isRTL ? 'rtl' : 'ltr'}
               >
-                الملخص المالي
+                {t('reports.financialSummary')}
               </h3>
               
               {/* Financial Bar Chart */}
@@ -747,8 +956,9 @@ export default function ReportsPage() {
                       fontFamily: fonts.IBMPlexSansArabicRegular,
                       fontSize: verticalScale(12)
                     }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    العهد
+                    {t('reports.covenant')}
                   </div>
                 </div>
 
@@ -768,8 +978,9 @@ export default function ReportsPage() {
                       fontFamily: fonts.IBMPlexSansArabicRegular,
                       fontSize: verticalScale(12)
                     }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    المصروفات
+                    {t('reports.expenses')}
                   </div>
                 </div>
 
@@ -789,33 +1000,35 @@ export default function ReportsPage() {
                       fontFamily: fonts.IBMPlexSansArabicRegular,
                       fontSize: verticalScale(12)
                     }}
+                    dir={isRTL ? 'rtl' : 'ltr'}
                   >
-                    المرتجعات
+                    {t('reports.returns')}
                   </div>
                 </div>
               </div>
 
               {/* Total Cost */}
               <div className="mt-6 p-4 bg-blue-50 rounded-xl flex justify-between items-center">
-                <span 
+                <span
                   style={{
                     fontFamily: fonts.IBMPlexSansArabicMedium,
                     fontSize: verticalScale(16),
                     color: colors.BLACK
                   }}
-                  dir="rtl"
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 >
-                  إجمالي تكاليف المشروع
+                  {t('reports.totalProjectCost')}
                 </span>
-                <span 
+                <span
                   className="text-2xl font-bold"
                   style={{
                     fontFamily: fonts.IBMPlexSansArabicBold,
                     fontSize: verticalScale(20),
                     color: colors.BLUE
                   }}
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 >
-                  {formatNumber(reportData.TotalcosttothCompany)} ر.س
+                  {formatNumber(reportData.TotalcosttothCompany)} {t('reports.sar')}
                 </span>
               </div>
             </div>
@@ -833,9 +1046,9 @@ export default function ReportsPage() {
                     fontSize: verticalScale(18),
                     color: colors.BLACK
                   }}
-                  dir="rtl"
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 >
-                  تأخيرات المشروع
+                  {t('reports.projectDelays')}
                 </h3>
 
                 <div className="overflow-x-auto">
@@ -849,8 +1062,9 @@ export default function ReportsPage() {
                             fontSize: verticalScale(14),
                             color: colors.BLUE
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          التاريخ
+                          {t('reports.date')}
                         </th>
                         <th
                           className="border border-gray-200 p-3 text-center"
@@ -859,8 +1073,9 @@ export default function ReportsPage() {
                             fontSize: verticalScale(14),
                             color: colors.BLUE
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          ملاحظة
+                          {t('reports.note')}
                         </th>
                         <th
                           className="border border-gray-200 p-3 text-center"
@@ -869,8 +1084,9 @@ export default function ReportsPage() {
                             fontSize: verticalScale(14),
                             color: colors.BLUE
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          المتسبب
+                          {t('reports.responsible')}
                         </th>
                         <th
                           className="border border-gray-200 p-3 text-center"
@@ -879,8 +1095,9 @@ export default function ReportsPage() {
                             fontSize: verticalScale(14),
                             color: colors.BLUE
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          عدد التأخيرات
+                          {t('reports.delayCount')}
                         </th>
                       </tr>
                     </thead>
@@ -937,35 +1154,36 @@ export default function ReportsPage() {
 
             {/* Team Info */}
             {(reportData.boss || reportData.MostAccomplished?.length) && (
-              <div 
+              <div
                 className="bg-white rounded-2xl p-6 shadow-sm"
                 style={{ backgroundColor: colors.WHITE }}
               >
-                <h3 
+                <h3
                   className="text-lg font-semibold mb-4"
                   style={{
                     fontFamily: fonts.IBMPlexSansArabicSemiBold,
                     fontSize: verticalScale(18),
                     color: colors.BLACK
                   }}
-                  dir="rtl"
+                  dir={isRTL ? 'rtl' : 'ltr'}
                 >
-                  فريق العمل
+                  {t('reports.team')}
                 </h3>
-                
+
                 {reportData.boss && (
                   <div className="mb-4 p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-between items-center">
-                      <span 
+                      <span
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicMedium,
                           fontSize: verticalScale(14),
                           color: colors.BLACK
                         }}
+                        dir={isRTL ? 'rtl' : 'ltr'}
                       >
-                        مدير الفرع:
+                        {t('reports.branchManager')}:
                       </span>
-                      <span 
+                      <span
                         style={{
                           fontFamily: fonts.IBMPlexSansArabicSemiBold,
                           fontSize: verticalScale(16),
@@ -982,14 +1200,15 @@ export default function ReportsPage() {
                   <div key={index} className="mb-2 p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-between items-center">
                       <div>
-                        <span 
+                        <span
                           style={{
                             fontFamily: fonts.IBMPlexSansArabicMedium,
                             fontSize: verticalScale(14),
                             color: colors.BLACK
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          مهندس الموقع:
+                          {t('reports.siteEngineer')}:
                         </span>
                         <span 
                           className="mr-2"
@@ -1003,14 +1222,15 @@ export default function ReportsPage() {
                         </span>
                       </div>
                       <div className="text-left">
-                        <div 
+                        <div
                           style={{
                             fontFamily: fonts.IBMPlexSansArabicSemiBold,
                             fontSize: verticalScale(14),
                             color: colors.BLUE
                           }}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
-                          {member.Count} مهمة
+                          {member.Count} {member.Count === 1 ? t('reports.task') : t('reports.tasks')}
                         </div>
                         <div 
                           style={{
@@ -1030,27 +1250,6 @@ export default function ReportsPage() {
           </div>
         )}
       </ContentSection>
-
-      {/* Selection Modals */}
-      <SelectionModal
-        isOpen={showBranchModal}
-        onClose={() => setShowBranchModal(false)}
-        title="اختر الفرع"
-        items={branches}
-        onSelect={handleBranchSelect}
-        loading={branchesLoading}
-      />
-
-
-
-      {/* PDF Preview Modal */}
-      {reportData && (
-        <PDFPreview
-          reportData={reportData}
-          isOpen={showPDFPreview}
-          onClose={() => setShowPDFPreview(false)}
-        />
-      )}
     </ResponsiveLayout>
   );
 }

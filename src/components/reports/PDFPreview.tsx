@@ -6,6 +6,7 @@ import { fonts } from '@/constants/fonts';
 import { verticalScale } from '@/utils/responsiveSize';
 import { ReportData, generateReportHTML, generatePDF } from '@/utils/pdfGenerator';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface PDFPreviewProps {
   reportData: ReportData;
@@ -16,6 +17,7 @@ interface PDFPreviewProps {
 export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [previewHTML, setPreviewHTML] = useState<string>('');
+  const { t, isRTL } = useTranslation();
 
   React.useEffect(() => {
     if (isOpen && reportData) {
@@ -26,15 +28,15 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
 
   const handleGeneratePDF = async () => {
     if (!reportData) return;
-    
+
     setIsGenerating(true);
     try {
       await generatePDF(reportData);
-      Tostget('تم تصدير التقرير بنجاح');
+      Tostget(t('reports.reportGenerated'));
       onClose();
     } catch (error) {
       console.error('Error generating PDF:', error);
-      Tostget('حدث خطأ أثناء تصدير التقرير');
+      Tostget(t('errors.generalError'));
     } finally {
       setIsGenerating(false);
     }
@@ -50,18 +52,18 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
       >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b">
-          <h2 
+          <h2
             className="text-xl font-bold"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
               fontSize: verticalScale(20),
               color: colors.BLACK
             }}
-            dir="rtl"
+            dir={isRTL ? 'rtl' : 'ltr'}
           >
-            معاينة التقرير
+            {t('reports.reportPreview')}
           </h2>
-          
+
           <div className="flex items-center gap-3">
             <button
               onClick={handleGeneratePDF}
@@ -72,14 +74,15 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
                 fontFamily: fonts.IBMPlexSansArabicMedium,
                 fontSize: verticalScale(14)
               }}
+              dir={isRTL ? 'rtl' : 'ltr'}
             >
               {isGenerating ? (
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  جاري التصدير...
+                  {t('reports.exportingPDF')}
                 </div>
               ) : (
-                'تصدير PDF'
+                t('reports.exportPDFButton')
               )}
             </button>
             
@@ -120,15 +123,15 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
         {/* Footer */}
         <div className="p-6 border-t bg-gray-50 rounded-b-2xl">
           <div className="flex items-center justify-between">
-            <div 
+            <div
               className="text-sm text-gray-600"
               style={{
                 fontFamily: fonts.IBMPlexSansArabicRegular,
                 fontSize: verticalScale(12)
               }}
-              dir="rtl"
+              dir={isRTL ? 'rtl' : 'ltr'}
             >
-              سيتم تصدير التقرير بصيغة PDF
+              {t('reports.pdfExportMessage')}
             </div>
             
             <div className="flex gap-3">
@@ -140,10 +143,11 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
                   fontSize: verticalScale(14),
                   color: colors.BLACK
                 }}
+                dir={isRTL ? 'rtl' : 'ltr'}
               >
-                إلغاء
+                {t('reports.cancel')}
               </button>
-              
+
               <button
                 onClick={handleGeneratePDF}
                 disabled={isGenerating}
@@ -153,8 +157,9 @@ export default function PDFPreview({ reportData, isOpen, onClose }: PDFPreviewPr
                   fontFamily: fonts.IBMPlexSansArabicMedium,
                   fontSize: verticalScale(14)
                 }}
+                dir={isRTL ? 'rtl' : 'ltr'}
               >
-                {isGenerating ? 'جاري التصدير...' : 'تصدير'}
+                {isGenerating ? t('reports.exporting') : t('reports.export')}
               </button>
             </div>
           </div>
