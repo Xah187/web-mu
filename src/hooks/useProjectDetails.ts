@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useSelector } from 'react-redux';
+import { useAppDispatch } from '@/store';
+import { setValidity } from '@/store/slices/userSlice';
 import axiosInstance from '@/lib/api/axios';
 import useDataHome from './useDataHome';
 
@@ -69,6 +71,7 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
   const [error, setError] = useState<string | null>(null);
   const [hasMoreStages, setHasMoreStages] = useState(true);
 
+  const dispatch = useAppDispatch();
   const { user } = useSelector((state: any) => state.user || {});
   const { saveProjectData } = useDataHome();
 
@@ -136,7 +139,14 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
 
       // في التطبيق الأصلي، البيانات في result.data.data
       const stagesData = response.data?.data || response.data;
-      
+
+      // مطابق للتطبيق المحمول PageHomeProjectFunction.tsx السطر 57-60
+      // حفظ الصلاحيات في Redux عند جلب المراحل
+      if (lastStageId === 0 && response.data?.Validity) {
+        console.log('📊 تحديث صلاحيات المشروع من BringStage:', response.data.Validity);
+        dispatch(setValidity(response.data.Validity));
+      }
+
       if (stagesData && Array.isArray(stagesData)) {
         if (lastStageId === 0) {
           // First load or refresh
@@ -145,7 +155,7 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
           // Load more (pagination)
           setStages(prev => [...prev, ...stagesData]);
         }
-        
+
         // Check if there are more stages to load based on pagination logic
         // If we get less than 8 items or if type is 'all', there are no more stages
         if (type === 'all' || stagesData.length < 8) {

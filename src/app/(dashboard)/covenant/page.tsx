@@ -400,7 +400,8 @@ function CovenantPage() {
                 disabled={exportingPDF}
                 styleButton={{
                   backgroundColor: exportingPDF ? 'var(--color-surface-secondary)' : 'var(--color-primary)',
-                  opacity: exportingPDF ? 0.6 : 1
+                  opacity: exportingPDF ? 0.6 : 1,
+                  color: 'white'
                 }}
               >
                 {exportingPDF && (

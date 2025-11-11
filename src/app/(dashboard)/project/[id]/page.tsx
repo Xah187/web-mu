@@ -846,25 +846,60 @@ const ProjectDetailsPage = () => {
               </button>
 
               {showSettingsModal && (
-                <div className="fixed inset-0 z-[1000] bg-black/40" onClick={() => setShowSettingsModal(false)}>
+                <div
+                  className="fixed inset-0 z-[1000] bg-black/40"
+                  onClick={() => setShowSettingsModal(false)}
+                  style={{ padding: '20px' }}
+                >
                   <div
-                    className="absolute left-1/2 top-1/2 w-[min(22rem,92vw)] -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-lg overflow-hidden"
+                    className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-2xl bg-white shadow-lg overflow-hidden"
                     onClick={(e) => e.stopPropagation()}
-                    style={{ direction: dir as 'rtl' | 'ltr' }}
+                    style={{
+                      direction: dir as 'rtl' | 'ltr',
+                      width: 'min(24rem, 92vw)',
+                      maxHeight: '85vh',
+                      display: 'flex',
+                      flexDirection: 'column'
+                    }}
                   >
                     {/* Header */}
-                    <div className="px-4 py-3 border-b border-gray-200">
-                      <h3 className="font-ibm-arabic-semibold text-gray-500" style={{ fontSize: scale(14), textAlign: isRTL ? 'right' : 'left' }}>
+                    <div
+                      className="border-b border-gray-200"
+                      style={{
+                        padding: '20px 24px'
+                      }}
+                    >
+                      <h3
+                        className="font-ibm-arabic-bold text-gray-900"
+                        style={{
+                          fontSize: '18px',
+                          textAlign: isRTL ? 'right' : 'left'
+                        }}
+                      >
                         {t('projectDetails.settings')}
                       </h3>
                     </div>
 
                     {/* Options */}
-                    <div className="py-2">
+                    <div
+                      style={{
+                        padding: '12px 0',
+                        overflowY: 'auto',
+                        flex: 1
+                      }}
+                    >
                       {/* 1. إنشاء مرحلة */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full hover:bg-gray-50 flex items-center font-ibm-arabic-semibold transition-colors"
+                        style={{
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
+                          textAlign: isRTL ? 'right' : 'left',
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
+                        }}
                         onClick={async () => {
                           if (await Uservalidation('إضافة مرحلة رئيسية', projectId)) {
                             setShowAddStageModal(true);
@@ -872,17 +907,27 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 15 16" fill="none">
+                        <svg width="22" height="22" viewBox="0 0 15 16" fill="none" style={{ flexShrink: 0 }}>
                           <path d="M7.5 3V13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M2.5 8H12.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        {t('projectDetails.createStage')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.createStage')}
+                        </span>
                       </button>
 
                       {/* 2. ترتيب المراحل */}
                       <button
-                        className="w-full text-right px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
-                        style={{ fontSize: scale(14), backgroundColor: 'var(--color-surface-secondary)' }}
+                        className="w-full hover:bg-gray-50 flex items-center font-ibm-arabic-semibold transition-colors"
+                        style={{
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
+                          textAlign: isRTL ? 'right' : 'left',
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
+                        }}
                         onClick={async () => {
                           if (await Uservalidation('ترتيب المراحل', projectId)) {
                             try {
@@ -904,23 +949,28 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
                           <path d="M14.0737 3.88545C14.8189 3.07808 15.1915 2.6744 15.5874 2.43893C16.5427 1.87076 17.7191 1.85309 18.6904 2.39232C19.0929 2.6158 19.4769 3.00812 20.245 3.79276C21.0131 4.5774 21.3972 4.96972 21.6159 5.38093C22.1438 6.37312 22.1265 7.57479 21.5703 8.5507C21.3398 8.95516 20.9446 9.33578 20.1543 10.097L10.7506 19.1543C9.25288 20.5969 8.504 21.3182 7.56806 21.6837C6.63212 22.0493 5.6032 22.0224 3.54536 21.9686L3.26538 21.9613C2.63891 21.9449 2.32567 21.9367 2.14359 21.73C1.9615 21.5234 1.98636 21.2043 2.03608 20.5662L2.06308 20.2197C2.20301 18.4235 2.27297 17.5255 2.62371 16.7182C2.97444 15.9109 3.57944 15.2555 4.78943 13.9445L14.0737 3.88545Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                           <path d="M13 4L20 11" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round" />
                           <path d="M14 22H22" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
-                        {t('projectDetails.reorderStages')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.reorderStages')}
+                        </span>
                       </button>
 
                       {/* 3. اضافة مستخدمين - Matching mobile app PageHomeProject.tsx line 192-199 */}
                       {/* تم تغييره ليفتح صفحة كاملة بدلاً من مودال - مطابق للتطبيق المحمول PageUsers.tsx */}
                       <button
-                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        className="w-full hover:bg-gray-50 flex items-center font-ibm-arabic-semibold transition-colors"
                         style={{
-                          fontSize: scale(14),
-                          backgroundColor: 'var(--color-surface-secondary)',
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
                           textAlign: isRTL ? 'right' : 'left',
-                          flexDirection: isRTL ? 'row' : 'row'
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
                         }}
                         onClick={async () => {
                           const ok = await Uservalidation('إضافة مستخدمين للمشروع', projectId);
@@ -932,23 +982,28 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" style={{ flexShrink: 0 }}>
                           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
                           <circle cx="9" cy="7" r="4"/>
                           <line x1="19" y1="8" x2="19" y2="14"/>
                           <line x1="22" y1="11" x2="16" y2="11"/>
                         </svg>
-                        {t('projectDetails.addUsers')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.addUsers')}
+                        </span>
                       </button>
 
                       {/* 4. تعديل تاريخ بدء المشروع - Matching mobile app PageHomeProject.tsx line 223-232 */}
                       <button
-                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        className="w-full hover:bg-gray-50 flex items-center font-ibm-arabic-semibold transition-colors"
                         style={{
-                          fontSize: scale(14),
-                          backgroundColor: 'var(--color-surface-secondary)',
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
                           textAlign: isRTL ? 'right' : 'left',
-                          flexDirection: isRTL ? 'row' : 'row'
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
                         }}
                         onClick={async () => {
                           if (await Uservalidation('تعديل تاريخ بدء المشروع', projectId)) {
@@ -962,21 +1017,26 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ flexShrink: 0 }}>
                           <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
                           <path d="M12 6v6l4 2" strokeWidth="1.5" strokeLinecap="round" />
                         </svg>
-                        {t('projectDetails.editStartDate')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.editStartDate')}
+                        </span>
                       </button>
 
                       {/* 5. تعديل بيانات المشروع */}
                       <button
-                        className="w-full px-4 py-3 hover:bg-gray-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors"
+                        className="w-full hover:bg-gray-50 flex items-center font-ibm-arabic-semibold transition-colors"
                         style={{
-                          fontSize: scale(14),
-                          backgroundColor: 'var(--color-surface-secondary)',
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
                           textAlign: isRTL ? 'right' : 'left',
-                          flexDirection: isRTL ? 'row' : 'row'
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
                         }}
                         onClick={async () => {
                           if (await Uservalidation('تعديل بيانات المشروع', projectId)) {
@@ -985,20 +1045,25 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ flexShrink: 0 }}>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
-                        {t('projectDetails.editProjectData')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.editProjectData')}
+                        </span>
                       </button>
 
                       {/* 6. حذف المشروع */}
                       <button
-                        className="w-full px-4 py-3 hover:bg-red-50 flex items-center gap-3 font-ibm-arabic-semibold transition-colors text-red-600"
+                        className="w-full hover:bg-red-50 flex items-center font-ibm-arabic-semibold transition-colors text-red-600"
                         style={{
-                          fontSize: scale(14),
-                          backgroundColor: 'var(--color-surface-secondary)',
+                          fontSize: '15px',
+                          backgroundColor: 'transparent',
+                          padding: '16px 24px',
                           textAlign: isRTL ? 'right' : 'left',
-                          flexDirection: isRTL ? 'row' : 'row'
+                          direction: dir as 'rtl' | 'ltr',
+                          gap: '14px',
+                          justifyContent: 'flex-start'
                         }}
                         onClick={async () => {
                           if (await Uservalidation('حذف مشروع', projectId)) {
@@ -1007,10 +1072,12 @@ const ProjectDetailsPage = () => {
                           setShowSettingsModal(false);
                         }}
                       >
-                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" style={{ flexShrink: 0 }}>
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                        {t('projectDetails.deleteProject')}
+                        <span style={{ textAlign: isRTL ? 'right' : 'left' }}>
+                          {t('projectDetails.deleteProject')}
+                        </span>
                       </button>
                     </div>
                   </div>

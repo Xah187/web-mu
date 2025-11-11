@@ -31,25 +31,57 @@ interface DropdownItemProps {
 
 function DropdownItem({ title, onPress, color, className = '', hasBorder = false, icon }: DropdownItemProps) {
   // Get translation hook inside the component
-  const { isRTL } = useTranslation();
+  const { isRTL, dir } = useTranslation();
 
   return (
     <>
       <button
         onClick={onPress}
-        className={`w-full px-4 py-3 sm:py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isRTL ? 'text-right' : 'text-left'} active:bg-gray-100 dark:active:bg-gray-600 ${className}`}
+        className={`w-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors active:bg-gray-100 dark:active:bg-gray-600 ${className}`}
         style={{
           color: color || 'var(--color-text-primary)',
-          minHeight: '44px',
-          backgroundColor: 'transparent'
+          minHeight: '48px',
+          backgroundColor: 'transparent',
+          padding: '12px 20px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          textAlign: isRTL ? 'right' : 'left',
+          direction: dir as 'rtl' | 'ltr'
         }}
       >
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-          <span className="font-ibm-arabic-semibold text-sm sm:text-base leading-relaxed">{title}</span>
-          {icon && <div className={`${isRTL ? 'ml-3' : 'mr-3'} flex-shrink-0`}>{icon}</div>}
-        </div>
+        <span
+          className="font-ibm-arabic-semibold leading-relaxed"
+          style={{
+            fontSize: '15px',
+            textAlign: isRTL ? 'right' : 'left',
+            flex: 1,
+            display: 'block'
+          }}
+        >
+          {title}
+        </span>
+        {icon && (
+          <div
+            className="flex-shrink-0"
+            style={{
+              marginLeft: isRTL ? '12px' : '0',
+              marginRight: isRTL ? '0' : '12px'
+            }}
+          >
+            {icon}
+          </div>
+        )}
       </button>
-      {hasBorder && <div className="border-t my-1" style={{ borderColor: 'var(--color-border)' }}></div>}
+      {hasBorder && (
+        <div
+          className="border-t"
+          style={{
+            borderColor: 'var(--color-border)',
+            margin: '8px 0'
+          }}
+        />
+      )}
     </>
   );
 }
@@ -265,13 +297,20 @@ export default function SettingsDropdown({ className = '', showLabel = false }: 
 
         {/* Dropdown Menu */}
         {isOpen && (
-          <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 rounded-xl shadow-lg py-2 z-50 w-44 sm:w-56 md:w-64 theme-card`}
-               style={{
-                 backgroundColor: 'var(--color-card-background)',
-                 border: '1px solid var(--color-card-border)',
-                 boxShadow: 'var(--shadow-lg)',
-                 direction: dir as 'rtl' | 'ltr'
-               }}>
+          <div
+            className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full rounded-xl shadow-lg z-50 theme-card`}
+            style={{
+              backgroundColor: 'var(--color-card-background)',
+              border: '1px solid var(--color-card-border)',
+              boxShadow: 'var(--shadow-lg)',
+              direction: dir as 'rtl' | 'ltr',
+              marginTop: '12px',
+              padding: '8px 0',
+              minWidth: '240px',
+              width: 'auto',
+              maxWidth: '280px'
+            }}
+          >
             {/* Language */}
             <DropdownItem
               title={t('settings.language')}

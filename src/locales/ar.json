@@ -238,7 +238,8 @@
     "previous": "السابق",
     "submit": "إرسال",
     "reset": "إعادة تعيين",
-    "clear": "مسح"
+    "clear": "مسح",
+    "loadMore": "تحميل المزيد"
   },
   "chat": {
     "message": "رسالة",

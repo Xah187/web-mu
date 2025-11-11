@@ -17,6 +17,7 @@ interface ProjectPermissionsModalProps {
     ValidityProject?: string[];
   };
   projectId: number;
+  branchId?: number; // إضافة branchId - مطابق للتطبيق المحمول
   onSuccess: () => void;
 }
 
@@ -26,6 +27,7 @@ export default function ProjectPermissionsModal({
   onClose,
   member,
   projectId,
+  branchId,
   onSuccess
 }: ProjectPermissionsModalProps) {
   const { user } = useSelector((state: any) => state.user || {});
@@ -57,9 +59,25 @@ export default function ProjectPermissionsModal({
         }
       };
 
+      // ✅ استخدام branchId إذا كان متوفراً وصالحاً، وإلا استخدام IDCompanyBransh - مطابق للتطبيق المحمول
+      // التأكد من أن branchId رقم صحيح وليس string فارغ
+      const finalBranchId = (branchId && !isNaN(Number(branchId)))
+        ? parseInt(branchId.toString())
+        : user?.data?.IDCompanyBransh;
+
+      console.log('🔍 Debug branchId:', {
+        branchId,
+        'typeof branchId': typeof branchId,
+        'user?.data?.IDCompanyBransh': user?.data?.IDCompanyBransh,
+        finalBranchId,
+        'typeof finalBranchId': typeof finalBranchId,
+        projectId,
+        'typeof projectId': typeof projectId
+      });
+
       console.log('📊 تحديث صلاحيات المشروع:', {
-        idBrinsh: user?.data?.IDCompanyBransh,
-        type: projectId.toString(),
+        idBrinsh: finalBranchId,
+        type: projectId, // ✅ رقم وليس string - مطابق للتطبيق المحمول
         checkGloblenew,
         checkGlobleold: {},
         kind: 'user'
@@ -69,8 +87,8 @@ export default function ProjectPermissionsModal({
       const response = await axiosInstance.put(
         '/user/updat/userBrinshv2',
         {
-          idBrinsh: user?.data?.IDCompanyBransh,
-          type: projectId.toString(),
+          idBrinsh: finalBranchId,
+          type: projectId, // ✅ رقم وليس string - مطابق للتطبيق المحمول
           checkGloblenew: checkGloblenew,
           checkGlobleold: {},
           kind: 'user'
@@ -85,13 +103,52 @@ export default function ProjectPermissionsModal({
 
       console.log('📊 API Response:', response.data);
 
-      if (response.data?.success) {
+      // Check for different success response formats from backend
+      const isSuccess = response.data?.success === true ||
+                       response.data?.success === 'successfuly' ||
+                       response.data?.success === 'تمت العملية بنجاح';
+
+      if (isSuccess) {
         Tostget('تم تحديث الصلاحيات بنجاح');
+
+        // If updating current user's permissions, refresh them in Redux
+        // مطابق للتطبيق المحمول - إعادة جلب الصلاحيات بعد التحديث
+        console.log('🔍 Checking if current user:', {
+          'member.PhoneNumber': member.PhoneNumber,
+          'user?.data?.PhoneNumber': user?.data?.PhoneNumber,
+          'member.userName': member.userName,
+          'user?.data?.userName': user?.data?.userName,
+          isCurrentUser: member.PhoneNumber === user?.data?.PhoneNumber
+        });
+
+        if (member.PhoneNumber === user?.data?.PhoneNumber) {
+          console.log('✅ المستخدم الحالي - سيتم تحديث الصلاحيات في Redux');
+          try {
+            const { fetchUserPermissions } = await import('@/functions/permissions/fetchPermissions');
+            await fetchUserPermissions(user.accessToken, user);
+            console.log('✅ تم تحديث صلاحيات المستخدم الحالي في Redux');
+          } catch (error) {
+            console.error('فشل في تحديث صلاحيات المستخدم الحالي:', error);
+          }
+        } else {
+          console.log('ℹ️ ليس المستخدم الحالي - لن يتم تحديث Redux');
+        }
+
         onSuccess();
         onClose();
       } else {
         console.error('❌ فشل التحديث:', response.data);
-        Tostget('فشل في تحديث الصلاحيات');
+
+        // Show detailed error message if available
+        if (response.data?.errors) {
+          console.error('❌ تفاصيل الأخطاء:', response.data.errors);
+          const errorMessages = Object.values(response.data.errors).flat().join(', ');
+          Tostget(`فشل في تحديث الصلاحيات: ${errorMessages}`);
+        } else if (response.data?.message) {
+          Tostget(`فشل في تحديث الصلاحيات: ${response.data.message}`);
+        } else {
+          Tostget('فشل في تحديث الصلاحيات');
+        }
       }
     } catch (error) {
       console.error('❌ Error updating permissions:', error);

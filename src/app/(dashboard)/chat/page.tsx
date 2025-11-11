@@ -50,8 +50,38 @@ export default function ChatPage() {
 
   const ProjectID = search.get('ProjectID') || '';
   const typess = search.get('typess') || '';
-  const nameRoom = search.get('nameRoom') || typess || t('chat.defaultRoomName');
+  const nameRoomParam = search.get('nameRoom') || '';
   const nameProject = search.get('nameProject') || '';
+
+  // Normalize known chat types so the header title can be translated regardless of query text
+  const normalizeType = (s: string): 'decisions' | 'consultations' | 'approvals' | 'project' | undefined => {
+    const v = (s || '').toLowerCase();
+    if (!v) return undefined;
+    if (v.includes('قرار')) return 'decisions';
+    if (v.includes('استشا') || v.includes('consult')) return 'consultations';
+    if (v.includes('اعتما') || v.includes('approval')) return 'approvals';
+    if (v === 'project' || v.includes('project')) return 'project';
+    return undefined;
+  };
+
+  const normalizedType = normalizeType(typess) || normalizeType(nameRoomParam);
+
+  // Compute a translated header title
+  const headerTitle = (() => {
+    switch (normalizedType) {
+      case 'decisions':
+        return t('management.decisionsPage.title');
+      case 'consultations':
+        return t('management.consultationsPage.title');
+      case 'approvals':
+        return t('management.approvals');
+      case 'project':
+        return nameRoomParam || t('chat.defaultRoomName');
+      default:
+        // Fallback to provided room name, then type, else default
+        return nameRoomParam || typess || t('chat.defaultRoomName');
+    }
+  })();
 
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [text, setText] = useState('');
@@ -628,7 +658,7 @@ export default function ChatPage() {
     <ResponsiveLayout
       header={
         <PageHeader
-          title={nameRoom || t('chat.defaultRoomName')}
+          title={headerTitle}
           subtitle={nameProject || undefined}
           backButton={
             <button onClick={() => router.back()} className="p-2 rounded-lg transition-colors"

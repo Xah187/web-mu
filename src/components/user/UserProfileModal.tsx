@@ -13,59 +13,86 @@ interface UserProfileModalProps {
 }
 
 const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) => {
-  const { user, size } = useAppSelector((state: any) => state.user);
-  const { t } = useTranslation();
+  const { user, size, language } = useAppSelector((state: any) => state.user);
+  const { t, isRTL, dir } = useTranslation();
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
-      <div 
+    <div
+      className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
+      style={{ direction: dir as 'rtl' | 'ltr' }}
+    >
+      <div
         className="bg-black bg-opacity-40 absolute inset-0"
         onClick={onClose}
       />
-      
-      <div className="bg-white rounded-2xl p-6 w-full max-w-md relative z-10 shadow-2xl">
+
+      <div
+        className="bg-white rounded-2xl w-full max-w-md relative z-10 shadow-2xl"
+        style={{
+          padding: '32px 24px',
+          direction: dir as 'rtl' | 'ltr'
+        }}
+      >
         {/* User Avatar and Basic Info */}
-        <div className="flex flex-col items-center mb-6">
-          <div 
-            className="bg-peach rounded-full flex items-center justify-center mb-4 overflow-hidden"
-            style={{ 
-              width: scale(70), 
-              height: scale(70),
-              backgroundColor: '#FFE4E1'
+        <div className="flex flex-col items-center" style={{ marginBottom: '24px' }}>
+          <div
+            className="bg-peach rounded-full flex items-center justify-center overflow-hidden"
+            style={{
+              width: scale(80),
+              height: scale(80),
+              backgroundColor: '#FFE4E1',
+              marginBottom: '16px'
             }}
           >
             <Image
               src="/images/figma/male.png"
               alt="User Avatar"
-              width={70}
-              height={70}
+              width={80}
+              height={80}
               className="w-full h-full object-cover rounded-full"
             />
           </div>
-          
+
           <h3
-            className="font-ibm-arabic-bold text-gray-900 text-center mb-2"
-            style={{ fontSize: verticalScale(16 + size) }}
+            className="font-ibm-arabic-bold text-gray-900 text-center"
+            style={{
+              fontSize: verticalScale(18 + size),
+              marginBottom: '8px',
+              textAlign: 'center'
+            }}
           >
             {user?.data?.userName || t('profile.user')}
           </h3>
 
           <p
             className="font-ibm-arabic-medium text-gray-600 text-center"
-            style={{ fontSize: verticalScale(14 + size) }}
+            style={{
+              fontSize: verticalScale(14 + size),
+              textAlign: 'center'
+            }}
           >
             {user?.data?.job || t('profile.notSpecified')}
           </p>
         </div>
 
         {/* User Details */}
-        <div className="space-y-4 mb-6">
-          <div className="bg-gray-50 rounded-xl p-4">
+        <div style={{ marginBottom: '24px' }}>
+          <div
+            className="bg-gray-50 rounded-xl"
+            style={{
+              padding: '16px 20px',
+              marginBottom: '12px'
+            }}
+          >
             <p
-              className="font-ibm-arabic-medium text-gray-700 text-right"
-              style={{ fontSize: verticalScale(13 + size) }}
+              className="font-ibm-arabic-medium text-gray-700"
+              style={{
+                fontSize: verticalScale(14 + size),
+                textAlign: isRTL ? 'right' : 'left',
+                direction: dir as 'rtl' | 'ltr'
+              }}
             >
               <span className="text-gray-500">{t('profile.phoneNumber')}: </span>
               <span className="font-ibm-arabic-semibold">
@@ -74,10 +101,20 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div
+            className="bg-gray-50 rounded-xl"
+            style={{
+              padding: '16px 20px',
+              marginBottom: '12px'
+            }}
+          >
             <p
-              className="font-ibm-arabic-medium text-gray-700 text-right"
-              style={{ fontSize: verticalScale(13 + size) }}
+              className="font-ibm-arabic-medium text-gray-700"
+              style={{
+                fontSize: verticalScale(14 + size),
+                textAlign: isRTL ? 'right' : 'left',
+                direction: dir as 'rtl' | 'ltr'
+              }}
             >
               <span className="text-gray-500">{t('profile.idNumber')}: </span>
               <span className="font-ibm-arabic-semibold">
@@ -86,10 +123,19 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
             </p>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-4">
+          <div
+            className="bg-gray-50 rounded-xl"
+            style={{
+              padding: '16px 20px'
+            }}
+          >
             <p
-              className="font-ibm-arabic-medium text-gray-700 text-right"
-              style={{ fontSize: verticalScale(13 + size) }}
+              className="font-ibm-arabic-medium text-gray-700"
+              style={{
+                fontSize: verticalScale(14 + size),
+                textAlign: isRTL ? 'right' : 'left',
+                direction: dir as 'rtl' | 'ltr'
+              }}
             >
               <span className="text-gray-500">{t('profile.jobDescription')}: </span>
               <span className="font-ibm-arabic-semibold">
@@ -101,32 +147,57 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
 
         {/* Permissions Section */}
         {user?.data?.Validity && user.data.Validity.filter((item: any) => item?.NameBransh !== undefined).length > 0 && (
-          <div className="mb-6">
+          <div style={{ marginBottom: '24px' }}>
             <h4
-              className="font-ibm-arabic-bold text-gray-900 text-right mb-4"
-              style={{ fontSize: verticalScale(15 + size) }}
+              className="font-ibm-arabic-bold text-gray-900"
+              style={{
+                fontSize: verticalScale(16 + size),
+                marginBottom: '16px',
+                textAlign: isRTL ? 'right' : 'left',
+                direction: dir as 'rtl' | 'ltr'
+              }}
             >
               {t('profile.permissions')}
             </h4>
 
-            <div className="space-y-3">
+            <div>
               {user.data.Validity
                 .filter((item: any) => item?.NameBransh !== undefined)
                 .map((item: any, index: number) => (
-                  <div key={index} className="bg-blue-50 rounded-xl p-4 border border-blue-100">
-                    <div className="flex justify-between items-center">
-                      <div className="flex-1 text-right">
+                  <div
+                    key={index}
+                    className="bg-blue-50 rounded-xl border border-blue-100"
+                    style={{
+                      padding: '16px 20px',
+                      marginBottom: index < user.data.Validity.filter((i: any) => i?.NameBransh !== undefined).length - 1 ? '12px' : '0'
+                    }}
+                  >
+                    <div
+                      className="flex items-center"
+                      style={{
+                        flexDirection: isRTL ? 'row-reverse' : 'row',
+                        justifyContent: 'space-between',
+                        gap: '12px'
+                      }}
+                    >
+                      <div style={{ flex: 1 }}>
                         <p
                           className="font-ibm-arabic-semibold text-blue-800"
-                          style={{ fontSize: verticalScale(13 + size) }}
+                          style={{
+                            fontSize: verticalScale(14 + size),
+                            textAlign: isRTL ? 'right' : 'left'
+                          }}
                         >
                           {item?.job || t('profile.notSpecified')}
                         </p>
                       </div>
-                      <div className="flex-1 text-left">
+                      <div style={{ flex: 1 }}>
                         <p
                           className="font-ibm-arabic-medium text-blue-600"
-                          style={{ fontSize: verticalScale(13 + size) }}
+                          style={{
+                            fontSize: verticalScale(14 + size),
+                            textAlign: isRTL ? 'left' : 'right'
+                          }}
                         >
                           {item?.NameBransh || t('profile.notSpecified')}
                         </p>
@@ -141,8 +212,11 @@ const UserProfileModal: React.FC<UserProfileModalProps> = ({ isOpen, onClose }) 
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="w-full bg-gray-200 text-gray-800 py-3 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
-          style={{ fontSize: verticalScale(14 + size) }}
+          className="w-full bg-gray-200 text-gray-800 rounded-xl font-ibm-arabic-semibold hover:bg-gray-300 transition-colors"
+          style={{
+            fontSize: verticalScale(15 + size),
+            padding: '14px 24px'
+          }}
         >
           {t('common.close')}
         </button>

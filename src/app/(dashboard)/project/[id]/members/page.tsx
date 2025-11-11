@@ -60,16 +60,18 @@ export default function ProjectMembersPage() {
   }, [projectId]);
 
   // جلب أعضاء المشروع - مطابق للتطبيق المحمول PageUsers.tsx
-  const fetchProjectMembers = async (lastId = 0) => {
+  const fetchProjectMembers = async (lastId = 0, forceUpdate = false) => {
     try {
       setLoading(true);
 
-      console.log('🔍 Fetching project members for project:', projectId, 'branch:', branchId);
+      console.log('🔍 Fetching project members for project:', projectId, 'branch:', branchId, 'forceUpdate:', forceUpdate);
 
       // مطابق للتطبيق المحمول: استخدام BringUserCompanyinv2 بدلاً من BringUserCompanyBrinsh
       // type = رقم المشروع، selectuser = "project"
+      // إضافة type_request=update لإجبار الـ API على جلب البيانات الجديدة بدلاً من الـ cache
+      const typeRequest = forceUpdate ? 'update' : 'cache';
       const response = await axiosInstance.get(
-        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=${projectId}&number=${lastId}&kind_request=${filter}&selectuser=project`,
+        `/user/BringUserCompanyinv2?IDCompany=${user?.data?.IDCompany}&idBrinsh=${branchId}&type=${projectId}&number=${lastId}&kind_request=${filter}&selectuser=project&type_request=${typeRequest}`,
         {
           headers: {
             'Content-Type': 'application/json',
@@ -634,8 +636,10 @@ export default function ProjectMembersPage() {
             }}
             member={selectedMember}
             projectId={parseInt(projectId)}
+            branchId={branchId ? parseInt(branchId) : undefined} // ✅ تمرير branchId - مطابق للتطبيق المحمول
             onSuccess={() => {
-              fetchProjectMembers(0);
+              // ✅ إجبار التحديث من الـ API بدلاً من الـ cache - مطابق للتطبيق المحمول
+              fetchProjectMembers(0, true);
               setShowPermissionsModal(false);
               setSelectedMember(null);
             }}

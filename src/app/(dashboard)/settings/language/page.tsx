@@ -49,48 +49,73 @@ export default function LanguageSettingsPage() {
         />
       }
     >
-      <ContentSection className="p-4">
+      <ContentSection>
       {/* Content */}
-      <div className="p-4">
-        <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 mb-6">
+      <div style={{ padding: '24px 20px' }}>
+        <div
+          className="bg-white rounded-2xl shadow-sm border border-gray-100"
+          style={{
+            padding: '28px 24px',
+            marginBottom: '24px'
+          }}
+        >
           <h2
-            className="font-semibold text-gray-900 mb-4"
+            className="font-semibold text-gray-900"
             style={{
               fontFamily: fonts.IBMPlexSansArabicSemiBold,
-              fontSize: scale(16 + size)
+              fontSize: scale(17 + size),
+              marginBottom: '20px'
             }}
           >
             {t('settings.selectLanguage')}
           </h2>
 
-          <div className="space-y-3">
-            {languages.map((lang) => (
+          <div>
+            {languages.map((lang, index) => (
               <div
                 key={lang.value}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                className={`rounded-xl border-2 cursor-pointer transition-all duration-200 ${
                   selectedLanguage === lang.value
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 bg-white hover:border-gray-300'
                 }`}
+                style={{
+                  padding: '16px 20px',
+                  marginBottom: index < languages.length - 1 ? '14px' : '0'
+                }}
                 onClick={() => setSelectedLanguage(lang.value as 'ar' | 'en')}
               >
-                <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center"
+                  style={{ gap: '14px' }}
+                >
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
+                    className={`rounded-full border-2 flex items-center justify-center ${
                       selectedLanguage === lang.value
                         ? 'border-blue-500 bg-blue-500'
                         : 'border-gray-300'
                     }`}
+                    style={{
+                      width: '22px',
+                      height: '22px',
+                      flexShrink: 0
+                    }}
                   >
                     {selectedLanguage === lang.value && (
-                      <div className="w-2 h-2 bg-white rounded-full"></div>
+                      <div
+                        className="bg-white rounded-full"
+                        style={{
+                          width: '10px',
+                          height: '10px'
+                        }}
+                      />
                     )}
                   </div>
                   <span
                     className="text-gray-900"
                     style={{
                       fontFamily: fonts.IBMPlexSansArabicRegular,
-                      fontSize: scale(14 + size)
+                      fontSize: scale(15 + size)
                     }}
                   >
                     {lang.label}
@@ -101,16 +126,35 @@ export default function LanguageSettingsPage() {
           </div>
         </div>
 
-        <div className="flex gap-3">
+        <div
+          className="flex"
+          style={{ gap: '14px' }}
+        >
           <button
             onClick={handleSave}
-            className="flex-1 py-3 px-4 bg-blue text-white rounded-lg font-cairo font-medium hover:bg-blue-600 transition-colors"
+            className="flex-1 rounded-xl font-cairo font-medium transition-colors"
+            style={{
+              padding: '14px 20px',
+              fontSize: scale(15 + size),
+              backgroundColor: colors.BLUE,
+              color: '#FFFFFF'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#1e40af';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = colors.BLUE;
+            }}
           >
             {t('common.save')}
           </button>
           <button
             onClick={() => router.back()}
-            className="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-cairo font-medium hover:bg-gray-200 transition-colors"
+            className="flex-1 bg-gray-100 text-gray-700 rounded-xl font-cairo font-medium hover:bg-gray-200 transition-colors"
+            style={{
+              padding: '14px 20px',
+              fontSize: scale(15 + size)
+            }}
           >
             {t('common.cancel')}
           </button>
