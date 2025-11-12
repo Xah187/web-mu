@@ -2,7 +2,7 @@ import { useState, useCallback, useRef } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import axiosInstance from '@/lib/api/axios';
 
-import { setBoss } from '@/store/slices/userSlice';
+import { setBoss, setValidity } from '@/store/slices/userSlice';
 
 export interface Project {
   id: number;
@@ -93,6 +93,16 @@ export const useBranchProjects = (): UseBranchProjectsReturn => {
         // Mobile app sets boss from this endpoint if provided
         if (response?.data?.boss !== undefined) {
           dispatch(setBoss(response.data.boss));
+        }
+
+        // ✅ مطابق للتطبيق المحمول HomSubFunction.tsx السطر 55
+        // حفظ صلاحيات الفرع (ValidityBransh) في Redux عند جلب المشاريع
+        if (lastProjectId === 0 && response.data?.data && response.data.data.length > 0) {
+          const firstProject = response.data.data[0];
+          if (firstProject?.ValidityBransh) {
+            console.log('📊 تحديث صلاحيات الفرع من BringProject:', firstProject.ValidityBransh);
+            dispatch(setValidity(firstProject.ValidityBransh));
+          }
         }
 
         // استخراج بيانات المشاريع

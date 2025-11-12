@@ -74,7 +74,29 @@ const userSlice = createSlice({
       state.theme = action.payload;
     },
     setValidity: (state, action: PayloadAction<PermissionType[]>) => {
-      state.Validity = action.payload;
+      // ✅ التأكد من أن Validity هو array وليس string - مطابق للتطبيق المحمول
+      let validity = action.payload;
+
+      // إذا كان string، حوّله إلى array
+      if (typeof validity === 'string') {
+        try {
+          validity = JSON.parse(validity);
+          console.log('✅ [setValidity] تم تحويل Validity من string إلى array:', validity);
+        } catch (e) {
+          console.error('❌ [setValidity] فشل تحويل Validity من string:', e);
+          validity = [];
+        }
+      }
+
+      // تأكد من أنه array
+      state.Validity = Array.isArray(validity) ? validity : [];
+
+      console.log('✅ [setValidity] تم تحديث Validity في Redux:', {
+        'type': typeof state.Validity,
+        'isArray': Array.isArray(state.Validity),
+        'length': state.Validity.length,
+        'sample': state.Validity.slice(0, 3)
+      });
     },
     setBoss: (state, action: PayloadAction<BossType>) => {
       state.boss = action.payload;

@@ -16,7 +16,33 @@ const getSpecializedJobPermissions = (jobDescription: string): PermissionType[] 
  * Replicates the exact logic from the mobile app's ValidityUser.tsx
  */
 export default function useValidityUser() {
-  const { user, boss, Validity } = useAppSelector(state => state.user);
+  const { user, boss, Validity: rawValidity } = useAppSelector(state => state.user);
+
+  // ✅ التأكد من أن Validity هو array وليس string - مطابق للتطبيق المحمول
+  let Validity: PermissionType[] = [];
+
+  if (typeof rawValidity === 'string') {
+    try {
+      Validity = JSON.parse(rawValidity);
+      console.log('✅ [useValidityUser] تم تحويل Validity من string إلى array');
+    } catch (e) {
+      console.error('❌ [useValidityUser] فشل تحويل Validity من string:', e);
+      Validity = [];
+    }
+  } else if (Array.isArray(rawValidity)) {
+    Validity = rawValidity;
+  }
+
+  // Debug: Log Validity changes
+  console.log('🔍 [useValidityUser] Current Validity:', {
+    'rawValidity type': typeof rawValidity,
+    'Validity type': typeof Validity,
+    'isArray': Array.isArray(Validity),
+    'Validity.length': Validity?.length,
+    'Validity sample': Validity?.slice(0, 3),
+    'user.data.job': user?.data?.job,
+    boss
+  });
 
   /**
    * Main validation function

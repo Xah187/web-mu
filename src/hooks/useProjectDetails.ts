@@ -137,6 +137,15 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
         },
       });
 
+      console.log('🔍 BringStage API Response:', {
+        endpoint,
+        lastStageId,
+        type,
+        'response.data': response.data,
+        'response.data.Validity': response.data?.Validity,
+        'response.data.data': response.data?.data
+      });
+
       // في التطبيق الأصلي، البيانات في result.data.data
       const stagesData = response.data?.data || response.data;
 
@@ -145,6 +154,12 @@ export const useProjectDetails = (): UseProjectDetailsReturn => {
       if (lastStageId === 0 && response.data?.Validity) {
         console.log('📊 تحديث صلاحيات المشروع من BringStage:', response.data.Validity);
         dispatch(setValidity(response.data.Validity));
+      } else {
+        console.warn('⚠️ لم يتم تحديث الصلاحيات:', {
+          'lastStageId === 0': lastStageId === 0,
+          'response.data?.Validity exists': !!response.data?.Validity,
+          'response.data keys': Object.keys(response.data || {})
+        });
       }
 
       if (stagesData && Array.isArray(stagesData)) {

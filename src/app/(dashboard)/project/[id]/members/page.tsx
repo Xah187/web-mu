@@ -11,6 +11,7 @@ import EditMemberModal from '@/components/members/EditMemberModal';
 import DeleteMemberModal from '@/components/members/DeleteMemberModal';
 import ProjectPermissionsModal from '@/components/project/ProjectPermissionsModal';
 import AddProjectUsersModal from '@/components/project/AddProjectUsersModal';
+import { useProjectDetails } from '@/hooks/useProjectDetails';
 
 // مطابق للتطبيق المحمول PageUsers.tsx
 interface ProjectMember {
@@ -37,6 +38,7 @@ export default function ProjectMembersPage() {
 
   const { user } = useSelector((state: any) => state.user || {});
   const { Uservalidation } = useValidityUser();
+  const { fetchStages } = useProjectDetails(); // ✅ لتحديث الصلاحيات بعد التعديل - مطابق للتطبيق المحمول
 
   const [members, setMembers] = useState<ProjectMember[]>([]);
   const [loading, setLoading] = useState(false);
@@ -637,9 +639,15 @@ export default function ProjectMembersPage() {
             member={selectedMember}
             projectId={parseInt(projectId)}
             branchId={branchId ? parseInt(branchId) : undefined} // ✅ تمرير branchId - مطابق للتطبيق المحمول
-            onSuccess={() => {
+            onSuccess={async () => {
               // ✅ إجبار التحديث من الـ API بدلاً من الـ cache - مطابق للتطبيق المحمول
               fetchProjectMembers(0, true);
+
+              // ✅ إعادة جلب المراحل لتحديث الصلاحيات في Redux - مطابق للتطبيق المحمول
+              // مطابق لـ PageHomeProjectFunction.tsx السطر 57-59
+              console.log('🔄 إعادة جلب المراحل لتحديث الصلاحيات في Redux');
+              await fetchStages(parseInt(projectId), 0, 'update');
+
               setShowPermissionsModal(false);
               setSelectedMember(null);
             }}
