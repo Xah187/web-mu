@@ -336,50 +336,70 @@ export default function LoginPage() {
               width={120}
               height={24}
               alt={t('reports.moshrifLogo')}
-              className="h-6 sm:h-8 w-auto"
+              className="w-auto"
               priority
               style={{
+                height: '32px',
                 filter: isDark ? 'brightness(0) invert(1)' : 'none'
               }}
             />
             <span
-              className="font-ibm-arabic-bold text-2xl sm:text-3xl transition-colors duration-300"
+              className="transition-colors duration-300"
               style={{
                 color: isDark ? colors.WHITE : colors.BLUE,
-                fontFamily: fonts.IBMPlexSansArabicBold
+                fontFamily: fonts.IBMPlexSansArabicBold,
+                fontSize: '32px',
+                lineHeight: '1.2'
               }}
             >
               {t('app.name')}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 mb-1 px-2">
+          <div className="flex flex-wrap items-center justify-center gap-1 mb-1 px-2">
             <span
-              className="text-lg sm:text-xl font-cairo-bold transition-colors duration-300"
-              style={{ color: currentTheme.textPrimary }}
+              className="transition-colors duration-300"
+              style={{
+                color: currentTheme.textPrimary,
+                fontFamily: fonts.CAIROBOLD,
+                fontSize: '20px',
+                lineHeight: '1.4'
+              }}
             >
               {t('auth.welcomeTo')}
             </span>
             <span
-              className="font-ibm-arabic-bold text-lg sm:text-xl transition-colors duration-300"
+              className="transition-colors duration-300"
               style={{
                 color: isDark ? colors.WHITE : colors.BLUE,
-                fontFamily: 'IBMPlexSansArabic-Bold'
+                fontFamily: fonts.IBMPlexSansArabicBold,
+                fontSize: '20px',
+                lineHeight: '1.4'
               }}
             >
               {t('app.name')}
             </span>
             <span
-              className="text-lg sm:text-xl font-cairo-bold transition-colors duration-300"
-              style={{ color: currentTheme.textPrimary }}
+              className="transition-colors duration-300"
+              style={{
+                color: currentTheme.textPrimary,
+                fontFamily: fonts.CAIROBOLD,
+                fontSize: '20px',
+                lineHeight: '1.4'
+              }}
             >
               {t('auth.enterYourData')}
             </span>
           </div>
 
           <p
-            className="text-lg font-cairo transition-colors duration-300"
-            style={{ color: currentTheme.textSecondary }}
+            className="transition-colors duration-300"
+            style={{
+              color: currentTheme.textSecondary,
+              fontFamily: fonts.CAIROREGULARK,
+              fontSize: '18px',
+              lineHeight: '1.5'
+            }}
           >
             {t('auth.pleaseLogin')}
           </p>

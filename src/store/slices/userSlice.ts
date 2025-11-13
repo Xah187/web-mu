@@ -32,12 +32,34 @@ interface UserState {
   boss: BossType;
 }
 
+// Get initial language from localStorage (SSR-safe)
+const getInitialLanguage = (): 'ar' | 'en' => {
+  if (typeof window !== 'undefined') {
+    const savedLanguage = localStorage.getItem('appLanguage');
+    if (savedLanguage === 'ar' || savedLanguage === 'en') {
+      return savedLanguage;
+    }
+  }
+  return 'ar'; // Default fallback
+};
+
+// Get initial theme from localStorage (SSR-safe)
+const getInitialTheme = (): 'light' | 'dark' => {
+  if (typeof window !== 'undefined') {
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme === 'light' || savedTheme === 'dark') {
+      return savedTheme;
+    }
+  }
+  return 'light'; // Default fallback
+};
+
 const initialState: UserState = {
   user: null,
   isAuthenticated: false,
   size: 0,
-  language: 'ar',
-  theme: 'light',
+  language: getInitialLanguage(),
+  theme: getInitialTheme(),
   Validity: [],
   boss: '' as BossType,
 };

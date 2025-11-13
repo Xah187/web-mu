@@ -239,7 +239,7 @@ export default function ReportsPage() {
                             handleBranchSelect(branch);
                             setShowBranchDropdown(false);
                           }}
-                          className="w-full px-4 py-3 text-right transition-colors last:border-b-0"
+                          className={`w-full px-4 py-3 transition-colors last:border-b-0 ${isRTL ? 'text-right' : 'text-left'}`}
                           style={{
                             backgroundColor: selectedBranch?.id === branch.id
                               ? (theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(27, 78, 209, 0.1)')
@@ -371,7 +371,7 @@ export default function ReportsPage() {
                       <button
                         key={project.id}
                         onClick={() => handleProjectSelect(project)}
-                        className="w-full text-right px-4 py-3 transition-colors last:border-b-0"
+                        className={`w-full px-4 py-3 transition-colors last:border-b-0 ${isRTL ? 'text-right' : 'text-left'}`}
                         style={{
                           backgroundColor: selectedProject?.id === project.id
                             ? (theme === 'dark' ? 'rgba(99, 102, 241, 0.2)' : 'rgba(239, 246, 255, 1)')
@@ -399,7 +399,7 @@ export default function ReportsPage() {
                               ? (theme === 'dark' ? 'var(--color-primary)' : colors.BLUE)
                               : (theme === 'dark' ? 'var(--color-text-primary)' : colors.BLACK)
                           }}
-                          dir="rtl"
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         >
                           {project.Nameproject}
                         </span>

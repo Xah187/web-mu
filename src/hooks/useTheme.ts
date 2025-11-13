@@ -14,7 +14,7 @@ export const useTheme = () => {
   // Apply theme to CSS variables
   useEffect(() => {
     const root = document.documentElement;
-    
+
     // Apply all theme colors as CSS variables
     Object.entries(currentTheme).forEach(([key, value]) => {
       const cssVarName = `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
@@ -24,18 +24,10 @@ export const useTheme = () => {
     // Apply theme class to body
     document.body.className = document.body.className.replace(/theme-\w+/g, '');
     document.body.classList.add(`theme-${theme}`);
-    
+
     // Store theme preference
     localStorage.setItem('theme', theme);
   }, [theme, currentTheme]);
-
-  // Load theme from localStorage on mount
-  useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') as ThemeMode;
-    if (savedTheme && savedTheme !== theme) {
-      dispatch(setTheme(savedTheme));
-    }
-  }, [dispatch, theme]);
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light';
