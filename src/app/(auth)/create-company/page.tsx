@@ -12,6 +12,7 @@ import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
 import axiosInstance from '@/lib/api/axios';
 import { Tostget } from '@/components/ui/Toast';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CompanyFormData {
   CommercialRegistrationNumber: string;
@@ -46,7 +47,8 @@ const inputFieldsArray = [
 export default function CreateRegistrationCompany() {
   const router = useRouter();
   const { size } = useAppSelector(state => state.user);
-  
+  const { t } = useTranslation();
+
   // Initial form data - exact match to mobile
   const initialTitle: CompanyFormData = {
     CommercialRegistrationNumber: '',
@@ -82,7 +84,7 @@ export default function CreateRegistrationCompany() {
     // Check all required fields exactly like mobile
     for (const item of inputFieldsArray) {
       if (!title[item.type as keyof CompanyFormData]) {
-        Tostget('يجب اكمال البيانات');
+        Tostget(t('createCompany.fillAllFields'));
         setStartReject(true);
         return false;
       }
@@ -117,7 +119,7 @@ export default function CreateRegistrationCompany() {
       }
     } catch (error: any) {
       console.error('Create company error:', error);
-      Tostget('حدث خطأ أثناء إنشاء الحساب');
+      Tostget(t('createCompany.error'));
     } finally {
       setLoading(false);
     }
@@ -159,7 +161,7 @@ export default function CreateRegistrationCompany() {
           }}
         >
           <IconMoshrif size={120} />
-          <h1 
+          <h1
             className="font-ibm-arabic-semibold text-gray-200 mt-4"
             style={{
               fontSize: verticalScale(18 + size),
@@ -170,7 +172,7 @@ export default function CreateRegistrationCompany() {
               textAlign: 'center'
             }}
           >
-            منصة مشرف
+            {t('createCompany.platformName')}
           </h1>
         </div>
       </div>
@@ -189,14 +191,14 @@ export default function CreateRegistrationCompany() {
         <div className="content-container">
           
           {/* Title Section - exactly like mobile */}
-          <div 
+          <div
             className="text-center"
-            style={{ 
-              marginTop: 10, 
-              marginBottom: 10 
+            style={{
+              marginTop: 10,
+              marginBottom: 10
             }}
           >
-            <h2 
+            <h2
               className="font-ibm-arabic-semibold text-black mb-2"
               style={{
                 ...sizeText,
@@ -207,9 +209,9 @@ export default function CreateRegistrationCompany() {
                 textAlign: 'center'
               }}
             >
-              إنشاء حساب جديد
+              {t('createCompany.title')}
             </h2>
-            <p 
+            <p
               className="text-greay"
               style={{
                 fontSize: 16,
@@ -220,7 +222,7 @@ export default function CreateRegistrationCompany() {
                 textAlign: 'center'
               }}
             >
-              سجل بيانات شركتك من أجل إنشاء حساب
+              {t('createCompany.subtitle')}
             </p>
           </div>
 
@@ -236,7 +238,7 @@ export default function CreateRegistrationCompany() {
               {/* Row 1: رقم السجل التجاري + اسم الشركة */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
-                  name="رقم السجل التجاري"
+                  name={t('createCompany.commercialRegistrationNumber')}
                   value={title.CommercialRegistrationNumber}
                   onChange={(value) => insertInput('CommercialRegistrationNumber', value)}
                   type="tel"
@@ -244,7 +246,7 @@ export default function CreateRegistrationCompany() {
                   marginBottom={0}
                 />
                 <Input
-                  name="اسم الشركة"
+                  name={t('createCompany.companyName')}
                   value={title.NameCompany}
                   onChange={(value) => insertInput('NameCompany', value)}
                   type="text"
@@ -256,7 +258,7 @@ export default function CreateRegistrationCompany() {
               {/* Row 2: رقم المبنى + اسم الشارع */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
-                  name="رقم المبنى"
+                  name={t('createCompany.buildingNumber')}
                   value={title.BuildingNumber}
                   onChange={(value) => insertInput('BuildingNumber', value)}
                   type="tel"
@@ -264,7 +266,7 @@ export default function CreateRegistrationCompany() {
                   marginBottom={0}
                 />
                 <Input
-                  name="اسم الشارع"
+                  name={t('createCompany.streetName')}
                   value={title.StreetName}
                   onChange={(value) => insertInput('StreetName', value)}
                   type="text"
@@ -276,7 +278,7 @@ export default function CreateRegistrationCompany() {
               {/* Row 3: اسم الحي + الرمز البريدي */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
-                  name="اسم الحي"
+                  name={t('createCompany.neighborhoodName')}
                   value={title.NeighborhoodName}
                   onChange={(value) => insertInput('NeighborhoodName', value)}
                   type="text"
@@ -284,7 +286,7 @@ export default function CreateRegistrationCompany() {
                   marginBottom={0}
                 />
                 <Input
-                  name="الرمز البريدي"
+                  name={t('createCompany.postalCode')}
                   value={title.PostalCode}
                   onChange={(value) => insertInput('PostalCode', value)}
                   type="tel"
@@ -296,7 +298,7 @@ export default function CreateRegistrationCompany() {
               {/* Row 4: المدينة + الدولة */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
-                  name="المدينة"
+                  name={t('createCompany.city')}
                   value={title.City}
                   onChange={(value) => insertInput('City', value)}
                   type="text"
@@ -304,7 +306,7 @@ export default function CreateRegistrationCompany() {
                   marginBottom={0}
                 />
                 <Input
-                  name="الدولة"
+                  name={t('createCompany.country')}
                   value={title.Country}
                   onChange={(value) => insertInput('Country', value)}
                   type="text"
@@ -316,7 +318,7 @@ export default function CreateRegistrationCompany() {
               {/* Row 5: الرقم الضريبي + اسم المستخدم */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <Input
-                  name="الرقم الضريبي"
+                  name={t('createCompany.taxNumber')}
                   value={title.TaxNumber}
                   onChange={(value) => insertInput('TaxNumber', value)}
                   type="tel"
@@ -324,7 +326,7 @@ export default function CreateRegistrationCompany() {
                   marginBottom={0}
                 />
                 <Input
-                  name="اسم المستخدم"
+                  name={t('createCompany.userName')}
                   value={title.userName}
                   onChange={(value) => insertInput('userName', value)}
                   type="text"
@@ -337,7 +339,7 @@ export default function CreateRegistrationCompany() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div className="md:col-span-2">
                   <Input
-                    name="رقم الهاتف"
+                    name={t('createCompany.phoneNumber')}
                     value={title.PhoneNumber}
                     onChange={(value) => insertInput('PhoneNumber', value)}
                     type="tel"
@@ -352,7 +354,7 @@ export default function CreateRegistrationCompany() {
           {/* API Agreement Section - centered layout */}
           <div className="w-full max-w-md md:max-w-2xl mx-auto mt-6 mb-6">
             <div className="text-center mb-4">
-              <h3 
+              <h3
                 className="font-ibm-arabic-semibold text-black"
                 style={{
                   ...sizeText,
@@ -360,17 +362,17 @@ export default function CreateRegistrationCompany() {
                   fontFamily: fonts.IBMPlexSansArabicSemiBold
                 }}
               >
-                الربط المالي عبر «Apis»:
+                {t('createCompany.apiIntegration')}
               </h3>
             </div>
-            
+
             <div className="flex items-center justify-center gap-8">
                 {/* Yes Option */}
                 <button
                   onClick={() => setTitle({ ...title, Api: 'true' })}
                   className="api-button hover:bg-blue/5 p-2 rounded-lg transition-colors"
                 >
-                  <span 
+                  <span
                     className="font-ibm-arabic-semibold text-black"
                     style={{
                       ...sizeText,
@@ -379,12 +381,12 @@ export default function CreateRegistrationCompany() {
                       paddingRight: scale(10)
                     }}
                   >
-                    نعم
+                    {t('createCompany.yes')}
                   </span>
-                  <div 
+                  <div
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                      title.Api === 'true' 
-                        ? 'border-gray-600 bg-gray-600' 
+                      title.Api === 'true'
+                        ? 'border-gray-600 bg-gray-600'
                         : 'border-bordercolor bg-white'
                     }`}
                   >
@@ -399,7 +401,7 @@ export default function CreateRegistrationCompany() {
                   onClick={() => setTitle({ ...title, Api: 'false' })}
                   className="api-button hover:bg-blue/5 p-2 rounded-lg transition-colors"
                 >
-                  <span 
+                  <span
                     className="font-ibm-arabic-semibold text-black"
                     style={{
                       ...sizeText,
@@ -408,12 +410,12 @@ export default function CreateRegistrationCompany() {
                       paddingRight: scale(10)
                     }}
                   >
-                    لا
+                    {t('createCompany.no')}
                   </span>
-                  <div 
+                  <div
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all ${
-                      title.Api === 'false' 
-                        ? 'border-gray-600 bg-gray-600' 
+                      title.Api === 'false'
+                        ? 'border-gray-600 bg-gray-600'
                         : 'border-bordercolor bg-white'
                     }`}
                   >
@@ -426,15 +428,15 @@ export default function CreateRegistrationCompany() {
           </div>
 
           {/* Submit Button - exactly like mobile */}
-          <div 
+          <div
             className="submit-button mt-4"
-                          style={{ 
-                marginTop: 10, 
-                marginBottom: 80 
+                          style={{
+                marginTop: 10,
+                marginBottom: 80
               }}
           >
             <ButtonLong
-              text="حفظ"
+              text={loading ? t('createCompany.creating') : t('createCompany.createAccount')}
               onPress={handleSubmit}
               loading={loading}
               disabled={loading}

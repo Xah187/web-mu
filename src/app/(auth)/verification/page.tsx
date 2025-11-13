@@ -13,6 +13,8 @@ import { scale, verticalScale } from '@/utils/responsiveSize';
 import { fetchUserPermissions } from '@/functions/permissions/fetchPermissions';
 import ArrowIcon from '@/components/icons/ArrowIcon';
 import Image from 'next/image';
+import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // OTP Input Component
 interface OTPInputProps {
@@ -22,6 +24,7 @@ interface OTPInputProps {
 
 function OTPInput({ value, onChange }: OTPInputProps) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const { currentTheme, isDark } = useTheme();
 
   const handleChange = (index: number, digit: string) => {
     if (!/^\d*$/.test(digit)) return;
@@ -29,7 +32,7 @@ function OTPInput({ value, onChange }: OTPInputProps) {
     const newValue = value.split('');
     newValue[index] = digit;
     const joined = newValue.join('');
-    
+
     onChange(joined);
 
     // Auto focus next input
@@ -54,7 +57,7 @@ function OTPInput({ value, onChange }: OTPInputProps) {
   };
 
   return (
-    <div className="flex gap-3 justify-center" dir="ltr">
+    <div className="flex gap-3 justify-center" dir="rtl">
       {[0, 1, 2, 3].map((index) => (
         <input
           key={index}
@@ -70,11 +73,15 @@ function OTPInput({ value, onChange }: OTPInputProps) {
           onPaste={handlePaste}
           className={`
             w-12 h-12 text-center text-lg font-cairo-medium
-            bg-white rounded-lg border-2 transition-all duration-200
-            ${value[index] ? 'border-blue' : 'border-bordercolor'}
-            focus:border-blue focus:outline-none
+            rounded-lg border-2 transition-all duration-200
+            focus:outline-none
           `}
-          style={{ direction: 'ltr' }}
+          style={{
+            direction: 'ltr',
+            backgroundColor: currentTheme.inputBackground,
+            color: currentTheme.inputText,
+            borderColor: value[index] ? colors.BLUE : currentTheme.inputBorder
+          }}
         />
       ))}
     </div>
@@ -85,7 +92,9 @@ function VerificationContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const dispatch = useAppDispatch();
-  
+  const { currentTheme, isDark } = useTheme();
+  const { t } = useTranslation();
+
   const phoneNumber = searchParams.get('number') || '';
   const countryCode = searchParams.get('code') || '+966';
   const [code, setCode] = useState('');
@@ -94,7 +103,7 @@ function VerificationContent() {
 
   const handleVerification = async () => {
     if (code.length !== 4) {
-      setError('يرجى ادخال رمز التاكيد');
+      setError(t('auth.verificationCode'));
       return;
     }
 
@@ -152,10 +161,10 @@ function VerificationContent() {
         // This prevents going back to verification page
         router.replace('/home');
       } else {
-        setError(response.data.masseg || 'رمز التحقق غير صحيح');
+        setError(response.data.masseg || t('auth.invalidVerificationCode'));
       }
     } catch (err: any) {
-      setError('حدث خطأ أثناء التحقق');
+      setError(t('auth.verificationError'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -171,10 +180,11 @@ function VerificationContent() {
   return (
     <AuthGuard requireAuth={false}>
       <div
-        className="min-h-screen bg-home flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center transition-colors duration-300"
         style={{
           padding: `${verticalScale(20)}px ${scale(20)}px`,
-          minHeight: '100vh'
+          minHeight: '100vh',
+          backgroundColor: currentTheme.home
         }}
       >
       <div
@@ -187,37 +197,58 @@ function VerificationContent() {
         {/* Back Arrow */}
         <button
           onClick={() => router.back()}
-          className="mb-4 p-2 hover:bg-white/50 rounded-lg transition-colors"
+          className="mb-4 p-2 rounded-lg transition-all duration-200"
+          style={{
+            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(255, 255, 255, 0.7)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.5)';
+          }}
         >
-          <ArrowIcon size={24} color={colors.BLACK} />
+          <ArrowIcon size={24} color={currentTheme.textPrimary} />
         </button>
 
         {/* Logo Section (match login screen exactly) */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center mb-6 gap-1">
             <Image
-              src="/images/figma/Vector.png"
+              src="/images/logo-new.png"
               width={160}
               height={32}
-              alt="Moshrif Vector"
+              alt={t('reports.moshrifLogo')}
               className="h-8"
-              style={{ width: "auto" }}
+              style={{
+                width: "auto",
+                filter: isDark ? 'brightness(0) invert(1)' : 'none'
+              }}
               priority
             />
-            <span className="font-ibm-arabic-bold text-blue" style={{ 
-              fontSize: `${verticalScale(32)}px`,
-              color: colors.BLUE,
-              fontFamily: fonts.IBMPlexSansArabicBold
-            }}>
-              مشرف
+            <span
+              className="font-ibm-arabic-bold transition-colors duration-300"
+              style={{
+                fontSize: `${verticalScale(32)}px`,
+                color: isDark ? colors.WHITE : colors.BLUE,
+                fontFamily: fonts.IBMPlexSansArabicBold
+              }}
+            >
+              {t('app.name')}
             </span>
           </div>
 
-          <h2 className="text-xl font-cairo-bold text-black mb-2">
-            ادخل الكود المرسل إلى رقمك
+          <h2
+            className="text-xl font-cairo-bold mb-2 transition-colors duration-300"
+            style={{ color: currentTheme.textPrimary }}
+          >
+            {t('auth.enterCodeSentToNumber')}
           </h2>
-          <p className="text-lg font-cairo text-black">
-            سيصلك رمز تحقق على هذا الرقم{' '}
+          <p
+            className="text-lg font-cairo transition-colors duration-300"
+            style={{ color: currentTheme.textSecondary }}
+          >
+            {t('auth.verificationCodeWillBeSent')}{' '}
             <span style={{ direction: 'ltr', unicodeBidi: 'embed' }}>
               {countryCode}{phoneNumber}
             </span>
@@ -233,7 +264,14 @@ function VerificationContent() {
           }}
         >
           {error && (
-            <div className="p-3 bg-mistyrose rounded-lg text-red text-sm font-cairo text-center">
+            <div
+              className="p-3 rounded-lg text-sm font-cairo text-center transition-colors duration-300"
+              style={{
+                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : colors.MISTYROSE,
+                color: isDark ? '#fca5a5' : colors.RED,
+                border: isDark ? '1px solid rgba(239, 68, 68, 0.3)' : 'none'
+              }}
+            >
               {error}
             </div>
           )}
@@ -247,7 +285,7 @@ function VerificationContent() {
             }}
           >
             <ButtonLong
-              text="تأكيد"
+              text={t('auth.confirm')}
               onPress={handleVerification}
               loading={loading}
               disabled={loading || code.length !== 4}
@@ -262,7 +300,12 @@ function VerificationContent() {
 
 export default function VerificationPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-home" />}>
+    <Suspense fallback={
+      <div
+        className="min-h-screen transition-colors duration-300"
+        style={{ backgroundColor: 'var(--theme-home, #f6f8fe)' }}
+      />
+    }>
       <VerificationContent />
     </Suspense>
   );

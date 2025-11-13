@@ -13,7 +13,8 @@ import axiosInstance from '@/lib/api/axios';
 import { useAppSelector } from '@/store';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import Link from 'next/link';
-import ArrowIcon from '@/components/icons/ArrowIcon';
+import { useTheme } from '@/hooks/useTheme';
+import { useTranslation } from '@/hooks/useTranslation';
 
 // Country codes array
 const countryCodes = [
@@ -186,6 +187,8 @@ const countryCodes = [
 export default function LoginPage() {
   const router = useRouter();
   const { size } = useAppSelector(state => state.user);
+  const { currentTheme, isDark } = useTheme();
+  const { t } = useTranslation();
 
   const [phoneNumber, setPhoneNumber] = useState('');
   const [countryCode, setCountryCode] = useState('+966');
@@ -215,7 +218,7 @@ export default function LoginPage() {
 
     // Validate current phone number with new country code
     if (phoneNumber && !validatePhoneNumber(phoneNumber, code)) {
-      setError('رقم الهاتف غير متوافق مع مفتاح الدولة المختار');
+      setError(t('auth.invalidPhoneNumber'));
     }
   };
 
@@ -259,14 +262,14 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!phoneNumber) {
-      setError('يرجى ادخال رقم جوالك');
+      setError(t('auth.phoneNumberRequired'));
       return;
     }
 
     // Validate phone number format
     if (!validatePhoneNumber(phoneNumber, countryCode)) {
-      const countryName = countryCodes.find(c => c.code === countryCode)?.name || 'الدولة المختارة';
-      setError(`رقم الهاتف غير صحيح لـ ${countryName}. يرجى التأكد من صحة الرقم ومفتاح الدولة.`);
+      const countryName = countryCodes.find(c => c.code === countryCode)?.name || t('auth.selectCountry');
+      setError(`${t('auth.invalidPhoneNumber')} ${countryName}. ${t('auth.pleaseLogin')}`);
       return;
     }
 
@@ -298,10 +301,10 @@ export default function LoginPage() {
         // Navigate to verification page with country code
         router.push(`/verification?number=${number}&code=${encodeURIComponent(countryCode)}`);
       } else {
-        setError(response.data.masseg || 'الرقم ليس موجود');
+        setError(response.data.masseg || t('auth.accountNotFound'));
       }
     } catch (err: any) {
-      setError('حدث خطأ أثناء تسجيل الدخول');
+      setError(t('auth.loginError'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -311,10 +314,11 @@ export default function LoginPage() {
   return (
     <AuthGuard requireAuth={false}>
       <div
-        className="min-h-screen bg-home flex items-center justify-center"
+        className="min-h-screen flex items-center justify-center transition-colors duration-300"
         style={{
           padding: `${verticalScale(20)}px ${scale(20)}px`,
-          minHeight: '100vh'
+          minHeight: '100vh',
+          backgroundColor: currentTheme.home
         }}
       >
       <div
@@ -328,31 +332,57 @@ export default function LoginPage() {
         <div className="text-center" style={{ marginBottom: '60px' }}>
           <div className="flex items-center justify-center gap-1" style={{ marginBottom: '60px' }}>
             <Image
-              src="/images/figma/Vector.png"
+              src="/images/logo-new.png"
               width={120}
               height={24}
-              alt="Moshrif Vector"
+              alt={t('reports.moshrifLogo')}
               className="h-6 sm:h-8 w-auto"
               priority
+              style={{
+                filter: isDark ? 'brightness(0) invert(1)' : 'none'
+              }}
             />
             <span
-              className="font-ibm-arabic-bold text-blue text-2xl sm:text-3xl"
+              className="font-ibm-arabic-bold text-2xl sm:text-3xl transition-colors duration-300"
               style={{
-                color: colors.BLUE,
+                color: isDark ? colors.WHITE : colors.BLUE,
                 fontFamily: fonts.IBMPlexSansArabicBold
               }}
             >
-              مشرف
+              {t('app.name')}
             </span>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-1 sm:gap-2 mb-1 px-2">
-            <span className="text-lg sm:text-xl font-cairo-bold text-black">اهلا بك في</span>
-            <span className="font-ibm-arabic-bold text-blue text-lg sm:text-xl" style={{color: '#2117fb', fontFamily: 'IBMPlexSansArabic-Bold'}}>مشرف</span>
-            <span className="text-lg sm:text-xl font-cairo-bold text-black">ادخل بياناتك</span>
+            <span
+              className="text-lg sm:text-xl font-cairo-bold transition-colors duration-300"
+              style={{ color: currentTheme.textPrimary }}
+            >
+              {t('auth.welcomeTo')}
+            </span>
+            <span
+              className="font-ibm-arabic-bold text-lg sm:text-xl transition-colors duration-300"
+              style={{
+                color: isDark ? colors.WHITE : colors.BLUE,
+                fontFamily: 'IBMPlexSansArabic-Bold'
+              }}
+            >
+              {t('app.name')}
+            </span>
+            <span
+              className="text-lg sm:text-xl font-cairo-bold transition-colors duration-300"
+              style={{ color: currentTheme.textPrimary }}
+            >
+              {t('auth.enterYourData')}
+            </span>
           </div>
 
-          <p className="text-lg font-cairo text-black">قم بتسجيل الدخول</p>
+          <p
+            className="text-lg font-cairo transition-colors duration-300"
+            style={{ color: currentTheme.textSecondary }}
+          >
+            {t('auth.pleaseLogin')}
+          </p>
         </div>
 
         {/* Login Form */}
@@ -369,7 +399,8 @@ export default function LoginPage() {
             style={{
               height: `${scale(55)}px`,
               marginBottom: `${scale(20)}px`,
-              gap: `${scale(12)}px`
+              gap: `${scale(12)}px`,
+              direction: 'rtl'
             }}
           >
             {/* Phone Number Input - في اليمين */}
@@ -379,7 +410,7 @@ export default function LoginPage() {
                 value={phoneNumber}
                 onChange={handlePhoneNumberChange}
                 type="tel"
-                placeholder="أدخل رقم الهاتف"
+                placeholder={t('auth.enterPhoneNumber')}
                 onPressEnter={handleLogin}
                 height={`${scale(55)}px`}
                 marginBottom={0}
@@ -404,14 +435,17 @@ export default function LoginPage() {
           {/* Error message - positioned right after inputs */}
           {error && (
             <div
-              className="bg-mistyrose rounded-lg text-red text-sm font-cairo text-center"
+              className="rounded-lg text-sm font-cairo text-center transition-colors duration-300"
               style={{
                 padding: `${scale(12)}px`,
                 marginTop: `${scale(8)}px`,
                 marginBottom: `${scale(16)}px`,
                 borderRadius: `${scale(8)}px`,
                 fontSize: `${scale(13 + size)}px`,
-                fontFamily: fonts.IBMPlexSansArabicMedium
+                fontFamily: fonts.IBMPlexSansArabicMedium,
+                backgroundColor: isDark ? 'rgba(239, 68, 68, 0.1)' : colors.MISTYROSE,
+                color: isDark ? '#fca5a5' : colors.RED,
+                border: isDark ? '1px solid rgba(239, 68, 68, 0.3)' : 'none'
               }}
             >
               {error}
@@ -427,7 +461,7 @@ export default function LoginPage() {
             }}
           >
             <ButtonLong
-              text="تسجيل الدخول"
+              text={t('auth.login')}
               onPress={handleLogin}
               loading={loading}
               disabled={loading}
@@ -448,10 +482,10 @@ export default function LoginPage() {
               style={{
                 fontSize: `${verticalScale(14)}px`,
                 padding: `${verticalScale(8)}px ${scale(16)}px`,
-                color: '#2563EB'
+                color: isDark ? '#818cf8' : '#2563EB'
               }}
             >
-              إنشاء حساب شركة جديد
+              {t('auth.createNewCompanyAccount')}
             </Link>
           </div>
         </div>

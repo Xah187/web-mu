@@ -5,6 +5,7 @@ import { colors } from '@/constants/colors';
 import { fonts } from '@/constants/fonts';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import { useAppSelector } from '@/store';
+import { useTheme } from '@/hooks/useTheme';
 
 interface InputProps {
   value: string;
@@ -54,6 +55,7 @@ export default function Input({
 }: InputProps) {
   const [isFocused, setIsFocused] = useState(false);
   const { size, language } = useAppSelector(state => state.user);
+  const { currentTheme, isDark } = useTheme();
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
   const isRTL = language === 'ar';
 
@@ -123,7 +125,8 @@ export default function Input({
         `}
         style={{
           borderRadius: `${scale(12)}px`,
-          borderColor: isFocused ? colors.BLUE : error ? '#ef4444' : colors.BORDERCOLOR
+          borderColor: isFocused ? colors.BLUE : error ? '#ef4444' : currentTheme.inputBorder,
+          backgroundColor: currentTheme.inputBackground
         }}
         onClick={() => !disabled && inputRef.current?.focus()}
       >
@@ -139,7 +142,7 @@ export default function Input({
           disabled={disabled}
           placeholder={placeholder || (label || name ? undefined : `أدخل ${name}`)}
           className={`
-            w-full bg-transparent outline-none ${isRTL ? 'text-right' : 'text-left'}
+            w-full bg-transparent outline-none text-center
             ${multiline ? 'resize-none' : ''}
             ${disabled ? 'cursor-not-allowed' : ''}
           `}
@@ -149,10 +152,9 @@ export default function Input({
             fontSize: type === 'tel' ? `${scale(18 + size)}px` : `${scale(14 + size)}px`,
             fontFamily: fonts.IBMPlexSansArabicMedium,
             padding: `${scale(16)}px ${scale(16)}px`,
-            paddingTop: (value && value.length > 0) || placeholder ? `${scale(20)}px` : `${scale(16)}px`,
-            paddingBottom: (value && value.length > 0) || placeholder ? `${scale(8)}px` : `${scale(16)}px`,
-            color: 'var(--theme-text-primary)',
-            direction: isRTL ? 'rtl' : 'ltr'
+            color: currentTheme.inputText,
+            direction: 'ltr',
+            textAlign: 'center'
           }}
         />
 
@@ -171,8 +173,8 @@ export default function Input({
               fontSize: (value && String(value).trim().length > 0) || isFocused ? `${scale(11 + size)}px` : `${scale(14 + size)}px`,
               fontFamily: fonts.IBMPlexSansArabicMedium,
               lineHeight: '1.2',
-              color: (value && String(value).trim().length > 0) || isFocused ? 'var(--theme-primary)' : 'var(--theme-text-secondary)',
-              backgroundColor: 'var(--theme-card-background)'
+              color: (value && String(value).trim().length > 0) || isFocused ? colors.BLUE : currentTheme.inputPlaceholder,
+              backgroundColor: currentTheme.inputBackground
             }}
           >
             {name}

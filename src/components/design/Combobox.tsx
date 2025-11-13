@@ -6,6 +6,7 @@ import { fonts } from '@/constants/fonts';
 import { useAppSelector } from '@/store';
 import { scale, verticalScale } from '@/utils/responsiveSize';
 import ArrowDownIcon from '@/components/icons/ArrowDownIcon';
+import { useTheme } from '@/hooks/useTheme';
 
 interface ComboboxItem {
   id?: number | string;
@@ -49,6 +50,7 @@ export default function Combobox({
   const containerRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { size } = useAppSelector(state => state.user);
+  const { currentTheme, isDark } = useTheme();
 
   // Use options or items, with fallback to empty array
   const dataItems = options || items || [];
@@ -150,27 +152,26 @@ export default function Combobox({
         className={`
           w-full h-full text-center
           border rounded-xl
-          flex items-center justify-center
+          flex items-center justify-between gap-2
           transition-all duration-200
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:shadow-sm'}
-          relative
         `}
         style={{
           backgroundColor: disabled
-            ? 'var(--theme-surface-secondary)'
-            : 'var(--theme-input-background)',
+            ? currentTheme.surfaceSecondary
+            : currentTheme.inputBackground,
           fontSize: fontSize || scale(15 + size),
-          padding: `${scale(12)}px ${scale(16)}px`,
+          padding: `${scale(8)}px ${scale(10)}px ${scale(8)}px ${scale(12)}px`,
           borderColor: isOpen
-            ? 'var(--theme-primary)'
-            : 'var(--theme-border)',
+            ? colors.BLUE
+            : currentTheme.inputBorder,
           borderRadius: `${scale(12)}px`,
           fontFamily: fonts.IBMPlexSansArabicMedium,
           color: disabled
-            ? 'var(--theme-text-tertiary)'
-            : 'var(--theme-text-primary)',
+            ? currentTheme.textTertiary
+            : currentTheme.inputText,
           boxShadow: isOpen
-            ? '0 0 0 3px var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))'
+            ? `0 0 0 3px ${isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(33, 23, 251, 0.1)'}`
             : 'none'
         }}
       >
@@ -180,19 +181,19 @@ export default function Combobox({
             direction: 'ltr',
             unicodeBidi: 'embed',
             textAlign: 'center',
-            color: 'inherit'
+            color: 'inherit',
+            fontWeight: '600'
           }}
         >
           {selectedItem ? (selectedItem.code || selectedItem.name) : (value || placeholder)}
         </span>
         <span
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          className={`transition-transform duration-200 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}
           style={{
-            position: 'absolute',
-            left: `${scale(12)}px`,
-            top: '50%',
-            transform: 'translateY(-50%)',
-            color: 'var(--theme-text-secondary)'
+            color: currentTheme.textSecondary,
+            display: 'flex',
+            alignItems: 'center',
+            marginLeft: `${scale(4)}px`
           }}
         >
           <ArrowDownIcon
@@ -205,25 +206,27 @@ export default function Combobox({
 
       {isOpen && (
         <div
-          className={`absolute top-full border overflow-hidden z-50 sm:max-w-none max-w-[calc(100vw-40px)]`}
+          className={`absolute top-full border overflow-hidden z-50 sm:max-w-none max-w-[calc(100vw-40px)] transition-colors duration-200`}
           style={{
             marginTop: `${scale(4)}px`,
-            backgroundColor: 'var(--theme-surface)',
-            borderColor: 'var(--theme-border)',
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.border,
             borderRadius: `${scale(12)}px`,
             width: `${scale(280)}px`, // عرض افتراضي
             minWidth: `${scale(200)}px`, // حد أدنى للعرض
             maxHeight: `${verticalScale(280)}px`,
-            boxShadow: 'var(--theme-card-shadow, 0 10px 25px -5px rgba(0, 0, 0, 0.1))',
+            boxShadow: isDark
+              ? '0 10px 25px -5px rgba(0, 0, 0, 0.6)'
+              : '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
             // تطبيق التموضع المحسوب ديناميكياً
             ...dropdownStyle,
           }}
         >
           <div
-            className="border-b"
+            className="border-b transition-colors duration-200"
             style={{
               padding: `${scale(12)}px`,
-              borderBottomColor: 'var(--theme-border)'
+              borderBottomColor: currentTheme.border
             }}
           >
             <input
@@ -231,15 +234,16 @@ export default function Combobox({
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث..."
-              className="w-full border rounded-md text-right transition-colors duration-200 focus:ring-2 focus:border-transparent focus:ring-blue-500"
+              className="w-full border rounded-md text-right transition-colors duration-200 focus:ring-2 focus:border-transparent"
               style={{
                 fontSize: scale(12 + size),
                 padding: `${scale(8)}px ${scale(12)}px`,
-                backgroundColor: 'var(--theme-input-background)',
-                borderColor: 'var(--theme-border)',
+                backgroundColor: currentTheme.inputBackground,
+                borderColor: currentTheme.border,
                 borderRadius: `${scale(6)}px`,
                 fontFamily: fonts.IBMPlexSansArabicMedium,
-                color: 'var(--theme-text-primary)'
+                color: currentTheme.inputText,
+                outlineColor: colors.BLUE
               }}
             />
           </div>
@@ -262,16 +266,16 @@ export default function Combobox({
                 `}
                 style={{
                   backgroundColor: (item.name === value || item.code === value)
-                    ? 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.1))'
+                    ? (isDark ? 'rgba(99, 102, 241, 0.2)' : 'rgba(33, 23, 251, 0.1)')
                     : 'transparent',
-                  borderBottomColor: 'var(--theme-border-light)',
-                  color: 'var(--theme-text-primary)',
+                  borderBottomColor: currentTheme.borderLight,
+                  color: currentTheme.textPrimary,
                   padding: `${scale(14)}px ${scale(16)}px`,
                   minHeight: `${scale(48)}px`
                 }}
                 onMouseEnter={(e) => {
                   if (!(item.name === value || item.code === value)) {
-                    e.currentTarget.style.backgroundColor = 'var(--theme-surface-secondary)';
+                    e.currentTarget.style.backgroundColor = currentTheme.surfaceSecondary;
                   }
                 }}
                 onMouseLeave={(e) => {
@@ -289,8 +293,8 @@ export default function Combobox({
                     style={{
                       fontSize: scale(14 + size), // خط أكبر قليلاً
                       color: (item.name === value || item.code === value)
-                        ? 'var(--theme-primary)'
-                        : 'var(--theme-text-primary)',
+                        ? (isDark ? colors.WHITE : colors.BLUE)
+                        : currentTheme.textPrimary,
                       fontFamily: fonts.IBMPlexSansArabicMedium,
                       lineHeight: 1.5, // line height أفضل للقراءة
                       wordBreak: 'break-word', // كسر الكلمات الطويلة
@@ -305,15 +309,15 @@ export default function Combobox({
                         fontSize: scale(13 + size), // خط أكبر قليلاً
                         direction: 'ltr',
                         unicodeBidi: 'embed',
-                        color: 'var(--theme-primary)',
+                        color: isDark ? colors.WHITE : colors.BLUE,
                         fontFamily: fonts.IBMPlexSansArabicBold,
                         lineHeight: 1.4,
                         backgroundColor: (item.name === value || item.code === value)
-                          ? 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.15))'
-                          : 'var(--theme-primary-alpha, rgba(99, 102, 241, 0.05))',
+                          ? (isDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(33, 23, 251, 0.15)')
+                          : (isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(33, 23, 251, 0.05)'),
                         padding: `${scale(4)}px ${scale(8)}px`,
                         borderRadius: `${scale(6)}px`,
-                        border: `1px solid var(--theme-primary)`,
+                        border: `1px solid ${isDark ? colors.WHITE : colors.BLUE}`,
                       }}
                     >
                       {item.code}
