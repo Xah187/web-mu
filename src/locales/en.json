@@ -2183,7 +2183,30 @@
     "send": "Send",
     "replyingTo": "Replying to",
     "cancelReply": "Cancel reply",
-    "imagePreview": "Image preview"
+    "imagePreview": "Image preview",
+    "attachments": {
+      "buttonTitle": "Attachment options",
+      "camera": {
+        "title": "Take photo",
+        "subtitle": "Capture a photo"
+      },
+      "videoCapture": {
+        "title": "Video",
+        "subtitle": "Record video"
+      },
+      "file": {
+        "title": "Attach file",
+        "subtitle": "Choose a file"
+      },
+      "videoSelect": {
+        "title": "Attach video",
+        "subtitle": "Choose a video"
+      },
+      "location": {
+        "title": "Share location",
+        "subtitle": "Send current location"
+      }
+    }
   },
   "errors": {
     "invalidEmail": "Please enter a valid email",

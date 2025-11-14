@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { scale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AttachmentOption {
   id: string;
@@ -33,6 +34,7 @@ export default function AttachmentDropdown({
 }: AttachmentDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t, isRTL, dir } = useTranslation();
 
   // إغلاق القائمة عند النقر خارجها
   useEffect(() => {
@@ -95,44 +97,44 @@ export default function AttachmentDropdown({
   const attachmentOptions: AttachmentOption[] = [
     {
       id: 'camera',
-      title: 'اخذ صورة',
-      subtitle: 'التقط صورة',
+      title: t('chat.attachments.camera.title'),
+      subtitle: t('chat.attachments.camera.subtitle'),
       icon: <CameraIcon />,
       action: onCameraCapture
     },
     {
       id: 'video-capture',
-      title: 'فديو',
-      subtitle: 'تصوير فديو',
+      title: t('chat.attachments.videoCapture.title'),
+      subtitle: t('chat.attachments.videoCapture.subtitle'),
       icon: <VideoIcon />,
       action: onVideoCapture
     },
     {
       id: 'file',
-      title: 'ارفاق ملف',
-      subtitle: 'اختر ملف',
+      title: t('chat.attachments.file.title'),
+      subtitle: t('chat.attachments.file.subtitle'),
       icon: <FileIcon />,
       action: onFileSelect
     },
     {
       id: 'video-select',
-      title: 'ارفاق فديو',
-      subtitle: 'اختر الفديو',
+      title: t('chat.attachments.videoSelect.title'),
+      subtitle: t('chat.attachments.videoSelect.subtitle'),
       icon: videoLoading ? <LoadingIcon /> : <VideoIcon />,
       action: onVideoSelect,
       loading: videoLoading
     },
     {
       id: 'location',
-      title: 'مشاركة الموقع',
-      subtitle: 'إرسال الموقع الحالي',
+      title: t('chat.attachments.location.title'),
+      subtitle: t('chat.attachments.location.subtitle'),
       icon: <LocationIcon />,
       action: onLocationShare
     }
   ];
 
   return (
-    <div className="relative" ref={dropdownRef}>
+    <div className="relative" ref={dropdownRef} dir={dir}>
       {/* زر الإرفاق مع سهم */}
       <button
         onClick={() => setIsOpen(!isOpen)}
@@ -143,7 +145,7 @@ export default function AttachmentDropdown({
           borderRadius: `${scale(20)}px`,
           color: 'var(--color-text-secondary)'
         }}
-        title="خيارات الإرفاق"
+        title={t('chat.attachments.buttonTitle')}
       >
         {/* أيقونة الإرفاق */}
         <svg
@@ -180,7 +182,7 @@ export default function AttachmentDropdown({
         <div
           className="absolute bottom-full mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
           style={{
-            right: '0',
+            ...(isRTL ? { right: '0' } : { left: '0' }),
             minWidth: `${scale(200)}px`,
             maxWidth: `${scale(280)}px`,
             animation: 'slideUp 0.2s ease-out'
@@ -194,8 +196,8 @@ export default function AttachmentDropdown({
               className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 borderBottom: index < attachmentOptions.length - 1 ? '1px solid #f3f4f6' : 'none',
-                textAlign: 'right',
-                direction: 'rtl'
+                textAlign: isRTL ? 'right' : 'left',
+                direction: isRTL ? 'rtl' : 'ltr'
               }}
             >
               {/* الأيقونة */}
