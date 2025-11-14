@@ -266,30 +266,7 @@
     "send": "إرسال",
     "replyingTo": "رد على",
     "cancelReply": "إلغاء الرد",
-    "imagePreview": "معاينة الصورة",
-    "attachments": {
-      "buttonTitle": "خيارات الإرفاق",
-      "camera": {
-        "title": "اخذ صورة",
-        "subtitle": "التقط صورة"
-      },
-      "videoCapture": {
-        "title": "فديو",
-        "subtitle": "تصوير فديو"
-      },
-      "file": {
-        "title": "ارفاق ملف",
-        "subtitle": "اختر ملف"
-      },
-      "videoSelect": {
-        "title": "ارفاق فديو",
-        "subtitle": "اختر الفديو"
-      },
-      "location": {
-        "title": "مشاركة الموقع",
-        "subtitle": "إرسال الموقع الحالي"
-      }
-    }
+    "imagePreview": "معاينة الصورة"
   },
   "profile": {
     "title": "الملف الشخصي",
