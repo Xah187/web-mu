@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { scale } from '@/utils/responsiveSize';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface AttachmentOption {
   id: string;
@@ -33,6 +34,7 @@ export default function AttachmentDropdown({
 }: AttachmentDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const { t, isRTL } = useTranslation();
 
   // إغلاق القائمة عند النقر خارجها
   useEffect(() => {
@@ -95,37 +97,37 @@ export default function AttachmentDropdown({
   const attachmentOptions: AttachmentOption[] = [
     {
       id: 'camera',
-      title: 'اخذ صورة',
-      subtitle: 'التقط صورة',
+      title: t('chat.attachments.camera.title'),
+      subtitle: t('chat.attachments.camera.subtitle'),
       icon: <CameraIcon />,
       action: onCameraCapture
     },
     {
       id: 'video-capture',
-      title: 'فديو',
-      subtitle: 'تصوير فديو',
+      title: t('chat.attachments.videoCapture.title'),
+      subtitle: t('chat.attachments.videoCapture.subtitle'),
       icon: <VideoIcon />,
       action: onVideoCapture
     },
     {
       id: 'file',
-      title: 'ارفاق ملف',
-      subtitle: 'اختر ملف',
+      title: t('chat.attachments.file.title'),
+      subtitle: t('chat.attachments.file.subtitle'),
       icon: <FileIcon />,
       action: onFileSelect
     },
     {
       id: 'video-select',
-      title: 'ارفاق فديو',
-      subtitle: 'اختر الفديو',
+      title: t('chat.attachments.videoSelect.title'),
+      subtitle: t('chat.attachments.videoSelect.subtitle'),
       icon: videoLoading ? <LoadingIcon /> : <VideoIcon />,
       action: onVideoSelect,
       loading: videoLoading
     },
     {
       id: 'location',
-      title: 'مشاركة الموقع',
-      subtitle: 'إرسال الموقع الحالي',
+      title: t('chat.attachments.location.title'),
+      subtitle: t('chat.attachments.location.subtitle'),
       icon: <LocationIcon />,
       action: onLocationShare
     }
@@ -143,7 +145,7 @@ export default function AttachmentDropdown({
           borderRadius: `${scale(20)}px`,
           color: 'var(--color-text-secondary)'
         }}
-        title="خيارات الإرفاق"
+        title={t('chat.attachments.buttonTitle')}
       >
         {/* أيقونة الإرفاق */}
         <svg
@@ -178,12 +180,14 @@ export default function AttachmentDropdown({
       {/* القائمة المنسدلة */}
       {isOpen && (
         <div
-          className="absolute bottom-full mb-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+          className="absolute bottom-full bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
           style={{
-            right: '0',
+            [isRTL ? 'right' : 'left']: '0',
             minWidth: `${scale(200)}px`,
             maxWidth: `${scale(280)}px`,
-            animation: 'slideUp 0.2s ease-out'
+            animation: 'slideUp 0.2s ease-out',
+            marginBottom: `${scale(8)}px`,
+            direction: isRTL ? 'rtl' : 'ltr'
           }}
         >
           {attachmentOptions.map((option, index) => (
@@ -191,31 +195,36 @@ export default function AttachmentDropdown({
               key={option.id}
               onClick={() => handleOptionClick(option.action)}
               disabled={option.loading}
-              className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               style={{
                 borderBottom: index < attachmentOptions.length - 1 ? '1px solid #f3f4f6' : 'none',
-                textAlign: 'right',
-                direction: 'rtl'
+                textAlign: isRTL ? 'right' : 'left',
+                padding: `${scale(12)}px`,
+                gap: `${scale(12)}px`
               }}
             >
               {/* الأيقونة */}
-              <div 
+              <div
                 className="flex-shrink-0 flex items-center justify-center rounded-full"
                 style={{
                   width: `${scale(36)}px`,
                   height: `${scale(36)}px`,
-                  backgroundColor: 'var(--color-primary-light)',
-                  color: 'var(--color-primary)'
+                  backgroundColor: 'var(--color-primary)',
+                  color: 'white',
+                  boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
                 }}
               >
                 {option.icon}
               </div>
-              
+
               {/* النص */}
-              <div className="flex-1 text-right">
-                <div 
+              <div
+                className="flex-1"
+                style={{ textAlign: isRTL ? 'right' : 'left' }}
+              >
+                <div
                   className="font-semibold text-gray-900"
-                  style={{ 
+                  style={{
                     fontSize: `${scale(14)}px`,
                     fontFamily: 'var(--font-ibm-arabic-semibold)'
                   }}
@@ -223,9 +232,9 @@ export default function AttachmentDropdown({
                   {option.title}
                 </div>
                 {option.subtitle && (
-                  <div 
+                  <div
                     className="text-gray-500 text-sm"
-                    style={{ 
+                    style={{
                       fontSize: `${scale(12)}px`,
                       fontFamily: 'var(--font-ibm-arabic-regular)'
                     }}

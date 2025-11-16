@@ -3,6 +3,7 @@
 import React from 'react';
 import { scale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MessageInfoModalProps {
   message: any;
@@ -10,6 +11,8 @@ interface MessageInfoModalProps {
 }
 
 export default function MessageInfoModal({ message, onClose }: MessageInfoModalProps) {
+  const { t, isRTL } = useTranslation();
+
   const formatDateTime = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -50,11 +53,15 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
           style={{
             backgroundColor: 'var(--color-card-background)',
             border: '1px solid var(--color-card-border)',
-            padding: `${scale(24)}px`
+            padding: `${scale(24)}px`,
+            direction: isRTL ? 'rtl' : 'ltr'
           }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between mb-4">
+          <div
+            className="flex items-center justify-between"
+            style={{ marginBottom: `${scale(16)}px` }}
+          >
             <h2
               className="font-ibm-arabic-semibold"
               style={{
@@ -62,35 +69,37 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
                 color: 'var(--color-text-primary)'
               }}
             >
-              معلومات الرسالة
+              {t('chat.infoModal.title')}
             </h2>
             <button
               onClick={onClose}
-              className="rounded-full p-2 transition-colors"
+              className="rounded-full transition-colors"
               style={{
-                color: 'var(--color-text-secondary)'
+                color: 'var(--color-text-secondary)',
+                padding: `${scale(8)}px`
               }}
               onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
               onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg width={scale(20)} height={scale(20)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M18 6L6 18M6 6l12 12"/>
               </svg>
             </button>
           </div>
 
           {/* Content */}
-          <div className="space-y-3">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: `${scale(16)}px` }}>
             {/* المرسل */}
             <div>
               <div
-                className="font-ibm-arabic-semibold mb-1"
+                className="font-ibm-arabic-semibold"
                 style={{
                   fontSize: `${scale(13)}px`,
-                  color: 'var(--color-text-secondary)'
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: `${scale(8)}px`
                 }}
               >
-                المرسل
+                {t('chat.infoModal.sender')}
               </div>
               <div
                 style={{
@@ -99,20 +108,21 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
                   fontFamily: fonts.IBMPlexSansArabicRegular
                 }}
               >
-                {message.userName || message.Sender || message.sender || 'غير معروف'}
+                {message.userName || message.Sender || message.sender || t('chat.bubble.unknownSender')}
               </div>
             </div>
 
             {/* التاريخ والوقت */}
             <div>
               <div
-                className="font-ibm-arabic-semibold mb-1"
+                className="font-ibm-arabic-semibold"
                 style={{
                   fontSize: `${scale(13)}px`,
-                  color: 'var(--color-text-secondary)'
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: `${scale(8)}px`
                 }}
               >
-                التاريخ والوقت
+                {t('chat.infoModal.dateTime')}
               </div>
               <div
                 style={{
@@ -129,22 +139,25 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
             {(message.message || message.text || message.content) && (
               <div>
                 <div
-                  className="font-ibm-arabic-semibold mb-1"
+                  className="font-ibm-arabic-semibold"
                   style={{
                     fontSize: `${scale(13)}px`,
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: `${scale(8)}px`
                   }}
                 >
-                  الرسالة
+                  {t('chat.infoModal.message')}
                 </div>
                 <div
-                  className="p-3 rounded-lg"
+                  className="rounded-lg"
                   style={{
                     fontSize: `${scale(14)}px`,
                     color: 'var(--color-text-primary)',
                     fontFamily: fonts.IBMPlexSansArabicRegular,
                     backgroundColor: 'var(--color-surface-secondary)',
-                    wordWrap: 'break-word'
+                    wordWrap: 'break-word',
+                    padding: `${scale(12)}px`,
+                    borderRadius: `${scale(8)}px`
                   }}
                 >
                   {message.message || message.text || message.content}
@@ -156,38 +169,44 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
             {message.File && Object.keys(message.File).length > 0 && (
               <div>
                 <div
-                  className="font-ibm-arabic-semibold mb-1"
+                  className="font-ibm-arabic-semibold"
                   style={{
                     fontSize: `${scale(13)}px`,
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: `${scale(8)}px`
                   }}
                 >
-                  الملف المرفق
+                  {t('chat.infoModal.attachment')}
                 </div>
                 <div
-                  className="p-3 rounded-lg space-y-2"
+                  className="rounded-lg"
                   style={{
                     fontSize: `${scale(13)}px`,
                     color: 'var(--color-text-primary)',
                     fontFamily: fonts.IBMPlexSansArabicRegular,
-                    backgroundColor: 'var(--color-surface-secondary)'
+                    backgroundColor: 'var(--color-surface-secondary)',
+                    padding: `${scale(12)}px`,
+                    borderRadius: `${scale(8)}px`,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: `${scale(8)}px`
                   }}
                 >
                   {message.File.name && (
                     <div>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>الاسم: </span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{t('chat.infoModal.fileName')}: </span>
                       {message.File.name}
                     </div>
                   )}
                   {message.File.type && (
                     <div>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>النوع: </span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{t('chat.infoModal.fileType')}: </span>
                       {message.File.type}
                     </div>
                   )}
                   {message.File.size && (
                     <div>
-                      <span style={{ color: 'var(--color-text-secondary)' }}>الحجم: </span>
+                      <span style={{ color: 'var(--color-text-secondary)' }}>{t('chat.infoModal.fileSize')}: </span>
                       {getFileSize(message.File.size)}
                     </div>
                   )}
@@ -198,24 +217,27 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
             {/* حالة الرسالة */}
             <div>
               <div
-                className="font-ibm-arabic-semibold mb-1"
+                className="font-ibm-arabic-semibold"
                 style={{
                   fontSize: `${scale(13)}px`,
-                  color: 'var(--color-text-secondary)'
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: `${scale(8)}px`
                 }}
               >
-                الحالة
+                {t('chat.infoModal.status')}
               </div>
               <div
-                className="inline-block px-3 py-1 rounded-full"
+                className="inline-block rounded-full"
                 style={{
                   fontSize: `${scale(12)}px`,
                   fontFamily: fonts.IBMPlexSansArabicRegular,
                   backgroundColor: message.arrived ? 'var(--color-success)' + '20' : 'var(--color-warning)' + '20',
-                  color: message.arrived ? 'var(--color-success)' : 'var(--color-warning)'
+                  color: message.arrived ? 'var(--color-success)' : 'var(--color-warning)',
+                  padding: `${scale(6)}px ${scale(12)}px`,
+                  borderRadius: `${scale(16)}px`
                 }}
               >
-                {message.arrived ? 'تم الإرسال' : 'قيد الإرسال'}
+                {message.arrived ? t('chat.infoModal.statusSent') : t('chat.infoModal.statusPending')}
               </div>
             </div>
 
@@ -223,13 +245,14 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
             {message.chatID && (
               <div>
                 <div
-                  className="font-ibm-arabic-semibold mb-1"
+                  className="font-ibm-arabic-semibold"
                   style={{
                     fontSize: `${scale(13)}px`,
-                    color: 'var(--color-text-secondary)'
+                    color: 'var(--color-text-secondary)',
+                    marginBottom: `${scale(8)}px`
                   }}
                 >
-                  معرف الرسالة
+                  {t('chat.infoModal.messageId')}
                 </div>
                 <div
                   style={{
@@ -245,20 +268,25 @@ export default function MessageInfoModal({ message, onClose }: MessageInfoModalP
           </div>
 
           {/* Footer */}
-          <div className="mt-6 flex justify-end">
+          <div
+            className="flex justify-end"
+            style={{ marginTop: `${scale(24)}px` }}
+          >
             <button
               onClick={onClose}
-              className="px-6 py-2 rounded-lg transition-colors"
+              className="rounded-lg transition-colors"
               style={{
                 backgroundColor: 'var(--color-primary)',
                 color: 'white',
                 fontSize: `${scale(14)}px`,
-                fontFamily: fonts.IBMPlexSansArabicSemiBold
+                fontFamily: fonts.IBMPlexSansArabicSemiBold,
+                padding: `${scale(10)}px ${scale(24)}px`,
+                borderRadius: `${scale(8)}px`
               }}
               onMouseOver={(e) => e.currentTarget.style.opacity = '0.9'}
               onMouseOut={(e) => e.currentTarget.style.opacity = '1'}
             >
-              إغلاق
+              {t('chat.infoModal.close')}
             </button>
           </div>
         </div>

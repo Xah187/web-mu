@@ -177,7 +177,7 @@ export default function ChatPage() {
       socketService.emit('send_message', deletePayload);
     } catch (error) {
       console.error('Error deleting message:', error);
-      setErrorMsg('فشل حذف الرسالة');
+      setErrorMsg(t('chat.errors.deleteFailed'));
     }
   };
 
@@ -194,14 +194,14 @@ export default function ChatPage() {
       if (message.File && Object.keys(message.File).length > 0 && message.File.type !== 'location') {
         // للملفات، نحتاج إلى منطق خاص لإعادة الرفع
         console.log('إعادة إرسال ملف - يحتاج إلى تنفيذ خاص');
-        setErrorMsg('إعادة إرسال الملفات غير مدعومة حالياً');
+        setErrorMsg(t('chat.errors.resendFilesUnsupported'));
       } else {
         // للرسائل النصية والمواقع
         socketService.emit('send_message', resendPayload);
       }
     } catch (error) {
       console.error('Error resending message:', error);
-      setErrorMsg('فشل إعادة إرسال الرسالة');
+      setErrorMsg(t('chat.errors.resendFailed'));
     }
   };
 
@@ -524,7 +524,7 @@ export default function ChatPage() {
 
     } catch {
       setUploading(null);
-      setErrorMsg('تعذر رفع الملف. تحقق من الاتصال وحاول مرة أخرى.');
+      setErrorMsg(t('chat.errors.uploadFailed'));
     }
   };
 
@@ -546,7 +546,7 @@ export default function ChatPage() {
           idSendr: buildIdSendr(),
           ProjectID: parseInt(ProjectID),
           StageID: typess,
-          Sender: user?.data?.userName || 'غير معروف',
+          Sender: user?.data?.userName || (t('chat.bubble.unknownSender') as string),
           message: '',
           timeminet: new Date().toISOString(),
           File: {
@@ -578,7 +578,7 @@ export default function ChatPage() {
       }
     } catch (error) {
       console.error('Error handling file upload:', error);
-      setErrorMsg('خطأ في معالجة الملف');
+      setErrorMsg(t('chat.errors.processFileError'));
     }
   };
 
@@ -740,7 +740,7 @@ export default function ChatPage() {
             return (
               <div
                 key={idx}
-                className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md ${mine ? 'ml-auto' : 'mr-auto'}`}
+                className={`max-w-[80%] group relative cursor-pointer select-none transition-all duration-200 hover:shadow-md`}
                 style={{
                   padding: `${scale(16)}px`,
                   borderRadius: `${scale(16)}px`,
@@ -748,7 +748,10 @@ export default function ChatPage() {
                   backgroundColor: 'var(--color-card-background)',
                   border: `1px solid var(--color-border)`,
                   boxShadow: 'var(--shadow-sm)',
-                  color: 'var(--color-text-primary)'
+                  color: 'var(--color-text-primary)',
+                  [isRTL ? 'marginLeft' : 'marginRight']: mine ? 'auto' : '0',
+                  [isRTL ? 'marginRight' : 'marginLeft']: mine ? '0' : 'auto',
+                  direction: isRTL ? 'rtl' : 'ltr'
                 }}
                 onDoubleClick={() => setReplyToMessage(m)} // Double click للرد
                 onMouseDown={() => handleMouseDown(m)} // Mousedown للضغط الطويل
@@ -767,7 +770,7 @@ export default function ChatPage() {
                   className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full z-10 shadow-sm"
                   style={{
                     top: `${scale(8)}px`,
-                    left: `${scale(8)}px`,
+                    [isRTL ? 'left' : 'right']: `${scale(8)}px`,
                     padding: `${scale(6)}px`,
                     borderRadius: `${scale(20)}px`,
                     backgroundColor: 'var(--color-surface-secondary)',
@@ -775,7 +778,7 @@ export default function ChatPage() {
                   }}
                   onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
                   onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
-                  title="رد على هذه الرسالة"
+                  title={t('chat.bubble.replyTooltip')}
                 >
                   <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/>
@@ -793,7 +796,7 @@ export default function ChatPage() {
                       color: 'var(--color-text-primary)'
                     }}
                   >
-                    {senderName || 'غير معروف'}
+                    {senderName || t('chat.bubble.unknownSender')}
                   </span>
                   <span
                     style={{
@@ -808,11 +811,13 @@ export default function ChatPage() {
                 {/* عرض الرسالة المرد عليها إن وجدت */}
                 {(m as any).Reply && Object.keys((m as any).Reply).length > 0 && (
                   <div
-                    className="bg-gray-50 rounded-lg border-l-4 border-blue-500"
+                    className="bg-gray-50 rounded-lg"
                     style={{
                       marginBottom: `${scale(16)}px`,
                       padding: `${scale(12)}px`,
-                      borderRadius: `${scale(8)}px`
+                      borderRadius: `${scale(8)}px`,
+                      [isRTL ? 'borderRight' : 'borderLeft']: '4px solid var(--color-primary)',
+                      backgroundColor: 'var(--color-surface-secondary)'
                     }}
                   >
                     <div
@@ -823,7 +828,7 @@ export default function ChatPage() {
                         className="text-gray-600"
                         style={{ fontSize: `${scale(11 + (size || 0))}px` }}
                       >
-                        رد على: {(m as any).Reply.Sender}
+                        {t('chat.bubble.replyToPrefix')}: {(m as any).Reply.Sender}
                       </div>
                       <div
                         className="text-gray-500"
@@ -877,7 +882,7 @@ export default function ChatPage() {
                         className="max-h-64 rounded-lg"
                       />
                     ) : (
-                      <a href={`https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${fileName}`} target="_blank" className="text-blue underline" rel="noreferrer">تحميل الملف</a>
+                      <a href={`https://storage.googleapis.com/demo_backendmoshrif_bucket-1/${fileName}`} target="_blank" className="text-blue underline" rel="noreferrer">{t('chat.bubble.downloadFile')}</a>
                     )}
                   </div>
                 )}
@@ -907,7 +912,8 @@ export default function ChatPage() {
             style={{
               padding: `${scale(16)}px`,
               backgroundColor: 'var(--color-primary)' + '20',
-              borderColor: 'var(--color-primary)' + '30'
+              borderColor: 'var(--color-primary)' + '30',
+              direction: isRTL ? 'rtl' : 'ltr'
             }}
           >
             <div
@@ -928,7 +934,7 @@ export default function ChatPage() {
                 onClick={() => setReplyToMessage(null)}
                 className="transition-colors"
                 style={{
-                  padding: `${scale(4)}px`,
+                  padding: `${scale(8)}px`,
                   borderRadius: `${scale(4)}px`,
                   fontSize: `${scale(16)}px`,
                   color: 'var(--color-primary)'
@@ -937,8 +943,6 @@ export default function ChatPage() {
                 onMouseOut={(e) => e.currentTarget.style.color = 'var(--color-primary)'}
                 title={t('chat.cancelReply')}
               >
-
-
                 ✕
               </button>
             </div>

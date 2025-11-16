@@ -2183,7 +2183,72 @@
     "send": "Send",
     "replyingTo": "Replying to",
     "cancelReply": "Cancel reply",
-    "imagePreview": "Image preview"
+    "imagePreview": "Image preview",
+    "attachments": {
+      "buttonTitle": "Attachment options",
+      "camera": {
+        "title": "Take photo",
+        "subtitle": "Capture a photo"
+      },
+      "videoCapture": {
+        "title": "Video",
+        "subtitle": "Record video"
+      },
+      "file": {
+        "title": "Attach file",
+        "subtitle": "Choose a file"
+      },
+      "videoSelect": {
+        "title": "Attach video",
+        "subtitle": "Choose a video"
+      },
+      "location": {
+        "title": "Share location",
+        "subtitle": "Send current location"
+      }
+    },
+    "contextMenu": {
+      "reply": "Reply",
+      "info": "Info",
+      "copy": "Copy message",
+      "delete": "Delete message",
+      "resend": "Resend"
+    },
+    "infoModal": {
+      "title": "Message info",
+      "sender": "Sender",
+      "dateTime": "Date and time",
+      "message": "Message",
+      "attachment": "Attachment",
+      "fileName": "Name",
+      "fileType": "Type",
+      "fileSize": "Size",
+      "status": "Status",
+      "statusSent": "Sent",
+      "statusPending": "Sending",
+      "messageId": "Message ID",
+      "close": "Close"
+    },
+    "bubble": {
+      "replyTooltip": "Reply to this message",
+      "unknownSender": "Unknown",
+      "replyToPrefix": "Reply to",
+      "viewLocation": "View location on map",
+      "attachedFile": "Attached file",
+      "loading": "Loading...",
+      "reject": "Reject",
+      "approve": "Approve",
+      "statusApproved": "Approved",
+      "statusRejected": "Rejected",
+      "downloadFile": "Download file"
+    },
+    "errors": {
+      "deleteFailed": "Failed to delete message",
+      "resendFilesUnsupported": "Resending files is not supported yet",
+      "resendFailed": "Failed to resend message",
+      "uploadFailed": "Could not upload file. Check your connection and try again.",
+      "processFileError": "Error processing file"
+    }
   },
   "errors": {
     "invalidEmail": "Please enter a valid email",

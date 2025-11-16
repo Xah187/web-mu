@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppSelector } from '@/store';
+import { useTranslation } from '@/hooks/useTranslation';
 
 import { scale } from '@/utils/responsiveSize';
 import { fonts } from '@/constants/fonts';
@@ -54,6 +55,7 @@ interface ChatMessage {
 export default function ApprovalsPage() {
   const router = useRouter();
   const { user, size } = useAppSelector(state => state.user);
+  const { t } = useTranslation();
 
   // مطابق للتطبيق الأساسي: استخدام السجل التجاري كـ ProjectID لغرف خاصة (اعتمادات/قرارات/استشارات)
   const approvalsProjectId = parseInt((user as any)?.data?.CommercialRegistrationNumber as any) || 0;
@@ -775,8 +777,8 @@ export default function ApprovalsPage() {
                 <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9c1.66 0 3.22.45 4.56 1.23"/>
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">لا توجد رسائل</h3>
-            <p className="text-gray-600">ابدأ محادثة جديدة</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">{t('chat.noMessages')}</h3>
+            <p className="text-gray-600">{t('chat.startConversation')}</p>
           </div>
         ) : (
           messages.map((message, index) => (

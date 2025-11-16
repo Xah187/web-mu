@@ -4,6 +4,7 @@ import React from 'react';
 import { fonts } from '@/constants/fonts';
 import { scale } from '@/utils/responsiveSize';
 import { URLFIL } from '@/lib/api/axios';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface MessageBubbleProps {
   message: any;
@@ -34,6 +35,7 @@ export default function MessageBubble({
   onReject,
   actionLoading = {}
 }: MessageBubbleProps) {
+  const { t } = useTranslation();
   const senderName = message.userName ?? message.Sender ?? message.sender ?? '';
   const mine = (senderName?.toLowerCase?.() || '') === (currentUserName?.toLowerCase?.() || '');
   const messageContent = message.message || message.text || message.content || '';
@@ -90,7 +92,7 @@ export default function MessageBubble({
           }}
           onMouseOver={(e) => e.currentTarget.style.backgroundColor = 'var(--color-border)'}
           onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
-          title="رد على هذه الرسالة"
+          title={t('chat.bubble.replyTooltip')}
         >
           <svg width={scale(16)} height={scale(16)} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="M3 10h10a8 8 0 0 1 8 8v2M3 10l6 6M3 10l6-6"/>
@@ -109,7 +111,7 @@ export default function MessageBubble({
             color: 'var(--color-text-primary)'
           }}
         >
-          {senderName || 'غير معروف'}
+          {senderName || t('chat.bubble.unknownSender') }
         </span>
         <span
           style={{
@@ -143,7 +145,7 @@ export default function MessageBubble({
                 color: 'var(--color-text-secondary)'
               }}
             >
-              رد على: {message.Reply.Sender}
+              {t('chat.bubble.replyToPrefix')}: {message.Reply.Sender}
             </div>
             <div
               style={{
@@ -239,7 +241,7 @@ export default function MessageBubble({
                 className="hover:underline text-sm"
                 style={{ color: 'var(--color-primary)' }}
               >
-                📍 عرض الموقع على الخريطة
+                {t('chat.bubble.viewLocation')}
               </a>
             ) : (
               <a
@@ -256,7 +258,7 @@ export default function MessageBubble({
                 onMouseOut={(e) => e.currentTarget.style.backgroundColor = 'var(--color-surface-secondary)'}
               >
                 <span>📎</span>
-                <span>{message.File?.name || 'ملف مرفق'}</span>
+                <span>{message.File?.name || t('chat.bubble.attachedFile')}</span>
                 <span style={{ color: 'var(--color-text-tertiary)' }}>{message.File?.type ? `(${message.File.type})` : ''}</span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
@@ -280,7 +282,7 @@ export default function MessageBubble({
               border: '1px solid var(--color-error)'
             }}
           >
-            {actionLoading[message.id] ? 'جاري...' : 'رفض'}
+            {actionLoading[message.id] ? t('chat.bubble.loading') : t('chat.bubble.reject')}
           </button>
           <button
             onClick={() => onApprove?.(message.id)}
@@ -292,7 +294,7 @@ export default function MessageBubble({
               border: '1px solid var(--color-success)'
             }}
           >
-            {actionLoading[message.id] ? 'جاري...' : 'موافقة'}
+            {actionLoading[message.id] ? t('chat.bubble.loading') : t('chat.bubble.approve')}
           </button>
         </div>
       )}
@@ -311,7 +313,7 @@ export default function MessageBubble({
                 : 'var(--color-error)'
             }}
           >
-            {message.status === 'approved' ? 'تم الموافقة' : 'تم الرفض'}
+            {message.status === 'approved' ? t('chat.bubble.statusApproved') : t('chat.bubble.statusRejected')}
           </span>
         </div>
       )}
