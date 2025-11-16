@@ -155,7 +155,7 @@ export default function ChatPage() {
 
   const handleDeleteMessage = async (message: ChatMessage) => {
     if (!message.chatID) {
-      // حذف محلي فقط
+      // حذف محلي فقط للرسائل التي لم ترسل بعد
       setMessages(prev => prev.filter(m => m.idSendr !== message.idSendr));
       return;
     }
@@ -170,14 +170,25 @@ export default function ChatPage() {
         kind: 'delete'
       };
 
-      // حذف محلياً أولاً
-      setMessages(prev => prev.filter(m => m.chatID !== message.chatID));
+      // حذف محلياً فوراً بشكل نهائي
+      const chatIDToDelete = message.chatID;
+      setMessages(prev => {
+        const filtered = prev.filter(m => m.chatID !== chatIDToDelete);
+        console.log(`Deleted message ${chatIDToDelete}, remaining: ${filtered.length}`);
+        return filtered;
+      });
 
-      // إرسال طلب الحذف للسيرفر
+      // إرسال طلب الحذف للسيرفر (لحذفه من قاعدة البيانات وإبلاغ المستخدمين الآخرين)
       socketService.emit('send_message', deletePayload);
+
+      // إغلاق القائمة السياقية
+      setContextMenu(null);
     } catch (error) {
       console.error('Error deleting message:', error);
       setErrorMsg(t('chat.errors.deleteFailed'));
+
+      // في حالة الخطأ، لا نعيد الرسالة لأنها حُذفت محلياً
+      // المستخدم يمكنه تحديث الصفحة إذا أراد استرجاع البيانات من السيرفر
     }
   };
 
@@ -401,19 +412,46 @@ export default function ChatPage() {
       const currentUserName = ((user?.data?.userName as string) || (user as any)?.userName || '') as string;
       const senderName = (msg.userName ?? msg.Sender ?? '') as string;
 
-      // معالجة رسائل الحذف - مثل التطبيق المحمول
+      // معالجة رسائل الحذف - حذف فوري ومباشر لجميع المستخدمين
       if (msg.kind === 'delete') {
-        // حذف الرسالة من القائمة بناءً على chatID
-        setMessages(prev => prev.filter(m => m.chatID !== msg.chatID));
+        const chatIDToDelete = msg.chatID;
+        setMessages(prev => {
+          const filtered = prev.filter(m => m.chatID !== chatIDToDelete);
+          console.log(`Received delete for ${chatIDToDelete}, remaining: ${filtered.length}`);
+          return filtered;
+        });
         return;
       }
 
       // معالجة الرسائل الجديدة
-      // Only add message if it's from another user (not from current user)
-      // This prevents duplicate messages when current user sends a message
-      if (msg.kind === 'new' && senderName?.toLowerCase?.() !== currentUserName?.toLowerCase?.()) {
-        const n = normalizeMessage(msg);
-        addMessageSafely(n);
+      if (msg.kind === 'new') {
+        const normalized = normalizeMessage(msg);
+
+        // إذا كانت الرسالة من المستخدم الحالي: تحديث الرسالة الموجودة (مثل chackmessage في الموبايل)
+        if (senderName?.toLowerCase?.() === currentUserName?.toLowerCase?.()) {
+          const idSendr = (normalized as any).idSendr;
+          setMessages(prev => {
+            let updated = false;
+            const next = prev.map(m => {
+              if (idSendr && m.idSendr === idSendr) {
+                updated = true;
+                // نعتمد بيانات السيرفر النهائية (chatID, arrived, File, Reply, timeminet, ...)
+                return { ...m, ...normalized } as ChatMessage;
+              }
+              return m;
+            });
+
+            // إذا لم نجد الرسالة (حالة نادرة)، نضيفها مع إزالة التكرار
+            if (!updated) {
+              return dedupMessages([...prev, normalized]) as ChatMessage[];
+            }
+
+            return next as ChatMessage[];
+          });
+        } else {
+          // رسائل من مستخدمين آخرين - نضيفها مع إزالة التكرار
+          addMessageSafely(normalized);
+        }
       }
     };
     socketService.on('received_message', handleReceived);
