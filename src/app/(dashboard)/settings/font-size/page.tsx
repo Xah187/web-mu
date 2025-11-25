@@ -64,7 +64,7 @@ export default function FontSizePage() {
             <button
               onClick={() => router.back()}
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              aria-label={isRTL ? 'رجوع' : 'Back'}
+              aria-label={t('common.back')}
               style={{ transform: isRTL ? 'none' : 'rotate(180deg)' }}
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

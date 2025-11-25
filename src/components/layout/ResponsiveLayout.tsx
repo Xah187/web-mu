@@ -103,7 +103,7 @@ export function PageHeader({
       </div>
 
       {/* End Side - Actions */}
-      <div className={`flex items-center gap-2 ${isRTL ? 'mr-3' : 'ml-3'}`}>
+      <div className={`flex items-center gap-3 ${isRTL ? 'mr-3' : 'ml-3'}`}>
         <ThemeToggle size="sm" />
         {actions}
       </div>

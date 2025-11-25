@@ -224,6 +224,7 @@
   },
   "common": {
     "save": "حفظ",
+    "saveChanges": "حفظ التغييرات",
     "cancel": "إلغاء",
     "delete": "حذف",
     "edit": "تعديل",
@@ -1313,7 +1314,23 @@
     "returns": "المرتجعات",
     "remainingBalance": "الرصيد المتبقي",
     "loadMore": "تحميل المزيد",
-    "sar": "ر.س"
+    "sar": "ر.س",
+    "selectStatementType": "اختر نوع الكشف",
+    "statementTypeLabel": "نوع الكشف",
+    "fullStatement": "كشف حساب كامل",
+    "expensesStatement": "كشف حساب المصروفات",
+    "view": "عرض",
+    "share": "مشاركة",
+    "revenueType": "عهد",
+    "generating": "جاري الإنشاء...",
+    "statementGenerated": "تم إنشاء الكشف بنجاح",
+    "statementError": "حدث خطأ في إنشاء الكشف",
+    "project": "اسم المشروع",
+    "manualOperationsDisabled": "العمليات المالية اليدوية معطلة حالياً",
+    "expenseType": "مصروف",
+    "returnType": "مرتجع",
+    "loadError": "حدث خطأ في تحميل البيانات",
+    "retry": "إعادة المحاولة"
   },
   "covenantPage": {
     "covenantRequests": "طلبات العهد",

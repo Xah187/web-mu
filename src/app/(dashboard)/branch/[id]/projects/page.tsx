@@ -691,7 +691,7 @@ const BranchProjectsPage = () => {
             </button>
           }
           actions={
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {canShowEmployee && (
                 <button onClick={handleSettings} className="p-2 hover:bg-gray-50 rounded-lg transition-colors" title="الإعدادات">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none">

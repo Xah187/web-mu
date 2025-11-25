@@ -105,10 +105,10 @@ export default function useReports() {
         }));
 
         setBranches(branchesData);
-        Tostget(`تم تحميل ${branchesData.length} فرع`);
+        // Tostget(`تم تحميل ${branchesData.length} فرع`); // Removed: No need to show toast on auto-load
       } else {
         setBranches([]);
-        Tostget('لا توجد فروع متاحة');
+        // Tostget('لا توجد فروع متاحة'); // Removed: No need to show toast on auto-load
       }
     } catch (error: any) {
       console.error('Error fetching branches:', error);
@@ -164,12 +164,12 @@ export default function useReports() {
           // If we got less than expected (usually 10-20), assume no more
           setHasMoreProjects(projectsData.length >= 10);
 
-          Tostget(`تم تحميل ${projectsData.length} مشروع`);
+          // Tostget(`تم تحميل ${projectsData.length} مشروع`); // Removed: No need to show toast on auto-load
         } else {
           if (lastProjectId === 0) {
             setProjects([]);
             setHasMoreProjects(false);
-            Tostget('لا توجد مشاريع متاحة');
+            // Tostget('لا توجد مشاريع متاحة'); // Removed: No need to show toast on auto-load
           } else {
             // No more projects to load
             setHasMoreProjects(false);
@@ -217,10 +217,10 @@ export default function useReports() {
 
         if (reportData) {
           setReportData(reportData);
-          Tostget('تم تحميل التقرير بنجاح');
+          // Tostget('تم تحميل التقرير بنجاح'); // Removed: No need to show toast on auto-load
         } else {
           setReportData(null);
-          Tostget('لا توجد بيانات تقرير متاحة');
+          // Tostget('لا توجد بيانات تقرير متاحة'); // Removed: No need to show toast on auto-load
         }
       }
     } catch (error: any) {
@@ -290,11 +290,12 @@ export default function useReports() {
     setHasMoreProjects(false);
     setProjectsLoading(false);
 
-    if (allProjects.length > 0) {
-      Tostget(`تم تحميل جميع المشاريع: ${allProjects.length} مشروع`);
-    } else {
-      Tostget('لا توجد مشاريع متاحة');
-    }
+    // Removed toast notifications for auto-load
+    // if (allProjects.length > 0) {
+    //   Tostget(`تم تحميل جميع المشاريع: ${allProjects.length} مشروع`);
+    // } else {
+    //   Tostget('لا توجد مشاريع متاحة');
+    // }
   };
 
   // Select branch and fetch its projects

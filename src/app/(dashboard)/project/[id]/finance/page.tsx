@@ -12,7 +12,10 @@ import { Tostget } from '@/components/ui/Toast';
 import ResponsiveLayout, { PageHeader, ContentSection, Card } from '@/components/layout/ResponsiveLayout';
 import CreateFinanceModal from '@/components/finance/CreateFinanceModal';
 import ViewFinanceModal from '@/components/finance/ViewFinanceModal';
+import ShareFinanceModal from '@/components/finance/ShareFinanceModal';
 import { useTranslation } from '@/hooks/useTranslation';
+import useReports from '@/hooks/useReports';
+import { URLFIL } from '@/lib/api/axios';
 
 // Finance Summary Card Component - Modern design
 const FinanceSummaryCard = ({ totals, t, isRTL, dir }: { totals: any; t: any; isRTL: boolean; dir: string }) => {
@@ -414,6 +417,8 @@ export default function FinancePage() {
     deleteFinanceItem
   } = useFinance();
 
+  const { generateFinancialStatement, reportLoading } = useReports();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [showFilterModal, setShowFilterModal] = useState(false);
   const [showShareModal, setShowShareModal] = useState(false);
@@ -462,6 +467,44 @@ export default function FinancePage() {
 
   const handleShare = () => {
     setShowShareModal(true);
+  };
+
+  const handleGenerateStatement = async (type: 'all' | 'party', action: 'view' | 'share') => {
+    try {
+      const url = await generateFinancialStatement(projectId, type);
+      if (url) {
+        const fullUrl = `${URLFIL}/${url}`;
+
+        if (action === 'view') {
+          // فتح الملف في تبويب جديد
+          window.open(fullUrl, '_blank');
+          Tostget(t('finance.statementGenerated'));
+        } else {
+          // مشاركة الملف
+          if (navigator.share) {
+            try {
+              await navigator.share({
+                title: t('finance.accountStatement'),
+                text: t('finance.accountStatement'),
+                url: fullUrl
+              });
+            } catch (err) {
+              // إذا فشلت المشاركة، انسخ الرابط
+              navigator.clipboard.writeText(fullUrl);
+              Tostget('تم نسخ الرابط');
+            }
+          } else {
+            // إذا لم يكن المتصفح يدعم المشاركة، انسخ الرابط
+            navigator.clipboard.writeText(fullUrl);
+            Tostget('تم نسخ الرابط');
+          }
+        }
+        setShowShareModal(false);
+      }
+    } catch (error) {
+      console.error('Error generating statement:', error);
+      Tostget(t('finance.statementError'));
+    }
   };
 
   const handleChat = () => {
@@ -780,7 +823,15 @@ export default function FinancePage() {
         }}
       />
 
-      {/* TODO: Add Filter and Share modals */}
+      {/* Share Finance Modal */}
+      <ShareFinanceModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        onGenerate={handleGenerateStatement}
+        loading={reportLoading}
+      />
+
+      {/* TODO: Add Filter modal */}
       </ContentSection>
     </ResponsiveLayout>
   );

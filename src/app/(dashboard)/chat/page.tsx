@@ -101,23 +101,33 @@ export default function ChatPage() {
   const [contextMenu, setContextMenu] = useState<{ message: ChatMessage; x: number; y: number } | null>(null);
   const [showMessageInfo, setShowMessageInfo] = useState<ChatMessage | null>(null);
 
-  // وظائف الضغط الطويل للرد
-  const handleMouseDown = (message: ChatMessage) => {
+  // وظائف الضغط الطويل لفتح قائمة الإعدادات (مثل الجوال)
+  const handleLongPress = (e: React.MouseEvent | React.TouchEvent, message: ChatMessage) => {
     const timer = setTimeout(() => {
-      setReplyToMessage(message);
       // إضافة اهتزاز خفيف إذا كان متاحاً
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
-      // التركيز على منطقة الكتابة
-      setTimeout(() => {
-        textareaRef.current?.focus();
-      }, 100);
+
+      let x = 0;
+      let y = 0;
+
+      // التعامل مع Touch events (الجوال) و Mouse events (الحاسب)
+      if ('touches' in e && e.touches.length > 0) {
+        x = e.touches[0].clientX;
+        y = e.touches[0].clientY;
+      } else if ('clientX' in e) {
+        x = e.clientX;
+        y = e.clientY;
+      }
+
+      // فتح قائمة الإعدادات
+      setContextMenu({ message, x, y });
     }, 500); // 500ms للضغط الطويل
     setLongPressTimer(timer);
   };
 
-  const handleMouseUp = () => {
+  const handleLongPressEnd = () => {
     if (longPressTimer) {
       clearTimeout(longPressTimer);
       setLongPressTimer(null);
@@ -792,20 +802,20 @@ export default function ChatPage() {
                   direction: isRTL ? 'rtl' : 'ltr'
                 }}
                 onDoubleClick={() => setReplyToMessage(m)} // Double click للرد
-                onMouseDown={() => handleMouseDown(m)} // Mousedown للضغط الطويل
-                onMouseUp={handleMouseUp} // Mouseup لإلغاء الضغط الطويل
-                onMouseLeave={handleMouseUp} // إلغاء عند مغادرة المنطقة
-                onTouchStart={() => handleMouseDown(m)} // Touch للهواتف
-                onTouchEnd={handleMouseUp} // Touch end للهواتف
+                onMouseDown={(e) => handleLongPress(e, m)} // Mousedown للضغط الطويل
+                onMouseUp={handleLongPressEnd} // Mouseup لإلغاء الضغط الطويل
+                onMouseLeave={handleLongPressEnd} // إلغاء عند مغادرة المنطقة
+                onTouchStart={(e) => handleLongPress(e, m)} // Touch للهواتف - يفتح قائمة الإعدادات
+                onTouchEnd={handleLongPressEnd} // Touch end للهواتف
                 onContextMenu={(e) => handleContextMenu(e, m)} // Right click للقائمة السياقية
               >
-                {/* Reply Button - يظهر عند hover */}
+                {/* Reply Button - يظهر عند hover في الحاسب فقط */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation(); // منع تفعيل الضغط الطويل
                     handleQuickReply(m);
                   }}
-                  className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full z-10 shadow-sm"
+                  className="absolute opacity-0 group-hover:opacity-100 transition-all duration-200 rounded-full z-10 shadow-sm hidden md:block"
                   style={{
                     top: `${scale(8)}px`,
                     [isRTL ? 'left' : 'right']: `${scale(8)}px`,
