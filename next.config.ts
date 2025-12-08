@@ -15,10 +15,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  eslint: {
-    // السماح بإكمال البناء حتى مع وجود أخطاء ESLint (الموجودة سابقاً)
-    ignoreDuringBuilds: true,
-  },
   // Turbopack config (moved from experimental.turbo)
   turbopack: {
     rules: {
