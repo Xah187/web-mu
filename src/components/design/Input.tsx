@@ -42,7 +42,7 @@ export default function Input({
   name,
   placeholder,
   type = 'text',
-  onPressEnter = () => {},
+  onPressEnter = () => { },
   height = '100%',
   multiline = false,
   minHeight = 55,
@@ -120,7 +120,7 @@ export default function Input({
       <div
         className={`
           relative rounded-xl border transition-all duration-200
-          ${isFocused ? 'border-blue shadow-sm' : error ? 'border-red-500' : 'border-bordercolor'}
+          ${isFocused ? 'border-blue' : error ? 'border-red-500' : 'border-bordercolor'}
           ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-text'}
         `}
         style={{
@@ -140,9 +140,9 @@ export default function Input({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           disabled={disabled}
-          placeholder={placeholder || (label || name ? undefined : `أدخل ${name}`)}
+          placeholder={placeholder}
           className={`
-            w-full bg-transparent outline-none text-center
+            w-full bg-transparent outline-none !outline-none focus:outline-none focus:ring-0 text-center
             ${multiline ? 'resize-none' : ''}
             ${disabled ? 'cursor-not-allowed' : ''}
           `}
@@ -154,12 +154,14 @@ export default function Input({
             padding: `${scale(16)}px ${scale(16)}px`,
             color: currentTheme.inputText,
             direction: 'ltr',
-            textAlign: 'center'
+            textAlign: 'center',
+            outline: 'none',
+            boxShadow: 'none'
           }}
         />
 
         {/* Floating Label - only when no external label and no placeholder */}
-        {!label && !placeholder && (
+        {!label && !name && !placeholder && (
           <label
             className={`
               absolute ${isRTL ? 'right-4' : 'left-4'} px-2 pointer-events-none
@@ -181,55 +183,26 @@ export default function Input({
           </label>
         )}
 
-        {/* Paste Button */}
-        {isFocused && !value && (
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                const text = await navigator.clipboard.readText();
-                if (text) {
-                  if (type === 'number' || type === 'tel') {
-                    // Allow only numbers (including Arabic numerals) when pasting from clipboard
-                    const numbersOnly = text.replace(/[^\d٠-٩]/g, '');
-                    onChange(convertArabicToEnglish(numbersOnly));
-                  } else {
-                    onChange(text);
-                  }
-                }
-              } catch (err) {
-                // Silently fail
-              }
-            }}
-            className={`absolute ${isRTL ? 'left-2' : 'right-2'} top-1/2 -translate-y-1/2 text-white text-xs rounded-md hover:bg-bluedark transition-colors duration-200`}
-            style={{
-              fontSize: `${scale(11 + size)}px`,
-              fontFamily: fonts.IBMPlexSansArabicMedium,
-              padding: `${scale(4)}px ${scale(8)}px`,
-              borderRadius: `${scale(4)}px`,
-              backgroundColor: colors.BLUE
-            }}
-          >
-            {isRTL ? 'لصق' : 'Paste'}
-          </button>
-        )}
+
       </div>
 
       {/* Error Message */}
-      {error && (
-        <p
-          className={`text-red-500 ${isRTL ? 'text-right' : 'text-left'}`}
-          style={{
-            fontSize: `${scale(12 + size)}px`,
-            fontFamily: fonts.IBMPlexSansArabicMedium,
-            marginTop: `${scale(4)}px`,
-            lineHeight: 1.4
-          }}
-        >
-          {error}
-        </p>
-      )}
-    </div>
+      {
+        error && (
+          <p
+            className={`text-red-500 ${isRTL ? 'text-right' : 'text-left'}`}
+            style={{
+              fontSize: `${scale(12 + size)}px`,
+              fontFamily: fonts.IBMPlexSansArabicMedium,
+              marginTop: `${scale(4)}px`,
+              lineHeight: 1.4
+            }}
+          >
+            {error}
+          </p>
+        )
+      }
+    </div >
   );
 }
 
